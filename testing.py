@@ -40,16 +40,30 @@ def get_recommendations(headers):
     response = requests.get(recommender_url, params=params)
 
     results = response.json()
-    display_results(results)
+    display_results(results, send)
 
-def display_results(results):
+def display_results(results, send):
     """
     Fucntion display_results that takes query results and displays them in a readable format
     
     Params:
         results (dict) : query results converted to json
     """
-    print(results['results'])
+    matches = results['results']
+    print(f"Total of {len(matches)} matches for {send}")
+
+    for count, match in enumerate(matches):
+   
+        print(f"-------Match {count + 1}--------")
+        print(matches[count]['prefixedName'])
+        print(matches[count]['vocabulary.prefix'])
+        print(matches[count]['uri'])
+        print(matches[count]['type'])
+        print(matches[count]['score'])
+
+
+
+
 #--------------------------------------------------------------
 # Main Function to run the request
 def main():
