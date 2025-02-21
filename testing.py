@@ -29,18 +29,19 @@ def get_recommendations(headers):
         None
 
     """
-    send = headers[0]
+    for header in headers:
+        send = header
 
-    params = {
-        "q": send,
-        "category": "class", 
-        "page_size": 5
-    }
+        params = {
+            "q": send,
+            "category": "class", # Here possibly allow the user to switch the type / supervise learning for matching the category
+            "page_size": 5 # Manually selected by users
+        }
 
-    response = requests.get(recommender_url, params=params)
+        response = requests.get(recommender_url, params=params)
 
-    results = response.json()
-    display_results(results, send)
+        results = response.json()
+        display_results(results, send)
 
 def display_results(results, send):
     """
@@ -50,7 +51,7 @@ def display_results(results, send):
         results (dict) : query results converted to json
     """
     matches = results['results']
-    print(f"Total of {len(matches)} matches for {send}")
+    print(f"TOTAL OF {len(matches)} MATCHES FOR {send}")
 
     for count, match in enumerate(matches):
    
@@ -60,7 +61,7 @@ def display_results(results, send):
         print(matches[count]['uri'])
         print(matches[count]['type'])
         print(matches[count]['score'])
-
+    print("--------------------------------")
 
 
 
