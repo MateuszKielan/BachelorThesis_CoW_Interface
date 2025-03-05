@@ -24,4 +24,18 @@
         size: 200, 50
         pos: root.width * 0.4, root.height * 0.45
         on_press: root.select_file()
+
+    Label:
+        id: file_path_label
+        text: "No File Selected"
+        color: 0,0,0
+        size_hint_y: None
+        height: 40
+        pos: root.width * 0.45, root.height * 0.4
+    
+    Button:
+        text: "Convert"
+        size_hint: None, None
+        size: 200, 50
+        pos: root.width * 0.4, root.height * 0.20
     
