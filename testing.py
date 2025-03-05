@@ -34,7 +34,7 @@ def get_recommendations(headers):
 
         params = {
             "q": send,
-            "category": "class", # Here possibly allow the user to switch the type / supervise learning for matching the category
+            "category": "class",
             "page_size": 5 # Manually selected by users
         }
 
