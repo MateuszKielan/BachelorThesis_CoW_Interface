@@ -1,13 +1,17 @@
+#------Imports Section-------
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 from kivy.lang import Builder
+#-----------------------------
 
-Builder.load_file("kivy_app.kv")
+class StartingScreen(Widget):
+    #def __init__(self, **kwargs):
+        #super().__init__(**kwargs)
 
-class StartingScreen(BoxLayout):
+    #def select_file(self):
     pass
-
 class CowApp(App):
     def build(self):
         return StartingScreen()
