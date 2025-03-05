@@ -1,6 +1,10 @@
 #:kivy 2.3.1
+ScreenManager:
+    StartingScreen:
+    ConverterScreen:
 
 <StartingScreen>:
+    name: "start"
     orientation: "vertical"
     padding: 20
     spacing: 10
@@ -16,13 +20,13 @@
         text: "Welcome to CoW Interface"
         color: 0,0,0
         font_size: 25
-        pos: root.width * 0.45, root.height / 2
+        pos_hint: {"center_x": 0.5, "y": 0.08}
 
     Button:
         text: "Select File"
         size_hint: None, None
         size: 200, 50
-        pos: root.width * 0.4, root.height * 0.45
+        pos_hint: {"center_x": 0.5, "y": 0.44}
         on_press: root.select_file()
 
     Label:
@@ -31,11 +35,22 @@
         color: 0,0,0
         size_hint_y: None
         height: 40
-        pos: root.width * 0.45, root.height * 0.4
+        pos_hint: {"center_x": 0.5, "y": 0.38}
     
     Button:
         text: "Convert"
         size_hint: None, None
         size: 200, 50
-        pos: root.width * 0.4, root.height * 0.20
+        pos_hint: {"center_x": 0.5, "y": 0.15}
+        on_press: root.switch()
+    
+<ConverterScreen>:
+    name: "converter"
+    canvas.before:
+        Color:
+            rgb: 1,1,1
+        Rectangle
+            pos: self.pos
+            size: self.size
+
     
