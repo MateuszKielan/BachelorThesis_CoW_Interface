@@ -8,10 +8,11 @@ from kivy.lang import Builder
 from kivy.config import Config
 from plyer import filechooser
 from pathlib import Path
+from screeninfo import get_monitors
+from kivy.core.window import Window
 #-----------------------------
 
-Config.set("graphics", "width", 1200)
-Config.set("graphics", "height", 800)
+Window.maximize()
 
 class StartingScreen(Screen):
     def __init__(self, **kwargs):
