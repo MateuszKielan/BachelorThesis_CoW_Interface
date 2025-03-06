@@ -5,9 +5,13 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
+from kivy.config import Config
 from plyer import filechooser
 from pathlib import Path
 #-----------------------------
+
+Config.set("graphics", "width", 1200)
+Config.set("graphics", "height", 800)
 
 class StartingScreen(Screen):
     def __init__(self, **kwargs):
