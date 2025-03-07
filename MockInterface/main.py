@@ -13,6 +13,7 @@ from kivy.core.window import Window
 from testing import get_csv_headers, get_recommendations
 #-----------------------------
 
+# Set the adaptive fullScreen mode
 Window.maximize()
 
 class StartingScreen(Screen):
@@ -21,31 +22,57 @@ class StartingScreen(Screen):
         selected_file = ''
 
     def select_file(self):
+        """
+        Function select_file that opens filechooser.
+        """
         filechooser.open_file(on_selection=self.select_store)
         
     def select_store(self, selection):
+        """
+        Function selct_store that: 
+            1. Stores the selected file path.
+            2. Updates the file name label.
+        Params:
+            selection (arr): array of length 1 with a selected file
+        """
         if selection:
             self.selected_file = str(Path(selection[0]))
             file_path_name = str(Path(selection[0]).name)
             self.ids.file_path_label.text = file_path_name
 
-    def switch(self, item=None):
+    def switch(self):
+        """
+        Function switch that 
+            1. Switches the screen to converter_screen
+            2. Passes the file path to the converter_screen
+        """
         converter_screen = self.manager.get_screen("converter")
         converter_screen.display_recommendation(self.selected_file)
         self.manager.current = "converter"
 
 class ConverterScreen(Screen):
     def display_recommendation(self, file_path):
+        """
+        Funciton display_recommnedation:
+            1. Retreitves the recommendation from the input csv.
+            2. Displays the headers on the middle page.
+            3. Displays the recommendations on the middle page.
+        """
         headers = get_csv_headers(file_path)
-        recommendations = get_recommendations(headers)
+        size = 1
 
         table = self.ids.vocab_recommender
         for header in headers:
+            recommendations = get_recommendations(headers, size)
             table.add_widget(Label(text=f'{header}', bold=True, color=(0, 0, 0, 1)))
+            #table.add_widget(Label(text=f'{recommendations}', bold=True, color=(0,0,0,1)))
 
 
 class CowApp(App):
     def build(self):
+        """
+        Build app function that runs the Screen Manager.
+        """
         sm = ScreenManager()
         sm.add_widget(StartingScreen(name="start"))
         sm.add_widget(ConverterScreen(name="converter"))

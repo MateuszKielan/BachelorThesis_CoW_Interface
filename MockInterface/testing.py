@@ -19,7 +19,7 @@ def get_csv_headers(file_path):
         headers = next(reader)
     return headers
 
-def get_recommendations(headers):
+def get_recommendations(header, size):
     """
     Function get_recommendations that receives headers and runs a get requests to the vocabulary api
 
@@ -29,20 +29,16 @@ def get_recommendations(headers):
         None
 
     """
-    for header in headers:
-        send = header
+    params = {
+        "q": header,
+        "category": "class",
+        "page_size": size # Manually selected by users
+    }
 
-        params = {
-            "q": send,
-            "category": "class",
-            "page_size": 5 # Manually selected by users
-        }
+    response = requests.get(recommender_url, params=params)
 
-        response = requests.get(recommender_url, params=params)
-
-        results = response.json()
-        return results
-        #display_results(results, send)
+    results = response.json()
+    return results
 
 def display_results(results, send):
     """
