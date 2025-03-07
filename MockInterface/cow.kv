@@ -78,7 +78,7 @@ ScreenManager:
             size_hint_x: 0.33
             canvas.before:
                 Color:
-                    rgb: 0.8, 0.8, 1  # Light blue background
+                    rgb: 1, 1, 1  # Light blue background
                 Rectangle:
                     pos: self.pos
                     size: self.size
@@ -86,6 +86,15 @@ ScreenManager:
                 text: "Vocabulary Recommender"
                 font_size: 20
                 bold: True
+                color: 0,0,0
+            
+            GridLayout:
+                id: vocab_recommender
+                cols: 1
+                pos_hint: {'center_x': 0.5, 'y': 0.9}
+                height: 500
+                spacing: 5
+
 
         # Right Section - JSON Preview / Editing
         BoxLayout:

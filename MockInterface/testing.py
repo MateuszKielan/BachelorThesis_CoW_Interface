@@ -41,7 +41,8 @@ def get_recommendations(headers):
         response = requests.get(recommender_url, params=params)
 
         results = response.json()
-        display_results(results, send)
+        return results
+        #display_results(results, send)
 
 def display_results(results, send):
     """
