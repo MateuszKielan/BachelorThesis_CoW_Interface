@@ -281,6 +281,9 @@ def main():
     # Retrieve the best results for a homogenous request
     request_result = retrieve_homogenous(best_vocab, all_results)
 
+    # IF wanna retrieve only with NECESSARY VOCABS
+    # request_result = retrieve_homogenous(necessary_vocabs[-1])
+
     # Display the results in readable format
     print(f"Best Vocabulary: {best_vocab}")
     print(f"Homogeneous Matches (header -> match):")
