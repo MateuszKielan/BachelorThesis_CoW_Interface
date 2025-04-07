@@ -1,6 +1,7 @@
 import requests
 import csv
 import json
+from copy import deepcopy
 
 # Lov api url
 recommender_url = "https://lov.linkeddata.es/dataset/lov/api/v2/term/search"
@@ -168,6 +169,48 @@ def get_average_score(vocabs, all_results):
 
 
 
+#------------------------------- WORK IN PROGRESS ---------------------------------------
+def combiSQORE(all_results, vocab_scores):
+    """
+   ! WORK IN PROGRESS !
+
+    Function combiSQORE that leaves only the smallest set of vocabularies that ensures that every header has
+    at least one recommendation.
+
+    Params: 
+        - all_results (dict(arr)): dictionary with query results for all headers
+        - vocab_scores (arr(tuple)): array with vocabularies and their scores sorted in descending order
+    Return:
+        - combi_vocabs (arr): smallest set of vocabularies that ensuring every header has at least one recommendation
+
+        
+    Logic:
+        1. Loop through the vocabularies
+        2. For every header remove all the results from the current vocabulary
+        3. Check if the match list is empty
+        4. If no then exclude the vocabulary from the final list 
+        5. Repeat for every vocabulary
+    """
+    vocab_scores = vocab_scores[::-1]
+    combi_vocab = []
+
+    for vocab in vocab_scores:
+        necessary = False
+        for header in all_results:
+            data = deepcopy(all_results[header])
+            filtered = [match for match in data if match[1] != vocab[0]]
+            if not filtered:
+                necessary = True
+                break
+        if necessary == True:
+            combi_vocab.append(vocab)
+    
+    return combi_vocab
+
+#------------------------------------------------------------------------------------
+
+
+
 def retrieve_homogenous(best_vocab, all_results):
     """
     Funciton retrieve_homogenous that retrieves the matches based on the best vocabulary
@@ -229,6 +272,9 @@ def main():
     # Calculate a score for every vocabulary
     scores = get_average_score(vocabs, all_results)
 
+    # Find only the necessary vocabularies
+    necessary_vocabs = combiSQORE(all_results,scores)
+    
     # Select the best vocabulary
     best_vocab = scores[0][0]
 
@@ -237,7 +283,7 @@ def main():
 
     # Display the results in readable format
     print(f"Best Vocabulary: {best_vocab}")
-    print(f"Homogeneous Matches (header -> match index):")
+    print(f"Homogeneous Matches (header -> match):")
     for header, index in request_result:
         match = all_results[header][index]
         print(f"- {header}: {match[0]} ({match[1]}, score={match[4]})")
