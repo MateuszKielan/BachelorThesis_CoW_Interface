@@ -10,7 +10,7 @@ from plyer import filechooser
 from pathlib import Path
 from screeninfo import get_monitors
 from kivy.core.window import Window
-from testing import get_csv_headers, get_recommendations
+from MockInterface.requests_t import get_csv_headers, get_recommendations
 #-----------------------------
 
 # Set the adaptive fullScreen mode
@@ -53,7 +53,7 @@ class StartingScreen(Screen):
 class ConverterScreen(Screen):
     def display_recommendation(self, file_path):
         """
-        Funciton display_recommnedation:
+        Function display_recommnedation:
             1. Retreitves the recommendation from the input csv.
             2. Displays the headers on the middle page.
             3. Displays the recommendations on the middle page.
