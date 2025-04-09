@@ -101,7 +101,7 @@ def organize_results(result):
 
         sub_match = []
         sub_match.append(matches[id]['prefixedName'])
-        sub_match.append(matches[id]['vocabulary.prefix'])
+        sub_match.append(matches[id]['vocabulary.prefix'][0])
         sub_match.append(matches[id]['uri'])
         sub_match.append(matches[id]['type'])
         sub_match.append(matches[id]['score'])
@@ -169,7 +169,6 @@ def get_average_score(vocabs, all_results):
 
 
 
-#------------------------------- WORK IN PROGRESS ---------------------------------------
 def combiSQORE(all_results, vocab_scores):
     """
    ! WORK IN PROGRESS !
@@ -191,6 +190,7 @@ def combiSQORE(all_results, vocab_scores):
         4. If no then exclude the vocabulary from the final list 
         5. Repeat for every vocabulary
     """
+    # Reverse the list to first exclude the worst performing vocabularies.
     vocab_scores = vocab_scores[::-1]
     combi_vocab = []
 
@@ -207,7 +207,6 @@ def combiSQORE(all_results, vocab_scores):
     
     return combi_vocab
 
-#------------------------------------------------------------------------------------
 
 
 
@@ -236,6 +235,7 @@ def retrieve_homogenous(best_vocab, all_results):
         choice = False
         for index, match in enumerate(all_results[header]):
             if match[1] == best_vocab:
+                print(f'Header: {header} Found a match')
                 choice = match
                 request_return.append((header,index))
                 # When match is found terminate immidiately
@@ -244,12 +244,52 @@ def retrieve_homogenous(best_vocab, all_results):
                 continue
         # If no match is found take the first match for the header 
         if choice == False:
+            print("didn't find a match")
             request_return.append((header, 0))
 
     return request_return
 
-        
-        
+
+
+def retrieve_combiSQORE(best_vocab, all_results):
+    """
+    Funciton retrieve_homogenous that retrieves the matches based on the best vocabulary based on combiSQORE
+
+    Params:
+        - best_vocab (str): best vocabulary  (see the combiSQORE function)
+    Return:
+        - request_return (arr(tuple)): array containing tuples with the following format:
+            (header, match_index)
+
+    Main logic:
+        1. For every header check all the matches
+        2. For every match check if it is from a best_vocab
+            3. If yes add it to the list and move to the next header
+        4. If the header has no matches with the best_vocab, select the first match 
+    """
+
+    request_return = []
+    for header in all_results:
+        choice = False
+        for index, match in enumerate(all_results[header]):
+            if match[1] == best_vocab:
+                print(f'Header {header}: FOUND a match for {best_vocab}')
+                choice = match
+                request_return.append((header,index))
+                # When match is found terminate immidiately
+                break
+            else:
+                continue
+        # If no match is found take the first match for the header 
+        if choice == False:
+            print(f"Header {header}: NOT FOUND a match for {best_vocab}")
+            request_return.append((header, 0))
+
+    return request_return
+
+    
+
+
 #--------------------------------------------------------------
 # Main Function to run the request
 def main():
@@ -273,23 +313,25 @@ def main():
     scores = get_average_score(vocabs, all_results)
 
     # Find only the necessary vocabularies
-    necessary_vocabs = combiSQORE(all_results,scores)
+    combi_vocabs = combiSQORE(all_results,scores)
     
     # Select the best vocabulary
     best_vocab = scores[0][0]
-
+    best_combi_vocab = combi_vocabs[0][0]
+    
     # Retrieve the best results for a homogenous request
-    request_result = retrieve_homogenous(best_vocab, all_results)
+    #request_result = retrieve_homogenous(best_vocab, all_results)
 
     # IF wanna retrieve only with NECESSARY VOCABS
-    # request_result = retrieve_homogenous(necessary_vocabs[-1])
+    request_result = retrieve_combiSQORE(best_combi_vocab, all_results)
 
     # Display the results in readable format
-    print(f"Best Vocabulary: {best_vocab}")
+    print(f"Best Vocabulary: {best_combi_vocab}")
     print(f"Homogeneous Matches (header -> match):")
     for header, index in request_result:
         match = all_results[header][index]
         print(f"- {header}: {match[0]} ({match[1]}, score={match[4]})")
+
 
 if __name__ == "__main__":
     main()
