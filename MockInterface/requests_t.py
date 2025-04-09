@@ -171,8 +171,6 @@ def get_average_score(vocabs, all_results):
 
 def combiSQORE(all_results, vocab_scores):
     """
-   ! WORK IN PROGRESS !
-
     Function combiSQORE that leaves only the smallest set of vocabularies that ensures that every header has
     at least one recommendation.
 
