@@ -67,10 +67,24 @@ ScreenManager:
                 Rectangle:
                     pos: self.pos
                     size: self.size
+
             Label:
                 text: "CSV Preview"
                 font_size: 20
                 bold: True
+                color: 0, 0, 0
+                size_hint_y: None
+
+            BoxLayout:
+                id: csv_preview_container
+
+            Button:
+                text: "Open Full Table"
+                size_hint: None, None
+                size: 200, 50
+                pos_hint: {"center_x": 0.5}
+                on_press: root.show_popup()
+            
 
         # Middle Section - Vocabulary Recommendations
         BoxLayout:
@@ -87,6 +101,8 @@ ScreenManager:
                 font_size: 20
                 bold: True
                 color: 0,0,0
+                size_hint_y: None
+                
             
             GridLayout:
                 id: vocab_recommender
@@ -110,3 +126,10 @@ ScreenManager:
                 text: "JSON Preview"
                 font_size: 20
                 bold: True
+
+<DataPopup>
+    Label:
+        text: "Csv Preview"
+        pos_hint: {"center_x": 0.5, "y": 0.9}
+        Color:
+            rgb: 1,1,1
