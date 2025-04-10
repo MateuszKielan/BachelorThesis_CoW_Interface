@@ -60,7 +60,26 @@ class DataPopup(FloatLayout):
     """
     Class DataPopup that defines a popup page that displays full csv data table
     """
+    def __init__(self, column_heads, row_data, **kwargs):
+        super().__init__(**kwargs)
+        self.build_table(column_heads, row_data)
+
+    def build_table(self, column_heads, row_data):
+        
+        table = MDDataTable(
+            column_data=column_heads,
+            row_data=row_data,
+            size_hint=(0.98, 0.85),
+            pos_hint={"center_x": 0.5, "center_y": 0.5},
+            use_pagination=True,
+            rows_num=20
+        )
+
+        self.ids.popup_data_container.clear_widgets()
+        self.ids.popup_data_container.add_widget(table)
+
     def dismiss_popup(self):
+
         parent = self.parent
         while parent:
             if isinstance(parent, Popup):
@@ -74,11 +93,14 @@ class ConverterScreen(Screen):
         """
         Function show_popup that calls the DataPopup class to display the table 
         """
-        show = DataPopup()
+        show = DataPopup(column_heads, row_data)
 
         popupWindow = Popup(title="CSV Data", content=show, size_hint=(1, 1))
 
         popupWindow.open()
+    
+    def open_recommendations():
+        pass
     
     def display_recommendation(self, file_path):
         """
@@ -105,9 +127,9 @@ class ConverterScreen(Screen):
 
         # Seperate headers and row data
         column_heads = [(header, dp(25)) for header in rows[0]]
-        print(column_heads)
         table_rows = rows[1:11] 
         row_data = rows [1:]
+
         # Remove old tabless
         if hasattr(self, 'csv_table'):
             self.remove_widget(self.csv_table)
@@ -116,15 +138,17 @@ class ConverterScreen(Screen):
         self.csv_table = MDDataTable(
             column_data=column_heads,
             row_data=table_rows,
-            size_hint=(0.9, 0.9),
+            size_hint=(0.9, 1),
             pos_hint={"center_x": 0.5, "center_y": 0.5},
+            use_pagination=True,
+            rows_num = 10
         )
 
         # Add table to left section
         self.ids.csv_preview_container.clear_widgets()
         self.ids.csv_preview_container.add_widget(self.csv_table)
 
-        open_popup = Button(text='test_btn', on_press=lambda x: self.show_popup(column_heads,row_data), size_hint=(None,None), pos_hint={"center_x": 0.5})
+        open_popup = Button(text='Load Full Dataset', on_press=lambda x: self.show_popup(column_heads,row_data), size_hint=(None,None), size=(200,50), pos_hint={"center_x": 0.5})
         self.ids.csv_preview_container.add_widget(open_popup)
 
 
