@@ -6,6 +6,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.popup import Popup
+from kivy.uix.button import Button
 from kivy.lang import Builder
 from kivy.config import Config
 from plyer import filechooser
@@ -59,10 +60,20 @@ class DataPopup(FloatLayout):
     """
     Class DataPopup that defines a popup page that displays full csv data table
     """
+    def dismiss_popup(self):
+        parent = self.parent
+        while parent:
+            if isinstance(parent, Popup):
+                parent.dismiss()
+                break
+            parent = parent.parent
     
         
 class ConverterScreen(Screen):
-    def show_popup(self):
+    def show_popup(self, column_heads, row_data):
+        """
+        Function show_popup that calls the DataPopup class to display the table 
+        """
         show = DataPopup()
 
         popupWindow = Popup(title="CSV Data", content=show, size_hint=(1, 1))
@@ -96,7 +107,7 @@ class ConverterScreen(Screen):
         column_heads = [(header, dp(25)) for header in rows[0]]
         print(column_heads)
         table_rows = rows[1:11] 
-
+        row_data = rows [1:]
         # Remove old tabless
         if hasattr(self, 'csv_table'):
             self.remove_widget(self.csv_table)
@@ -105,13 +116,17 @@ class ConverterScreen(Screen):
         self.csv_table = MDDataTable(
             column_data=column_heads,
             row_data=table_rows,
-            size_hint=(0.90, 0.80),
+            size_hint=(0.9, 0.9),
             pos_hint={"center_x": 0.5, "center_y": 0.5},
         )
 
         # Add table to left section
         self.ids.csv_preview_container.clear_widgets()
         self.ids.csv_preview_container.add_widget(self.csv_table)
+
+        open_popup = Button(text='test_btn', on_press=lambda x: self.show_popup(column_heads,row_data), size_hint=(None,None), pos_hint={"center_x": 0.5})
+        self.ids.csv_preview_container.add_widget(open_popup)
+
 
 class CowApp(MDApp):
     def build(self):

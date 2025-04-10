@@ -77,13 +77,7 @@ ScreenManager:
 
             BoxLayout:
                 id: csv_preview_container
-
-            Button:
-                text: "Open Full Table"
-                size_hint: None, None
-                size: 200, 50
-                pos_hint: {"center_x": 0.5}
-                on_press: root.show_popup()
+                orientation: "vertical"
             
 
         # Middle Section - Vocabulary Recommendations
@@ -128,8 +122,18 @@ ScreenManager:
                 bold: True
 
 <DataPopup>
-    Label:
-        text: "Csv Preview"
-        pos_hint: {"center_x": 0.5, "y": 0.9}
-        Color:
-            rgb: 1,1,1
+    BoxLayout:
+        orientation: "vertical"
+
+        Label:
+            text: "Csv Preview"
+            color: 1,1,1
+            size_hint_y: None
+
+        Button:
+            text: "Close"
+            on_press: root.dismiss_popup()
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {"center_x": 0.5, y: 0.2}
+        
