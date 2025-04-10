@@ -23,9 +23,14 @@ import csv
 Window.maximize()
 
 class StartingScreen(Screen):
+    """
+    Class StartingScreen that implements logic begind Starting Screen
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         selected_file = ''
+
 
     def select_file(self):
         """
@@ -33,6 +38,7 @@ class StartingScreen(Screen):
         """
         filechooser.open_file(on_selection=self.select_store)
         
+
     def select_store(self, selection):
         """
         Function selct_store that: 
@@ -46,6 +52,7 @@ class StartingScreen(Screen):
             file_path_name = str(Path(selection[0]).name)
             self.ids.file_path_label.text = file_path_name
 
+
     def switch(self):
         """
         Function switch that 
@@ -56,13 +63,18 @@ class StartingScreen(Screen):
         converter_screen.display_recommendation(self.selected_file)
         self.manager.current = "converter"
 
+
+
 class DataPopup(FloatLayout):
     """
     Class DataPopup that defines a popup page that displays full csv data table
     """
+
+
     def __init__(self, column_heads, row_data, **kwargs):
         super().__init__(**kwargs)
         self.build_table(column_heads, row_data)
+
 
     def build_table(self, column_heads, row_data):
         """
@@ -87,16 +99,26 @@ class DataPopup(FloatLayout):
         self.ids.popup_data_container.clear_widgets()
         self.ids.popup_data_container.add_widget(table)
 
-    def dismiss_popup(self):
 
+    def dismiss_popup(self):
+        """
+        Function dismiss_popup that closes the popup.
+        """
         parent = self.parent
         while parent:
             if isinstance(parent, Popup):
                 parent.dismiss()
                 break
             parent = parent.parent
-    
+
+
+
 class RecommendationPopup(FloatLayout):
+    """
+    Class RecommendationPopup that implements the logic behind Recommendation popups for every header 
+    """
+
+
     def __init__(self, header, organized_data, list_titles, **kwargs):
         super().__init__(**kwargs)
         self.build_table(header, organized_data, list_titles)
@@ -125,16 +147,27 @@ class RecommendationPopup(FloatLayout):
         self.ids.popup_recommendations.clear_widgets()
         self.ids.popup_recommendations.add_widget(table)
 
-    def dismiss_popup(self):
 
+    def dismiss_popup(self):
+        """
+        Function dismiss_popup that closes the popup window
+        """
         parent = self.parent
+
+        # Search for the lowest parent
         while parent:
             if isinstance(parent, Popup):
                 parent.dismiss()
                 break
             parent = parent.parent
-    
+
+
+
 class ConverterScreen(Screen):
+    """
+    Class ConverterScreen that implements logic behind the 
+    """
+
     def show_popup(self, column_heads, row_data):
         """
         Function show_popup that calls the DataPopup class to display the table 
@@ -149,16 +182,28 @@ class ConverterScreen(Screen):
         # Pass the data to the popup
         show = DataPopup(column_heads, row_data)
 
-        # Initialize window
+        # Initialize and open window
         popupWindow = Popup(title="CSV Data", content=show, size_hint=(1, 1))
-
         popupWindow.open()
     
-    def open_recommendations(self,header, data,list_titles):
+
+    def open_recommendations(self,header, data, list_titles):
+        """
+        Function open recommendations that opens a recommendation popup.
+
+        Params:
+            header(str): name of the csv header
+            data(arr): list of data for the  
+            list_titles(arr): list of table headers
+        """
+        # Pass the data to the popup
         show = RecommendationPopup(header,data,list_titles)
+
+        # Initialize and open window
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
         popupWindow.open()
     
+
     def display_recommendation(self, file_path):
         """
         Function display_recommnedation:
@@ -172,7 +217,15 @@ class ConverterScreen(Screen):
         table = self.ids.vocab_recommender
 
         all_results = {}
-        list_titles = [('prefixedName', dp(50)), ('vocabulary.prefix', dp(50)), ('uri',dp(50)), ('type',dp(50)), ('score',dp(50))]
+
+        # List of titles with spacings
+        list_titles = [
+            ('prefixedName', dp(60)), 
+            ('vocabulary.prefix', dp(60)), 
+            ('uri',dp(60)),
+            ('type',dp(60)), 
+            ('score',dp(60))
+        ]
 
         for header in headers:
             recommendations = get_recommendations(header, size)
@@ -213,6 +266,7 @@ class ConverterScreen(Screen):
 
         open_popup = Button(text='Load Full Dataset', on_press=lambda x: self.show_popup(column_heads,row_data), size_hint=(None,None), size=(200,50), pos_hint={"center_x": 0.5})
         self.ids.csv_preview_container.add_widget(open_popup)
+
 
 
 class CowApp(MDApp):
