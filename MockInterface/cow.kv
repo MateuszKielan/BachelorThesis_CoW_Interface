@@ -140,3 +140,21 @@ ScreenManager:
             size: 300, 50
             pos_hint: {"center_x": 0.5, "y": 0.2}
         
+<RecommendationPopup>
+    BoxLayout:
+        orientation: "vertical"
+
+        Label:
+            text: "Recommendations Preview"
+            color: 1,1,1
+            size_hint_y: None
+
+        BoxLayout:
+            id: popup_recommendations
+
+        Button:
+            text: "Close"
+            on_press: root.dismiss_popup()
+            size_hint: None, None
+            size: 300, 50
+            pos_hint: {"center_x": 0.5, "y": 0.2}
