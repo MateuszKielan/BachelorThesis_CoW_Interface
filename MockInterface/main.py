@@ -168,6 +168,7 @@ class ConverterScreen(Screen):
     Class ConverterScreen that implements logic behind the 
     """
 
+
     def show_popup(self, column_heads, row_data):
         """
         Function show_popup that calls the DataPopup class to display the table 
@@ -230,7 +231,7 @@ class ConverterScreen(Screen):
         for header in headers:
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
-            table.add_widget(Button(text=f'{header}', on_press=lambda x: self.open_recommendations(header, organized_data, list_titles), bold=True, color=(0, 0, 0, 1)))
+            table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=organized_data: self.open_recommendations(h, d, list_titles), bold=True, color=(0, 0, 0, 1)))
             all_results[header] = organized_data
         
 
