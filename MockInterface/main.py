@@ -18,6 +18,7 @@ from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 import csv
 import subprocess
+from cow_csvw.converter.csvw import build_schema
 #-----------------------------
 
 # Set the adaptive fullScreen mode
@@ -200,7 +201,13 @@ class ConverterScreen(Screen):
         """
         Converts the given CSV file using CoW and saves the RDF output.
         """
-        pass
+        input_path = Path(csv_path)
+        output_metadata_path = input_path.parent / "metadata.json"
+
+        try:
+            build_schema(str(input_path), str(output_metadata_path))
+        except Exception as e:
+            pass
 
     def show_popup(self, column_heads, row_data):
         """
