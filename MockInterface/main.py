@@ -207,6 +207,7 @@ class ConverterScreen(Screen):
         super().__init__(**kwargs)
         self.rec_mode = "Homogenous"  # Changing in the switch_mode function
 
+
     def convert_with_cow(self, csv_path):
         """
         Function convert_with_cow that takes the CSV file and creates a JSON metadata
@@ -223,6 +224,7 @@ class ConverterScreen(Screen):
             build_schema(str(input_path), str(output_metadata_path))
         except Exception as e:
             pass
+
 
     def show_popup(self, column_heads, row_data):
         """
@@ -259,19 +261,49 @@ class ConverterScreen(Screen):
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
         popupWindow.open()
 
+
     def switch_mode(self, choice, headers, all_results, table):
         """
-        Function switch_mode
+        Function switch_mode that switches conversion mode according to the button pressed
+
+        Params:
+            choice (str): Single or Homogenous
+            headers, all_results, table: see create_header_buttons function
         """
+        # Set the variable to user choice
         self.rec_mode = choice
+
+        # Reload the buttons 
         self.create_header_buttons(headers, all_results, table)
 
+
     def create_header_buttons(self, headers, all_results, table):
+        """
+        Function create_header_buttons that adds a button for every widget in the file
+
+        Params:
+            headers (list): list of headers
+            all_results (dict): dictionary of all headers with their matches
+            table: display widget 
+        """
+        # Clear the previous buttons
         table.clear_widgets()
+
+        # Add a spacing widget
         table.add_widget(Widget(size_hint_y=None, height=40))
+
+        # For Every header add a corresponding button with the appropriate data
         for header in headers:
             data = all_results[header]
-            table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, self.list_titles, self.request_results), bold=True, color=(1, 1, 1, 1), size_hint=(None, None),pos_hint={"x": 0.5}, size=(120, 80),))
+            table.add_widget(Button(
+                text=f'{header}', 
+                on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, self.list_titles, self.request_results), # pass the corresponding data for every header
+                bold=True, color=(1, 1, 1, 1), 
+                size_hint=(None, None),
+                pos_hint={"x": 0.5}, 
+                size=(120, 80) # Later fix for relative size!!!
+            ))
+
 
     def display_recommendation(self, file_path):
         """
@@ -282,13 +314,20 @@ class ConverterScreen(Screen):
         """
         
         self.selected_file = file_path
+
+        # Convert the CSV to metadata JSON 
         self.convert_with_cow(file_path)
 
+        # Get the headers from CSV file
         headers = get_csv_headers(file_path)
+
+        # Set the size of received matches
         size = 20
 
+        # Store the display widget
         table = self.ids.vocab_recommender
 
+        # Dictionary {header: list of matches}
         all_results = {}
 
         # List of titles with spacings
@@ -300,19 +339,28 @@ class ConverterScreen(Screen):
             ('score',dp(60))
         ]
 
+        # For every header get recommendations and populate the all_results dictionary
         for header in headers:
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
             all_results[header] = organized_data
         
+        # Get all the vocabularies from the request data
         vocabs = get_vocabs(all_results)
+
+        # Calculate average score for every vocabulary
         scores = get_average_score(vocabs, all_results)
+
+        # Find best vocabularies according to combiSQORE 
         combi_vocabs = combiSQORE(all_results, scores)
 
+        # Select the best vocabulary 
         best_combi_vocab = combi_vocabs[0][0]
-
+        
+        # Retrieve indexes of best matches for every header 
         self.request_results = retrieve_combiSQORE(best_combi_vocab, all_results)
         
+        # Create buttons for every header
         self.create_header_buttons(headers, all_results, table)
 
         # Load CSV data for table
@@ -331,7 +379,7 @@ class ConverterScreen(Screen):
         if hasattr(self, 'csv_table'):
             self.remove_widget(self.csv_table)
 
-        # Create MDDataTable
+        # Create data overwiew table
         self.csv_table = MDDataTable(
             column_data=column_heads,
             row_data=table_rows,
@@ -341,12 +389,15 @@ class ConverterScreen(Screen):
             rows_num = 10
         )
 
+        # Add two buttons to toggle between Single and Homogenous texts 
         self.ids.request_option_panel.add_widget(Button(text='Single', on_press=lambda x: self.switch_mode('Single', headers, all_results, table), color=(1, 1, 1, 1)))
         self.ids.request_option_panel.add_widget(Button(text='Homogenous',on_press=lambda x: self.switch_mode('Homogenous', headers, all_results, table), color=(1, 1, 1, 1)))
     
+        # Clear previews widgets
         self.ids.csv_preview_container.clear_widgets()
         self.ids.csv_preview_container.add_widget(self.csv_table)
 
+        # Load Full dataset overview popup
         open_popup = Button(text='Load Full Dataset', on_press=lambda x: self.show_popup(column_heads,row_data), size_hint=(None,None), size=(200,50), pos_hint={"center_x": 0.5})
         self.ids.csv_preview_container.add_widget(open_popup)
 
@@ -358,8 +409,8 @@ class CowApp(MDApp):
         Build app function that runs the Screen Manager.
         """
         sm = ScreenManager()
-        sm.add_widget(StartingScreen(name="start"))
-        sm.add_widget(ConverterScreen(name="converter"))
+        sm.add_widget(StartingScreen(name="start")) # File Selection Screen
+        sm.add_widget(ConverterScreen(name="converter")) # Conversion Screen
         return sm
     
 if __name__ == '__main__':
