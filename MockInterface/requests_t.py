@@ -244,6 +244,7 @@ def retrieve_homogenous(best_vocab, all_results):
         if choice == False:
             print("didn't find a match")
             request_return.append((header, 0))
+            # To-Do if no matches are found then call combiSQORE again with the remaining data
 
     return request_return
 
@@ -324,7 +325,7 @@ def main():
     request_result = retrieve_combiSQORE(best_combi_vocab, all_results)
 
     # Display the results in readable format
-    print(f"Best Vocabulary: {best_combi_vocab}")
+    print(f"\nBest Vocabulary: {best_combi_vocab}")
     print(f"Homogeneous Matches (header -> match):")
     for header, index in request_result:
         match = all_results[header][index]

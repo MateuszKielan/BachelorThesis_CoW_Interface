@@ -255,7 +255,7 @@ class ConverterScreen(Screen):
         self.csv_table = MDDataTable(
             column_data=column_heads,
             row_data=table_rows,
-            size_hint=(0.9, 1),
+            size_hint=(1, 1),
             pos_hint={"center_x": 0.5, "center_y": 0.5},
             use_pagination=True,
             rows_num = 10
