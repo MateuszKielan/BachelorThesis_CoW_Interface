@@ -131,14 +131,20 @@ class RecommendationPopup(FloatLayout):
         Function build_table that builds the table for every header.
 
         Params:
-            column_heads(arr): list of headers
-            row_data(arr): list of data row by row
+            header (str): current header
+            organized_data (list): list of matches for the header
+            list_titles (list): list of titles for the output table columns
+            request_results (list): list of tuples of the headers and indexes of the best match
+            rec_mode (str): mode of display (Single or Homogenous)
+
         """
+        # Clear all  previous widgets
         self.ids.popup_recommendations.clear_widgets()
 
         index = [item[1] for item in request_results if item[0] == header]
         best_match_data = [organized_data[index[0]]]
 
+        # Display the best_table according to mode 
         if rec_mode == 'Homogenous':
             best_table = MDDataTable(
                 column_data = list_titles,
@@ -156,7 +162,7 @@ class RecommendationPopup(FloatLayout):
                 use_pagination=False,
             )
 
-        # Define the table
+        # Define the table of Matches
         table = MDDataTable(
             column_data=list_titles,
             row_data=organized_data,
@@ -166,10 +172,10 @@ class RecommendationPopup(FloatLayout):
             rows_num=20
         )
 
-        # Clear the previous table on launch and add the new table to the widget
+        # Add the new tables to the widget with Labels
         self.ids.popup_recommendations.add_widget(Label(text=f'Best match for {header}:', color=(1, 1, 1, 1), font_size='20sp', size_hint_y=0.05))
         self.ids.popup_recommendations.add_widget(best_table)
-        self.ids.popup_recommendations.add_widget(Widget(size_hint_y=None, height=20))
+        self.ids.popup_recommendations.add_widget(Widget(size_hint_y=None, height=20)) # Create spacing Widget
         self.ids.popup_recommendations.add_widget(Label(text=f'List of all matches:', color=(1, 1, 1, 1), font_size='20sp', size_hint_y=0.05))
         self.ids.popup_recommendations.add_widget(table)
 
@@ -191,15 +197,20 @@ class RecommendationPopup(FloatLayout):
 
 class ConverterScreen(Screen):
     """
-    Class ConverterScreen that implements logic behind the 
+    Class ConverterScreen that implements logic behind the conversion layout
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.rec_mode = "Homogenous"
+        self.rec_mode = "Homogenous"  # Changing in the switch_mode function
 
     def convert_with_cow(self, csv_path):
         """
-        Converts the given CSV file using CoW and saves the RDF output.
+        Function convert_with_cow that takes the CSV file and creates a JSON metadata
+        
+        Params:
+            csv_path (str): path to the input file
+        
+        Function utilizes build_schema from cow_csvw
         """
         input_path = Path(csv_path)
         output_metadata_path = input_path.parent / "metadata.json"
