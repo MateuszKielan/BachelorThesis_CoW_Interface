@@ -13,7 +13,7 @@ from plyer import filechooser
 from pathlib import Path
 from screeninfo import get_monitors
 from kivy.core.window import Window
-from requests_t import get_csv_headers, get_recommendations, organize_results  # My implementation of single / homogenouse requests
+from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, combiSQORE, retrieve_combiSQORE  # My implementation of single / homogenouse requests
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 import csv
@@ -119,12 +119,12 @@ class RecommendationPopup(FloatLayout):
     """
 
 
-    def __init__(self, header, organized_data, list_titles, **kwargs):
+    def __init__(self, header, organized_data, list_titles, request_results, **kwargs):
         super().__init__(**kwargs)
-        self.build_table(header, organized_data, list_titles)
+        self.build_table(header, organized_data, list_titles, request_results)
 
 
-    def build_table(self, header, organized_data,list_titles):
+    def build_table(self, header, organized_data, list_titles, request_results):
         """
         Function build_table that builds the table for every header.
 
@@ -132,19 +132,34 @@ class RecommendationPopup(FloatLayout):
             column_heads(arr): list of headers
             row_data(arr): list of data row by row
         """
+        self.ids.popup_recommendations.clear_widgets()
+
+        index = [item[1] for item in request_results if item[0] == header]
+        best_match_data = [organized_data[index[0]]]
+        print(best_match_data)
+
+        best_table = MDDataTable(
+            column_data = list_titles,
+            row_data= best_match_data,
+            size_hint=(1, 0.3),
+            pos_hint={"center_x": 0.5, "center_y": 0.6},
+            use_pagination=False,
+        )
 
         # Define the table
         table = MDDataTable(
             column_data=list_titles,
             row_data=organized_data,
-            size_hint=(0.98, 0.85),
-            pos_hint={"center_x": 0.5, "center_y": 0.5},
+            size_hint=(1, 0.6),
+            pos_hint={"center_x": 0.5, "center_y": 0.3},
             use_pagination=True,
             rows_num=20
         )
 
         # Clear the previous table on launch and add the new table to the widget
-        self.ids.popup_recommendations.clear_widgets()
+        self.ids.popup_recommendations.add_widget(Label(text=f'Best match for {header}:', color=(1, 1, 1, 1), size_hint_y=0.05))
+        self.ids.popup_recommendations.add_widget(best_table)
+        self.ids.popup_recommendations.add_widget(Label(text=f'List of all matches', color=(1, 1, 1, 1),size_hint_y=0.05))
         self.ids.popup_recommendations.add_widget(table)
 
 
@@ -188,7 +203,7 @@ class ConverterScreen(Screen):
         popupWindow.open()
     
 
-    def open_recommendations(self,header, data, list_titles):
+    def open_recommendations(self,header, data, list_titles, request_results):
         """
         Function open recommendations that opens a recommendation popup.
 
@@ -198,7 +213,7 @@ class ConverterScreen(Screen):
             list_titles(arr): list of table headers
         """
         # Pass the data to the popup
-        show = RecommendationPopup(header,data,list_titles)
+        show = RecommendationPopup(header,data,list_titles,request_results)
 
         # Initialize and open window
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
@@ -231,9 +246,20 @@ class ConverterScreen(Screen):
         for header in headers:
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
-            table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=organized_data: self.open_recommendations(h, d, list_titles), bold=True, color=(0, 0, 0, 1)))
+            #table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=organized_data: self.open_recommendations(h, d, list_titles), bold=True, color=(0, 0, 0, 1)))
             all_results[header] = organized_data
         
+        vocabs = get_vocabs(all_results)
+        scores = get_average_score(vocabs, all_results)
+        combi_vocabs = combiSQORE(all_results, scores)
+
+        best_combi_vocab = combi_vocabs[0][0]
+
+        request_results = retrieve_combiSQORE(best_combi_vocab, all_results)
+        
+        for header in headers:
+            data = all_results[header]
+            table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, list_titles, request_results), bold=True, color=(0, 0, 0, 1)))
 
         # Load CSV data for table
         with open(file_path, newline='', encoding='utf-8') as csvfile:

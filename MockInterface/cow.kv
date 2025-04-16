@@ -145,15 +145,15 @@ ScreenManager:
 <RecommendationPopup>
     BoxLayout:
         orientation: "vertical"
-
         Label:
             text: "Recommendations Preview"
             color: 1,1,1
-            size_hint_y: None
+            size_hint_y: 0.1
 
         BoxLayout:
+            orientation: "vertical"
             id: popup_recommendations
-
+            size_hint: 1,1
         Button:
             text: "Close"
             on_press: root.dismiss_popup()
