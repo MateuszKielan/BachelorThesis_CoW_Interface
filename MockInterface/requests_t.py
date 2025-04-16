@@ -286,8 +286,6 @@ def retrieve_combiSQORE(best_vocab, all_results):
 
     return request_return
 
-    
-
 
 #--------------------------------------------------------------
 # Main Function to run the request
