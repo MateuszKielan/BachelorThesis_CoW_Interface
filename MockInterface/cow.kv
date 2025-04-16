@@ -88,7 +88,7 @@ ScreenManager:
             size_hint_x: 0.33
             canvas.before:
                 Color:
-                    rgb: 1, 1, 1
+                    rgb: 0.9, 0.9, 0.9
                 Rectangle:
                     pos: self.pos
                     size: self.size
@@ -104,19 +104,15 @@ ScreenManager:
                 orientation: 'horizontal'
                 spacing: 10
                 padding: 10
-                Button:
-                    text: "Homogenous"
-                    #on_press: root.update_recommendations(mode="homogenous")
-                Button:
-                    text: "Single"
-                    #on_press: root.update_recommendations(mode="single")
+                id: request_option_panel
                     
             ScrollView:
                 GridLayout:
                     id: vocab_recommender
                     cols: 1
-                    pos_hint: {'center_x': 0.5, 'y': 0.9}
-                    height: 500
+                    pos_hint: {'center_x': 0.6, 'y': 0.9}
+                    size_hint_y: None
+                    height: self.minimum_height
                     spacing: 5
 
 

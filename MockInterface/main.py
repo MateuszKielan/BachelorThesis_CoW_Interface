@@ -17,6 +17,7 @@ from requests_t import get_csv_headers, get_recommendations, organize_results, g
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 import csv
+import subprocess
 #-----------------------------
 
 # Set the adaptive fullScreen mode
@@ -119,12 +120,12 @@ class RecommendationPopup(FloatLayout):
     """
 
 
-    def __init__(self, header, organized_data, list_titles, request_results, **kwargs):
+    def __init__(self, header, organized_data, list_titles, request_results, rec_mode, **kwargs):
         super().__init__(**kwargs)
-        self.build_table(header, organized_data, list_titles, request_results)
+        self.build_table(header, organized_data, list_titles, request_results,rec_mode)
 
 
-    def build_table(self, header, organized_data, list_titles, request_results):
+    def build_table(self, header, organized_data, list_titles, request_results, rec_mode):
         """
         Function build_table that builds the table for every header.
 
@@ -136,15 +137,23 @@ class RecommendationPopup(FloatLayout):
 
         index = [item[1] for item in request_results if item[0] == header]
         best_match_data = [organized_data[index[0]]]
-        print(best_match_data)
 
-        best_table = MDDataTable(
-            column_data = list_titles,
-            row_data= best_match_data,
-            size_hint=(1, 0.2),
-            pos_hint={"center_x": 0.5, "center_y": 0.6},
-            use_pagination=False,
-        )
+        if rec_mode == 'Homogenous':
+            best_table = MDDataTable(
+                column_data = list_titles,
+                row_data= best_match_data,
+                size_hint=(1, 0.2),
+                pos_hint={"center_x": 0.5, "center_y": 0.6},
+                use_pagination=False,
+            )
+        elif rec_mode == 'Single':
+            best_table = MDDataTable(
+                column_data = list_titles,
+                row_data= [organized_data[0]],
+                size_hint=(1, 0.2),
+                pos_hint={"center_x": 0.5, "center_y": 0.6},
+                use_pagination=False,
+            )
 
         # Define the table
         table = MDDataTable(
@@ -183,7 +192,15 @@ class ConverterScreen(Screen):
     """
     Class ConverterScreen that implements logic behind the 
     """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.rec_mode = "Homogenous"
 
+    def convert_with_cow(self, csv_path):
+        """
+        Converts the given CSV file using CoW and saves the RDF output.
+        """
+        pass
 
     def show_popup(self, column_heads, row_data):
         """
@@ -214,17 +231,25 @@ class ConverterScreen(Screen):
             list_titles(arr): list of table headers
         """
         # Pass the data to the popup
-        show = RecommendationPopup(header,data,list_titles,request_results)
+        show = RecommendationPopup(header,data, list_titles, request_results, self.rec_mode)
 
         # Initialize and open window
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
         popupWindow.open()
-    
-    def select_type(self, mode='homogenous'):
+
+    def switch_mode(self, choice, headers, all_results, table):
         """
-        
+        Function switch_mode
         """
-        pass
+        self.rec_mode = choice
+        self.create_header_buttons(headers, all_results, table)
+
+    def create_header_buttons(self, headers, all_results, table):
+        table.clear_widgets()
+        table.add_widget(Widget(size_hint_y=None, height=40))
+        for header in headers:
+            data = all_results[header]
+            table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, self.list_titles, self.request_results), bold=True, color=(1, 1, 1, 1), size_hint=(None, None),pos_hint={"x": 0.5}, size=(120, 80),))
 
     def display_recommendation(self, file_path):
         """
@@ -233,6 +258,10 @@ class ConverterScreen(Screen):
             2. Displays the headers on the middle page.
             3. Displays the recommendations on the middle page.
         """
+        
+        self.selected_file = file_path
+        self.convert_with_cow(file_path)
+
         headers = get_csv_headers(file_path)
         size = 20
 
@@ -241,7 +270,7 @@ class ConverterScreen(Screen):
         all_results = {}
 
         # List of titles with spacings
-        list_titles = [
+        self.list_titles = [
             ('prefixedName', dp(60)), 
             ('vocabulary.prefix', dp(60)), 
             ('uri',dp(60)),
@@ -252,7 +281,6 @@ class ConverterScreen(Screen):
         for header in headers:
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
-            #table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=organized_data: self.open_recommendations(h, d, list_titles), bold=True, color=(0, 0, 0, 1)))
             all_results[header] = organized_data
         
         vocabs = get_vocabs(all_results)
@@ -261,11 +289,9 @@ class ConverterScreen(Screen):
 
         best_combi_vocab = combi_vocabs[0][0]
 
-        request_results = retrieve_combiSQORE(best_combi_vocab, all_results)
+        self.request_results = retrieve_combiSQORE(best_combi_vocab, all_results)
         
-        for header in headers:
-            data = all_results[header]
-            table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, list_titles, request_results), bold=True, color=(1, 1, 1, 1), size_hint=(None, None), size=(120, 40),))
+        self.create_header_buttons(headers, all_results, table)
 
         # Load CSV data for table
         with open(file_path, newline='', encoding='utf-8') as csvfile:
@@ -293,7 +319,9 @@ class ConverterScreen(Screen):
             rows_num = 10
         )
 
-        # Clear the previous table on launch and add the new table to the widget
+        self.ids.request_option_panel.add_widget(Button(text='Single', on_press=lambda x: self.switch_mode('Single', headers, all_results, table), color=(1, 1, 1, 1)))
+        self.ids.request_option_panel.add_widget(Button(text='Homogenous',on_press=lambda x: self.switch_mode('Homogenous', headers, all_results, table), color=(1, 1, 1, 1)))
+    
         self.ids.csv_preview_container.clear_widgets()
         self.ids.csv_preview_container.add_widget(self.csv_table)
 
