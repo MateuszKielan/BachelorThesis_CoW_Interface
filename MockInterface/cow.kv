@@ -3,6 +3,7 @@ ScreenManager:
     StartingScreen:
     ConverterScreen:
 
+# File Selection Screen
 <StartingScreen>:
     name: "start"
     orientation: "vertical"
@@ -43,7 +44,8 @@ ScreenManager:
         size: 200, 50
         pos_hint: {"center_x": 0.5, "y": 0.3}
         on_press: root.switch()
-    
+
+# Converter Screen 
 <ConverterScreen>:
     name: "converter"
     canvas.before:
@@ -53,6 +55,7 @@ ScreenManager:
             pos: self.pos
             size: self.size
 
+    # BoxLayout Consisting of 3 main sections: Left, Middle, Right
     BoxLayout:
         orientation: "horizontal"
         size_hint: 1, 1 
@@ -61,9 +64,10 @@ ScreenManager:
         BoxLayout:
             orientation: "vertical"
             size_hint_x: 0.33 
+
             canvas.before:
                 Color:
-                    rgb: 0.9, 0.9, 0.9
+                    rgb: 0.9, 0.9, 0.9 # background to light gray
                 Rectangle:
                     pos: self.pos
                     size: self.size
@@ -92,20 +96,24 @@ ScreenManager:
                 Rectangle:
                     pos: self.pos
                     size: self.size
+
+            # Title panel
             Label:
                 text: "Vocabulary Recommender"
                 font_size: 20
                 bold: True
                 color: 0,0,0
                 size_hint_y: None
-            
+
+            # Request type choice panel
             BoxLayout:
                 size_hint_y: 0.1
                 orientation: 'horizontal'
                 spacing: 10
                 padding: 10
                 id: request_option_panel
-                    
+            
+            # Scrollview to prevent overflow
             ScrollView:
                 GridLayout:
                     id: vocab_recommender
@@ -131,6 +139,7 @@ ScreenManager:
                 font_size: 20
                 bold: True
 
+# Display Full Dataset popup
 <DataPopup>
     BoxLayout:
         orientation: "vertical"
@@ -149,7 +158,8 @@ ScreenManager:
             size_hint: None, None
             size: 300, 50
             pos_hint: {"center_x": 0.5, "y": 0.3}
-        
+
+# Displaying Recommendations Popup  
 <RecommendationPopup>
     BoxLayout:
         orientation: "vertical"
@@ -163,6 +173,7 @@ ScreenManager:
             orientation: "vertical"
             id: popup_recommendations
             size_hint: 1,1
+            
         Button:
             text: "Close"
             on_press: root.dismiss_popup()
