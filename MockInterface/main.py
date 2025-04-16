@@ -140,22 +140,26 @@ class RecommendationPopup(FloatLayout):
         # Clear all  previous widgets
         self.ids.popup_recommendations.clear_widgets()
 
+        # Extract the best match index from request_results for the appropriate header
         index = [item[1] for item in request_results if item[0] == header]
-        best_match_data = [organized_data[index[0]]]
+
+        # Extract the best recommendation for both Single and Homogenous requests
+        best_match_data_homogenous = [organized_data[index[0]]]
+        best_match_data_single = [organized_data[0]]
 
         # Display the best_table according to mode 
-        if rec_mode == 'Homogenous':
+        if rec_mode == 'Homogenous': # If mode is Homogenous
             best_table = MDDataTable(
                 column_data = list_titles,
-                row_data= best_match_data,
+                row_data= best_match_data_homogenous,
                 size_hint=(1, 0.2),
                 pos_hint={"center_x": 0.5, "center_y": 0.6},
                 use_pagination=False,
             )
-        elif rec_mode == 'Single':
+        elif rec_mode == 'Single': # If mode is Single
             best_table = MDDataTable(
                 column_data = list_titles,
-                row_data= [organized_data[0]],
+                row_data = best_match_data_single,
                 size_hint=(1, 0.2),
                 pos_hint={"center_x": 0.5, "center_y": 0.6},
                 use_pagination=False,
@@ -198,6 +202,7 @@ class ConverterScreen(Screen):
     """
     Class ConverterScreen that implements logic behind the conversion layout
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rec_mode = "Homogenous"  # Changing in the switch_mode function
