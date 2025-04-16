@@ -141,7 +141,7 @@ class RecommendationPopup(FloatLayout):
         best_table = MDDataTable(
             column_data = list_titles,
             row_data= best_match_data,
-            size_hint=(1, 0.3),
+            size_hint=(1, 0.2),
             pos_hint={"center_x": 0.5, "center_y": 0.6},
             use_pagination=False,
         )
@@ -157,9 +157,10 @@ class RecommendationPopup(FloatLayout):
         )
 
         # Clear the previous table on launch and add the new table to the widget
-        self.ids.popup_recommendations.add_widget(Label(text=f'Best match for {header}:', color=(1, 1, 1, 1), size_hint_y=0.05))
+        self.ids.popup_recommendations.add_widget(Label(text=f'Best match for {header}:', color=(1, 1, 1, 1), font_size='20sp', size_hint_y=0.05))
         self.ids.popup_recommendations.add_widget(best_table)
-        self.ids.popup_recommendations.add_widget(Label(text=f'List of all matches', color=(1, 1, 1, 1),size_hint_y=0.05))
+        self.ids.popup_recommendations.add_widget(Widget(size_hint_y=None, height=20))
+        self.ids.popup_recommendations.add_widget(Label(text=f'List of all matches:', color=(1, 1, 1, 1), font_size='20sp', size_hint_y=0.05))
         self.ids.popup_recommendations.add_widget(table)
 
 
@@ -219,6 +220,11 @@ class ConverterScreen(Screen):
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
         popupWindow.open()
     
+    def select_type(self, mode='homogenous'):
+        """
+        
+        """
+        pass
 
     def display_recommendation(self, file_path):
         """
@@ -259,7 +265,7 @@ class ConverterScreen(Screen):
         
         for header in headers:
             data = all_results[header]
-            table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, list_titles, request_results), bold=True, color=(0, 0, 0, 1)))
+            table.add_widget(Button(text=f'{header}', on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, list_titles, request_results), bold=True, color=(1, 1, 1, 1), size_hint=(None, None), size=(120, 40),))
 
         # Load CSV data for table
         with open(file_path, newline='', encoding='utf-8') as csvfile:

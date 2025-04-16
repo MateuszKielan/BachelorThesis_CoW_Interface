@@ -98,14 +98,26 @@ ScreenManager:
                 bold: True
                 color: 0,0,0
                 size_hint_y: None
-                
             
-            GridLayout:
-                id: vocab_recommender
-                cols: 1
-                pos_hint: {'center_x': 0.5, 'y': 0.9}
-                height: 500
-                spacing: 5
+            BoxLayout:
+                size_hint_y: 0.1
+                orientation: 'horizontal'
+                spacing: 10
+                padding: 10
+                Button:
+                    text: "Homogenous"
+                    #on_press: root.update_recommendations(mode="homogenous")
+                Button:
+                    text: "Single"
+                    #on_press: root.update_recommendations(mode="single")
+                    
+            ScrollView:
+                GridLayout:
+                    id: vocab_recommender
+                    cols: 1
+                    pos_hint: {'center_x': 0.5, 'y': 0.9}
+                    height: 500
+                    spacing: 5
 
 
         # Right Section - JSON Preview / Editing
@@ -149,6 +161,7 @@ ScreenManager:
             text: "Recommendations Preview"
             color: 1,1,1
             size_hint_y: 0.1
+            font_size: 20
 
         BoxLayout:
             orientation: "vertical"
