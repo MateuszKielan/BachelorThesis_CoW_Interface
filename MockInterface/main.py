@@ -13,7 +13,7 @@ from plyer import filechooser
 from pathlib import Path
 from screeninfo import get_monitors
 from kivy.core.window import Window
-from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, combiSQORE, retrieve_combiSQORE  # My implementation of single / homogenouse requests
+from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, combiSQORE, retrieve_combiSQORE  # My implementation of single / homogenous requests
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 import csv
@@ -31,7 +31,6 @@ class StartingScreen(Screen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        selected_file = ''
 
 
     def select_file(self):
