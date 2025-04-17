@@ -309,7 +309,6 @@ class ConverterScreen(Screen):
         self.ids.json_editor.text = display_json
         logger.info("Displaying File")
 
-
     def show_popup(self, column_heads, row_data):
         """
         Function show_popup that calls the DataPopup class to display the table 
@@ -448,7 +447,7 @@ class ConverterScreen(Screen):
         self.request_results = retrieve_combiSQORE(best_combi_vocab, all_results)
         
         logger.info("Request processing finished")
-        
+
         # Create buttons for every header
         self.create_header_buttons(headers, all_results, table)
 

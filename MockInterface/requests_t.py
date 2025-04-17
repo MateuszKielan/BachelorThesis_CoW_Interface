@@ -227,6 +227,7 @@ def retrieve_homogenous(best_vocab, all_results):
 
     # Initialize the final list 
     request_return = []
+    unselected = []
 
     # For all headers check every match with the best vocabulary
     for header in all_results:
