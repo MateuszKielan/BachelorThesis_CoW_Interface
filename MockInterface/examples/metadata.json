@@ -91,7 +91,7 @@
   "@id": "http://opendefinition.org/licenses/cc-by/"
  },
  "dc:modified": {
-  "@value": "2025-04-16",
+  "@value": "2025-04-17",
   "@type": "xsd:date"
  },
  "@id": "https://example.com/id/cow_person_example.csv"

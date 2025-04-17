@@ -17,6 +17,7 @@ from requests_t import get_csv_headers, get_recommendations, organize_results, g
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 import csv
+import json
 import subprocess
 from cow_csvw.converter.csvw import build_schema
 #-----------------------------
@@ -226,6 +227,25 @@ class ConverterScreen(Screen):
             pass
 
 
+    def show_json(self):
+        """
+        Function show_json that displays the json file in the right section
+        """
+
+        # Get the path of the metadata file 
+        path = Path(__file__).parent / "examples" / "metadata.json"
+
+        # Open and Load the file 
+        with open(path, 'r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+        
+        # Prepare for display
+        display_json = json.dumps(data, indent=2, ensure_ascii=False)
+
+        # Add to the editor widget
+        self.ids.json_editor.text = display_json
+
+        
     def show_popup(self, column_heads, row_data):
         """
         Function show_popup that calls the DataPopup class to display the table 
@@ -389,16 +409,35 @@ class ConverterScreen(Screen):
             rows_num = 10
         )
 
+        json_path = 'examples/metadata.json'
+        self.show_json()
+
         # Add two buttons to toggle between Single and Homogenous texts 
-        self.ids.request_option_panel.add_widget(Button(text='Single', on_press=lambda x: self.switch_mode('Single', headers, all_results, table), color=(1, 1, 1, 1)))
-        self.ids.request_option_panel.add_widget(Button(text='Homogenous',on_press=lambda x: self.switch_mode('Homogenous', headers, all_results, table), color=(1, 1, 1, 1)))
+        self.ids.request_option_panel.add_widget(Button(
+            text='Single', 
+            on_press=lambda x: self.switch_mode('Single', headers, all_results, table), 
+            color=(1, 1, 1, 1)
+        ))
+
+        self.ids.request_option_panel.add_widget(Button(
+            text='Homogenous',
+            on_press=lambda x: self.switch_mode('Homogenous', headers, all_results, table),
+            color=(1, 1, 1, 1)
+        ))
     
         # Clear previews widgets
         self.ids.csv_preview_container.clear_widgets()
         self.ids.csv_preview_container.add_widget(self.csv_table)
 
         # Load Full dataset overview popup
-        open_popup = Button(text='Load Full Dataset', on_press=lambda x: self.show_popup(column_heads,row_data), size_hint=(None,None), size=(200,50), pos_hint={"center_x": 0.5})
+        open_popup = Button(
+            text='Load Full Dataset', 
+            on_press=lambda x: self.show_popup(column_heads,row_data), 
+            size_hint=(None,None), 
+            size=(200,50), 
+            pos_hint={"center_x": 0.5}
+        )
+        
         self.ids.csv_preview_container.add_widget(open_popup)
 
 
