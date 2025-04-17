@@ -227,42 +227,51 @@ class ConverterScreen(Screen):
         except Exception as e:
             pass
     
+
     def substitute_recommendations(self, headers, all_results, request_results):
         """
         Function substitute_recommendations that inserts the best matches into the JSON file.
+
+        Params:
+            header (list): list of headers
+            all_results (dict): dictionary with heders and all of their matches
+            request_results (list): list of tuples representing a header and the index for its best homogenus match
         """
+
+        # Find the path for a metadata file
         path = Path(__file__).parent / "examples" / "metadata.json"
 
+        # Read the JSON file 
         with open(path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file) # Array of Dictionaries
 
         for header in headers:
             res = all_results[header]
             index = [item[1] for item in request_results if item[0] == header]
-            match_data = res[index[0]]
-            print(match_data)
+         
             flag = False
             for column in data['tableSchema']['columns']:
                 if (column['name'] == header):
                     flag = True
                     logger.info(f"Found a match in metadata for {header}")
 
+                    # Add the best match data to the JSON  
                     column['name'] = res[index[0]][0][0]
                     column['@id'] = res[index[0]][2][0]
                     column['vocab'] = res[index[0]][1]
                     column['type'] = res[index[0]][3]
                     column['score'] = res[index[0]][4]
 
-                    logger.info(column['@id'])
+                    logger.info(f"Successfully added the metadata for {header}")
+
             if flag == False:
                 logger.warning(f'Match in metadata for {header} NOT found')
 
+        # Write in the JSON file
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
             logger.info(f"Updated metadata written to {path}")
         
-
-
 
     def save_json(self):
         """
@@ -277,6 +286,7 @@ class ConverterScreen(Screen):
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=2, ensure_ascii=False)
 
+        logger.info("File saved Successfully")
         self.show_json()
 
 
@@ -297,8 +307,9 @@ class ConverterScreen(Screen):
 
         # Add to the editor widget
         self.ids.json_editor.text = display_json
+        logger.info("Displaying File")
 
-        
+
     def show_popup(self, column_heads, row_data):
         """
         Function show_popup that calls the DataPopup class to display the table 
@@ -333,6 +344,7 @@ class ConverterScreen(Screen):
         # Initialize and open window
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
         popupWindow.open()
+        logger.info("Opening the Recommendation Popup")
 
 
     def switch_mode(self, choice, headers, all_results, table):
@@ -348,6 +360,7 @@ class ConverterScreen(Screen):
 
         # Reload the buttons 
         self.create_header_buttons(headers, all_results, table)
+        logger.info(f"Mode switched to {self.rec_mode} requests")
 
 
     def create_header_buttons(self, headers, all_results, table):
@@ -377,6 +390,7 @@ class ConverterScreen(Screen):
                 size=(120, 80) # Later fix for relative size!!!
             ))
 
+        logger.info("Set of header buttons created successfully")
 
     def display_recommendation(self, file_path):
         """
@@ -432,6 +446,8 @@ class ConverterScreen(Screen):
         
         # Retrieve indexes of best matches for every header 
         self.request_results = retrieve_combiSQORE(best_combi_vocab, all_results)
+        
+        logger.info("Request processing finished")
         
         # Create buttons for every header
         self.create_header_buttons(headers, all_results, table)
