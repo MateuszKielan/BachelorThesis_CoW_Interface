@@ -225,6 +225,24 @@ class ConverterScreen(Screen):
             build_schema(str(input_path), str(output_metadata_path))
         except Exception as e:
             pass
+    
+    def substitute_recommendations(self):
+        pass
+
+    def save_json(self):
+        """
+        Function save_json that saves changes made in the interface.
+        """
+        # Get the path of the metadata file 
+        path = Path(__file__).parent / "examples" / "metadata.json"
+
+        data = self.ids.json_editor.text
+        data = json.loads(data)
+
+        with open(path, 'w', encoding='utf-8') as json_file:
+            json.dump(data, json_file, indent=2, ensure_ascii=False)
+
+        self.show_json()
 
 
     def show_json(self):
