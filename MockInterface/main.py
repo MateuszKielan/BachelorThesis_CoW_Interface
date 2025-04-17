@@ -19,9 +19,10 @@ from kivy.metrics import dp
 import csv
 import json
 import subprocess
+import logging
 from cow_csvw.converter.csvw import build_schema
 #-----------------------------
-
+logger = logging.getLogger(__name__)
 # Set the adaptive fullScreen mode
 Window.maximize()
 
@@ -226,8 +227,42 @@ class ConverterScreen(Screen):
         except Exception as e:
             pass
     
-    def substitute_recommendations(self):
-        pass
+    def substitute_recommendations(self, headers, all_results, request_results):
+        """
+        Function substitute_recommendations that inserts the best matches into the JSON file.
+        """
+        path = Path(__file__).parent / "examples" / "metadata.json"
+
+        with open(path, 'r', encoding='utf-8') as json_file:
+            data = json.load(json_file) # Array of Dictionaries
+
+        for header in headers:
+            res = all_results[header]
+            index = [item[1] for item in request_results if item[0] == header]
+            match_data = res[index[0]]
+            print(match_data)
+            flag = False
+            for column in data['tableSchema']['columns']:
+                if (column['name'] == header):
+                    flag = True
+                    logger.info(f"Found a match in metadata for {header}")
+
+                    column['name'] = res[index[0]][0][0]
+                    column['@id'] = res[index[0]][2][0]
+                    column['vocab'] = res[index[0]][1]
+                    column['type'] = res[index[0]][3]
+                    column['score'] = res[index[0]][4]
+
+                    logger.info(column['@id'])
+            if flag == False:
+                logger.warning(f'Match in metadata for {header} NOT found')
+
+        with open(path, 'w', encoding='utf-8') as json_file:
+            json.dump(data, json_file, indent=4, ensure_ascii=False)
+            logger.info(f"Updated metadata written to {path}")
+        
+
+
 
     def save_json(self):
         """
@@ -427,7 +462,9 @@ class ConverterScreen(Screen):
             rows_num = 10
         )
 
+        # Show JSON file in the right section
         json_path = 'examples/metadata.json'
+        self.substitute_recommendations(headers, all_results, self.request_results)
         self.show_json()
 
         # Add two buttons to toggle between Single and Homogenous texts 
@@ -457,7 +494,6 @@ class ConverterScreen(Screen):
         )
         
         self.ids.csv_preview_container.add_widget(open_popup)
-
 
 
 class CowApp(MDApp):
