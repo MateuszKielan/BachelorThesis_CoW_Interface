@@ -4,6 +4,8 @@ import json
 from copy import deepcopy
 import logging
 
+logger = logging.getLogger(__name__)
+
 # Lov api url
 recommender_url = "https://lov.linkeddata.es/dataset/lov/api/v2/term/search"
 
@@ -249,6 +251,7 @@ def retrieve_combiSQORE(best_vocab, all_results):
 def retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched):
     """
     """
+    logger.info("current best vocabulary")
     # Find the best vocabulary 
     best_vocab = vocab_scores[0][0]
 
@@ -260,7 +263,7 @@ def retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched):
         choice = False
         for index, match in enumerate(all_results[header]):
             if match[1] == best_vocab:
-                print(f'Header {header}: FOUND a match for {best_vocab}')
+                logger.info(f"found match for {header} with {best_vocab}")
                 choice = match
                 request_return.append((header,index))
                 # When match is found terminate immidiately
@@ -269,17 +272,21 @@ def retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched):
                 continue
         # If no match is found take the first match for the header 
         if choice == False:
-            print(f"Header {header}: NOT FOUND a match for {best_vocab}")
+            logger.info(f"No match is found for {header}")
             #request_return.append((header, 0))
             unmatched.append(header)
 
-    
+    if len(unmatched) > 0:
+        logger.info(f'Found unmatched headers: {unmatched} starting new recursive call')
+
     # If more than one header is without a best vocabulary match
     if len(unmatched > 1):
         # Delete the previous best vocabulary
         del vocab_scores[0]
-        
+        logger.info(f"new vocabulary list {vocab_scores}")
+
         new_results = {header: all_results[header] for header in unmatched}
+
         # Find matches again
         remainder = retrieve_combiSQORE_recursion(new_results, vocab_scores, unmatched)
         
