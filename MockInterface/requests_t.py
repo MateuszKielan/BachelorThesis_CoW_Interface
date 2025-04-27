@@ -2,6 +2,7 @@ import requests
 import csv
 import json
 from copy import deepcopy
+import logging
 
 # Lov api url
 recommender_url = "https://lov.linkeddata.es/dataset/lov/api/v2/term/search"
@@ -254,6 +255,7 @@ def retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched):
     # Initialize request_return
     request_return = []
     
+
     for header in all_results:
         choice = False
         for index, match in enumerate(all_results[header]):
@@ -271,17 +273,19 @@ def retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched):
             #request_return.append((header, 0))
             unmatched.append(header)
 
+    
     # If more than one header is without a best vocabulary match
     if len(unmatched > 1):
         # Delete the previous best vocabulary
         del vocab_scores[0]
-
-        # Select new best vocabulary 
-        best_vocab = vocab_scores[0][0]
-
-        # Find matches again
-        retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched)
         
+        new_results = {header: all_results[header] for header in unmatched}
+        # Find matches again
+        remainder = retrieve_combiSQORE_recursion(new_results, vocab_scores, unmatched)
+        
+        # Add them to request_return
+        request_return += remainder
+
 
     return request_return
 
