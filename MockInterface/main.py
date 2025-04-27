@@ -16,6 +16,7 @@ from kivy.core.window import Window
 from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, combiSQORE, retrieve_combiSQORE  # My implementation of single / homogenous requests
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
+from kivymd.uix.tooltip import MDTooltip
 import csv
 import json
 import subprocess
@@ -66,6 +67,9 @@ class StartingScreen(Screen):
         converter_screen.display_recommendation(self.selected_file)
         self.manager.current = "converter"
 
+
+class ModeToolTip(MDTooltip):
+    pass 
 
 
 class DataPopup(FloatLayout):
