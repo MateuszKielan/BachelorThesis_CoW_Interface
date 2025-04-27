@@ -207,50 +207,6 @@ def combiSQORE(all_results, vocab_scores):
 
 
 
-
-def retrieve_homogenous(best_vocab, all_results):
-    """
-    Funciton retrieve_homogenous that retrieves the matches based on the best vocabulary
-
-    Params:
-        - best_vocab (str): best vocabulary  (see the get_average_scores function)
-    Return:
-        - request_return (arr(tuple)): array containing tuples with the following format:
-            (header, match_index)
-
-    Main logic:
-        1. For every header check all the matches
-        2. For every match check if it is from a best_vocab
-            3. If yes add it to the list and move to the next header
-        4. If the header has no matches with the best_vocab, select the first match 
-    """
-
-    # Initialize the final list 
-    request_return = []
-    unselected = []
-
-    # For all headers check every match with the best vocabulary
-    for header in all_results:
-        choice = False
-        for index, match in enumerate(all_results[header]):
-            if match[1] == best_vocab:
-                print(f'Header: {header} Found a match')
-                choice = match
-                request_return.append((header,index))
-                # When match is found terminate immidiately
-                break
-            else:
-                continue
-        # If no match is found take the first match for the header 
-        if choice == False:
-            print("didn't find a match")
-            request_return.append((header, 0))
-            unselected.append(header)
-    
-    return request_return
-
-
-
 def retrieve_combiSQORE(best_vocab, all_results):
     """
     Funciton retrieve_homogenous that retrieves the matches based on the best vocabulary based on combiSQORE
@@ -289,23 +245,13 @@ def retrieve_combiSQORE(best_vocab, all_results):
     return request_return
 
 
-def retrieve_combiSQORE_recursion(best_vocab, all_results):
+def retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched):
     """
-    Funciton retrieve_homogenous that retrieves the matches based on the best vocabulary based on combiSQORE
-
-    Params:
-        - best_vocab (str): best vocabulary  (see the combiSQORE function)
-    Return:
-        - request_return (arr(tuple)): array containing tuples with the following format:
-            (header, match_index)
-
-    Main logic:
-        1. For every header check all the matches
-        2. For every match check if it is from a best_vocab
-            3. If yes add it to the list and move to the next header
-        4. If the header has no matches with the best_vocab, select the first match 
     """
+    # Find the best vocabulary 
+    best_vocab = vocab_scores[0][0]
 
+    # Initialize request_return
     request_return = []
     
     for header in all_results:
@@ -322,9 +268,23 @@ def retrieve_combiSQORE_recursion(best_vocab, all_results):
         # If no match is found take the first match for the header 
         if choice == False:
             print(f"Header {header}: NOT FOUND a match for {best_vocab}")
-            request_return.append((header, 0))
+            #request_return.append((header, 0))
+            unmatched.append(header)
+
+    # If more than one header is without a best vocabulary match
+    if len(unmatched > 1):
+        # Delete the previous best vocabulary
+        del vocab_scores[0]
+
+        # Select new best vocabulary 
+        best_vocab = vocab_scores[0][0]
+
+        # Find matches again
+        retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched)
+        
 
     return request_return
+
 
 #--------------------------------------------------------------
 # Main Function to run the request
