@@ -172,7 +172,7 @@ def get_average_score(vocabs, all_results):
 
 
 
-def combiSQORE(all_results, vocab_scores):
+def necessary_vocabs(all_results, vocab_scores):
     """
     Function combiSQORE that leaves only the smallest set of vocabularies that ensures that every header has
     at least one recommendation.
@@ -209,6 +209,29 @@ def combiSQORE(all_results, vocab_scores):
     return combi_vocab
 
 
+def combi_vocabs(all_results, vocab_scores, necessary_vocabs):
+    new_vocab_scores = []
+
+    for vocab in vocab_scores:
+        
+        vocab_name = vocab[0]
+
+        if vocab_name not in necessary_vocabs:
+            vocab_similarity_score = vocab[1]
+            vocab_query_coverage = 0
+            vocab_combi_score = 0
+
+            for header in all_results:
+                for match in all_results[header]:
+
+                    if match[1] == vocab_name:
+                        vocab_query_coverage += 1
+
+        vocab_combi_score = vocab_similarity_score * vocab_query_coverage
+
+        new_vocab_scores.append((vocab_name, vocab_combi_score))
+
+    return new_vocab_scores
 
 def retrieve_combiSQORE(best_vocab, all_results):
     """
@@ -280,7 +303,7 @@ def retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched):
         logger.info(f'Found unmatched headers: {unmatched} starting new recursive call')
 
     # If more than one header is without a best vocabulary match
-    if len(unmatched > 1):
+    if len(unmatched) > 1:
         # Delete the previous best vocabulary
         del vocab_scores[0]
         logger.info(f"new vocabulary list {vocab_scores}")
@@ -320,7 +343,10 @@ def main():
     scores = get_average_score(vocabs, all_results)
 
     # Find only the necessary vocabularies
-    combi_vocabs = combiSQORE(all_results,scores)
+    combi_vocabs = necessary_vocabs(all_results,scores)
+    logger.info(f"List of combi vocabularies")
+
+    logger.info(f"vocabularies with score: {scores}")
     print(combi_vocabs)
     # Select the best vocabulary
     best_vocab = scores[0][0]
@@ -330,14 +356,15 @@ def main():
     #request_result = retrieve_homogenous(best_vocab, all_results)
 
     # IF wanna retrieve only with NECESSARY VOCABS
-    request_result = retrieve_combiSQORE(best_combi_vocab, all_results)
+    #request_result = retrieve_combiSQORE(best_combi_vocab, all_results)
+    #request_result = retrieve_combiSQORE_recursion(all_results, scores, [])
 
     # Display the results in readable format
-    print(f"\nBest Vocabulary: {best_combi_vocab}")
-    print(f"Homogeneous Matches (header -> match):")
-    for header, index in request_result:
-        match = all_results[header][index]
-        print(f"- {header}: {match[0]} ({match[1]}, score={match[4]})")
+    #print(f"\nBest Vocabulary: {best_combi_vocab}")
+    #print(f"Homogeneous Matches (header -> match):")
+    #for header, index in request_result:
+        #match = all_results[header][index]
+        #print(f"- {header}: {match[0]} ({match[1]}, score={match[4]})")
 
 
 if __name__ == "__main__":
