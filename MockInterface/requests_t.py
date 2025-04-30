@@ -209,7 +209,22 @@ def necessary_vocabs(all_results, vocab_scores):
     return combi_vocab
 
 
-def combi_vocabs(all_results, vocab_scores, necessary_vocabs):
+def calculate_combi_score(all_results, vocab_scores, necessary_vocabs):
+    """
+    Function calculate_combi_score that calculates combi score of every vocabulary based on:
+        1. SS - Similarity score 
+        2. QC - Query coverage 
+
+        combi_score = SS * QC
+
+    Params:
+        all_results (dict(list())) - data of all headers and all matches.
+        vocab_scores (list(tuple))  - list of vocabularies with their corresponding scores.
+        necesary_vocabs (list(tuple)) - list of necessary vocabularies identified in necessary vocabs function.
+    Return:
+        new_vocab_scores (list(tuple)) - list of vocabularies with the calculated combi score.
+    """
+
     new_vocab_scores = []
 
     for vocab in vocab_scores:
@@ -232,6 +247,8 @@ def combi_vocabs(all_results, vocab_scores, necessary_vocabs):
         new_vocab_scores.append((vocab_name, vocab_combi_score))
 
     return new_vocab_scores
+
+
 
 def retrieve_combiSQORE(best_vocab, all_results):
     """
