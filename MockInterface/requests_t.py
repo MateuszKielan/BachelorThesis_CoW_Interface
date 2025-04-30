@@ -204,18 +204,18 @@ def necessary_vocabs(all_results, vocab_scores):
                 necessary = True
                 break
         if necessary == True:
-            combi_vocab.append(vocab)
+            combi_vocab.append(vocab[0])
     
     return combi_vocab
 
 
-def calculate_combi_score(all_results, vocab_scores, necessary_vocabs):
+def calculate_combi_score(all_results, vocab_scores):
     """
     Function calculate_combi_score that calculates combi score of every vocabulary based on:
         1. SS - Similarity score 
         2. QC - Query coverage 
 
-        combi_score = SS * QC
+        Query-Combinative-Ontology Similarity Score = SS * QC
 
     Params:
         all_results (dict(list())) - data of all headers and all matches.
@@ -230,17 +230,15 @@ def calculate_combi_score(all_results, vocab_scores, necessary_vocabs):
     for vocab in vocab_scores:
         
         vocab_name = vocab[0]
+        vocab_similarity_score = vocab[1]
+        vocab_query_coverage = 0
+        vocab_combi_score = 0
 
-        if vocab_name not in necessary_vocabs:
-            vocab_similarity_score = vocab[1]
-            vocab_query_coverage = 0
-            vocab_combi_score = 0
+        for header in all_results:
+            for match in all_results[header]:
 
-            for header in all_results:
-                for match in all_results[header]:
-
-                    if match[1] == vocab_name:
-                        vocab_query_coverage += 1
+                if match[1] == vocab_name:
+                    vocab_query_coverage += 1
 
         vocab_combi_score = vocab_similarity_score * vocab_query_coverage
 
@@ -355,19 +353,22 @@ def main():
     
     # Create a list of retrieved vocabularies
     vocabs = get_vocabs(all_results)
+    logger.info(f"List of retrieved vocabularies")
 
     # Calculate a score for every vocabulary
     scores = get_average_score(vocabs, all_results)
+    logger.info(f"List of vocabularies with averaged Tf-IDF score {scores}")
 
     # Find only the necessary vocabularies
-    combi_vocabs = necessary_vocabs(all_results,scores)
-    logger.info(f"List of combi vocabularies")
+    n_vocabularies = necessary_vocabs(all_results,scores)
+    logger.info(f"List of necessary vocabularies for matching {n_vocabularies}")
 
-    logger.info(f"vocabularies with score: {scores}")
-    print(combi_vocabs)
-    # Select the best vocabulary
-    best_vocab = scores[0][0]
-    best_combi_vocab = combi_vocabs[0][0]
+    # Rank the vocabularies according to Query-Combinative-Ontology Similarity Score
+    combi_score_vocabularies = calculate_combi_score(all_results, scores, n_vocabularies)
+    logger.info(f"List of vocabularies with the combi score {combi_score_vocabularies}")
+
+    # Retrieve best results for homogenous requests
+    # ....... recursive call ........
     
     # Retrieve the best results for a homogenous request
     #request_result = retrieve_homogenous(best_vocab, all_results)
