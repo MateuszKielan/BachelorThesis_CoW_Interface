@@ -57,31 +57,31 @@
                 "@id": "http://purl.org/healthcarevocab/v1#PersonIdentificationCodeSequence",
                 "vocab": "dicom",
                 "type": "property",
-                "score": 0.39819944
+                "score": 0.40057206
             },
             {
-                "name": "gndo:surname",
+                "name": "dbpedia-owl:Surname",
                 "datatype": "string",
-                "@id": "http://d-nb.info/standards/elementset/gnd#surname",
-                "vocab": "gndo",
-                "type": "property",
-                "score": 0.82681775
-            },
-            {
-                "name": "vcard:Male",
-                "datatype": "string",
-                "@id": "http://www.w3.org/2006/vcard/ns#Male",
-                "vocab": "vcard",
+                "@id": "http://dbpedia.org/ontology/Surname",
+                "vocab": "dbpedia-owl",
                 "type": "class",
-                "score": 0.5555556
+                "score": 0.4829591
             },
             {
-                "name": "dicom:Occupation",
+                "name": "dbpedia-owl:championInDoubleMale",
                 "datatype": "string",
-                "@id": "http://purl.org/healthcarevocab/v1#Occupation",
-                "vocab": "dicom",
+                "@id": "http://dbpedia.org/ontology/championInDoubleMale",
+                "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.5276489
+                "score": 0.18611622
+            },
+            {
+                "name": "dbpedia-owl:occupation",
+                "datatype": "string",
+                "@id": "http://dbpedia.org/ontology/occupation",
+                "vocab": "dbpedia-owl",
+                "type": "property",
+                "score": 0.57501024
             }
         ]
     },
@@ -103,7 +103,7 @@
         "@id": "http://opendefinition.org/licenses/cc-by/"
     },
     "dc:modified": {
-        "@value": "2025-04-17",
+        "@value": "2025-05-01",
         "@type": "xsd:date"
     },
     "@id": "https://example.com/id/cow_person_example.csv"

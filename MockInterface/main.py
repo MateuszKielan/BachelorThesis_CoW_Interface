@@ -13,7 +13,7 @@ from plyer import filechooser
 from pathlib import Path
 from screeninfo import get_monitors
 from kivy.core.window import Window
-from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, combiSQORE, retrieve_combiSQORE  # My implementation of single / homogenous requests
+from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 from kivymd.uix.tooltip import MDTooltip
@@ -442,13 +442,11 @@ class ConverterScreen(Screen):
         scores = get_average_score(vocabs, all_results)
 
         # Find best vocabularies according to combiSQORE 
-        combi_vocabs = combiSQORE(all_results, scores)
-
-        # Select the best vocabulary 
-        best_combi_vocab = combi_vocabs[0][0]
+        combi_score_vocabularies = calculate_combi_score(all_results, scores)
+        sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
         
         # Retrieve indexes of best matches for every header 
-        self.request_results = retrieve_combiSQORE(best_combi_vocab, all_results)
+        self.request_results = retrieve_combiSQORE_recursion(all_results, sorted_combi_score_vocabularies, len(headers))
         
         logger.info("Request processing finished")
 

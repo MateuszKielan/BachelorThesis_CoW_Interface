@@ -3,7 +3,7 @@ import csv
 import json
 from copy import deepcopy
 import logging
-
+import typing
 
 # Set up logger
 logging.basicConfig(
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # Lov api url
 recommender_url = "https://lov.linkeddata.es/dataset/lov/api/v2/term/search"
 
-def get_csv_headers(file_path):
+def get_csv_headers(file_path: str) -> list:
     """
     Function get_csv_header that opens a file and extracts headers from the csv for parsing into the vocabulary
 
@@ -36,7 +36,7 @@ def get_csv_headers(file_path):
 
 
 
-def get_recommendations(header, size):
+def get_recommendations(header: str, size: int) -> dict:
     """
     Function get_recommendations that receives headers and runs a get requests to the vocabulary api
 
@@ -60,7 +60,7 @@ def get_recommendations(header, size):
 
 
 
-def display_results(result, name):
+def display_results(result: dict, name: str):
     """
     HELPER fucntion display_results that takes query results and displays them in a readable format
 
@@ -68,6 +68,7 @@ def display_results(result, name):
     
     Params:
         results (dict) : query results converted to json
+        name (str): name of the header
     """
     matches = result['results']
     print(f"TOTAL OF {len(matches)} MATCHES FOR {name}")
@@ -84,7 +85,7 @@ def display_results(result, name):
 
 
 
-def organize_results(result):
+def organize_results(result:dict) -> list:
     """
     Function organize_results that converts the query result into below specified format.
 
@@ -125,7 +126,7 @@ def organize_results(result):
 
 
 
-def get_vocabs(all_results):
+def get_vocabs(all_results: dict) -> list:
     """
     Function get_vocabs that finds all vocabularies in the recommendation matches.
 
@@ -150,7 +151,7 @@ def get_vocabs(all_results):
 
 
 
-def get_average_score(vocabs, all_results):
+def get_average_score(vocabs: list, all_results: dict) -> list[tuple]:
     """
     Function get_average_score that computes average score for every distinct vocabulary.
 
@@ -181,7 +182,7 @@ def get_average_score(vocabs, all_results):
     return vocab_scores
 
 
-def calculate_combi_score(all_results, vocab_scores):
+def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[tuple]:
     """
     Function calculate_combi_score that calculates combi score of every vocabulary based on:
         1. SS - Similarity score 
@@ -220,7 +221,7 @@ def calculate_combi_score(all_results, vocab_scores):
 
 
 
-def retrieve_combiSQORE(best_vocab, all_results):
+def retrieve_combiSQORE(best_vocab: str, all_results: dict):
     """
     Funciton retrieve_homogenous that retrieves the matches based on the best vocabulary based on combiSQORE
 
@@ -258,7 +259,7 @@ def retrieve_combiSQORE(best_vocab, all_results):
     return request_return
 
 
-def retrieve_combiSQORE_recursion(all_results, vocab_scores, matched=None, unmatched=None):
+def retrieve_combiSQORE_recursion(all_results: dict, vocab_scores: list[tuple], num_headers: int, matched=None, unmatched=None) -> list[tuple]:
     """
     Recursive function to retrieve best matches for each header using lsit of ranked vocabularies.
 
@@ -280,6 +281,9 @@ def retrieve_combiSQORE_recursion(all_results, vocab_scores, matched=None, unmat
         print("No more vocabularies to try.")
         return matched
 
+    if len(matched) == num_headers:
+        return matched
+    
     current_vocab = vocab_scores[0][0]
     print(f"Trying vocabulary: {current_vocab}")
 
@@ -297,7 +301,7 @@ def retrieve_combiSQORE_recursion(all_results, vocab_scores, matched=None, unmat
             print(f"No match for '{header}' in vocab '{current_vocab}'")
             still_unmatched.append(header)
 
-    return retrieve_combiSQORE_recursion(all_results, vocab_scores[1:], matched, still_unmatched)
+    return retrieve_combiSQORE_recursion(all_results, vocab_scores[1:], num_headers, matched, still_unmatched)
 
 
 #--------------------------------------------------------------
@@ -330,7 +334,7 @@ def main():
     sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
 
     # Retrieve best results for homogenous requests
-    request_result = retrieve_combiSQORE_recursion(all_results, sorted_combi_score_vocabularies)
+    request_result = retrieve_combiSQORE_recursion(all_results, sorted_combi_score_vocabularies, len(headers))
 
     for header, index in request_result:
         match = all_results[header][index]
