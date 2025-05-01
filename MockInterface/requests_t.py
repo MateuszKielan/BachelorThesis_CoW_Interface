@@ -4,7 +4,17 @@ import json
 from copy import deepcopy
 import logging
 
+
+# Set up logger
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s"
+)
+
 logger = logging.getLogger(__name__)
+
+
+
 
 # Lov api url
 recommender_url = "https://lov.linkeddata.es/dataset/lov/api/v2/term/search"
@@ -171,44 +181,6 @@ def get_average_score(vocabs, all_results):
     return vocab_scores
 
 
-
-def necessary_vocabs(all_results, vocab_scores):
-    """
-    Function combiSQORE that leaves only the smallest set of vocabularies that ensures that every header has
-    at least one recommendation.
-
-    Params: 
-        - all_results (dict(arr)): dictionary with query results for all headers
-        - vocab_scores (arr(tuple)): array with vocabularies and their scores sorted in descending order
-    Return:
-        - combi_vocabs (arr): smallest set of vocabularies that ensuring every header has at least one recommendation
-
-        
-    Logic:
-        1. Loop through the vocabularies
-        2. For every header remove all the results from the current vocabulary
-        3. Check if the match list is empty
-        4. If no then exclude the vocabulary from the final list 
-        5. Repeat for every vocabulary
-    """
-    # Reverse the list to first exclude the worst performing vocabularies.
-    vocab_scores = vocab_scores[::-1]
-    combi_vocab = []
-
-    for vocab in vocab_scores:
-        necessary = False
-        for header in all_results:
-            data = deepcopy(all_results[header])
-            filtered = [match for match in data if match[1] != vocab[0]]
-            if not filtered:
-                necessary = True
-                break
-        if necessary == True:
-            combi_vocab.append(vocab[0])
-    
-    return combi_vocab
-
-
 def calculate_combi_score(all_results, vocab_scores):
     """
     Function calculate_combi_score that calculates combi score of every vocabulary based on:
@@ -286,11 +258,47 @@ def retrieve_combiSQORE(best_vocab, all_results):
     return request_return
 
 
-def retrieve_combiSQORE_recursion(all_results, vocab_scores, unmatched):
+def retrieve_combiSQORE_recursion(all_results, vocab_scores, matched=None, unmatched=None):
     """
-    # REWRITE THE FUNCTION
+    Recursive function to retrieve best matches for each header using lsit of ranked vocabularies.
+
+    Params:
+        - all_results (dict): {header: list of matches}
+        - vocab_scores (list): (vocab_name, score), sorted descending
+        - matched (list): list of already matched (header, index) pairs
+        - unmatched (list): list of headers that still need to be matched
+
+    Returns:
+        - matched: list of (header, index) pairs representing best matches
     """
-    pass
+    if matched is None:
+        matched = []
+    if unmatched is None:
+        unmatched = list(all_results.keys())
+
+    if not vocab_scores:
+        print("No more vocabularies to try.")
+        return matched
+
+    current_vocab = vocab_scores[0][0]
+    print(f"Trying vocabulary: {current_vocab}")
+
+    still_unmatched = []
+    
+    for header in unmatched:
+        found = False
+        for idx, match in enumerate(all_results[header]):
+            if match[1] == current_vocab:
+                print(f"Matched header '{header}' with vocab '{current_vocab}'")
+                matched.append((header, idx))
+                found = True
+                break
+        if not found:
+            print(f"No match for '{header}' in vocab '{current_vocab}'")
+            still_unmatched.append(header)
+
+    return retrieve_combiSQORE_recursion(all_results, vocab_scores[1:], matched, still_unmatched)
+
 
 #--------------------------------------------------------------
 # Main Function to run the request
@@ -317,30 +325,16 @@ def main():
     scores = get_average_score(vocabs, all_results)
     logger.info(f"List of vocabularies with averaged Tf-IDF score {scores}")
 
-    # Find only the necessary vocabularies
-    n_vocabularies = necessary_vocabs(all_results,scores)
-    logger.info(f"List of necessary vocabularies for matching {n_vocabularies}")
-
     # Rank the vocabularies according to Query-Combinative-Ontology Similarity Score
     combi_score_vocabularies = calculate_combi_score(all_results, scores)
     sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
 
     # Retrieve best results for homogenous requests
-    # ....... recursive call ........
-    
-    # Retrieve the best results for a homogenous request
-    #request_result = retrieve_homogenous(best_vocab, all_results)
+    request_result = retrieve_combiSQORE_recursion(all_results, sorted_combi_score_vocabularies)
 
-    # IF wanna retrieve only with NECESSARY VOCABS
-    #request_result = retrieve_combiSQORE(best_combi_vocab, all_results)
-    #request_result = retrieve_combiSQORE_recursion(all_results, scores, [])
-
-    # Display the results in readable format
-    #print(f"\nBest Vocabulary: {best_combi_vocab}")
-    #print(f"Homogeneous Matches (header -> match):")
-    #for header, index in request_result:
-        #match = all_results[header][index]
-        #print(f"- {header}: {match[0]} ({match[1]}, score={match[4]})")
+    for header, index in request_result:
+        match = all_results[header][index]
+        print(f"- {header}: {match[0]} ({match[1]}, score={match[4]})")
 
 
 if __name__ == "__main__":
