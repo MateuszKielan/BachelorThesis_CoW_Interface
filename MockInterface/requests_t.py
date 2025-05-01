@@ -300,6 +300,7 @@ def main():
     """
     csv_file = "examples/cow_person_example.csv"
     headers = get_csv_headers(csv_file)
+    logger.info(f"List of retrieved headers {headers}")
     all_results = {}
 
     # Get Recommendations for every header
@@ -321,8 +322,8 @@ def main():
     logger.info(f"List of necessary vocabularies for matching {n_vocabularies}")
 
     # Rank the vocabularies according to Query-Combinative-Ontology Similarity Score
-    combi_score_vocabularies = calculate_combi_score(all_results, scores, n_vocabularies)
-    logger.info(f"List of vocabularies with the combi score {combi_score_vocabularies}")
+    combi_score_vocabularies = calculate_combi_score(all_results, scores)
+    sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
 
     # Retrieve best results for homogenous requests
     # ....... recursive call ........
