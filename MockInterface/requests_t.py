@@ -336,6 +336,7 @@ def main():
     # Retrieve best results for homogenous requests
     request_result = retrieve_combiSQORE_recursion(all_results, sorted_combi_score_vocabularies, len(headers))
 
+    # Display results
     for header, index in request_result:
         match = all_results[header][index]
         print(f"- {header}: {match[0]} ({match[1]}, score={match[4]})")

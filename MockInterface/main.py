@@ -23,7 +23,10 @@ import subprocess
 import logging
 from cow_csvw.converter.csvw import build_schema
 #-----------------------------
+
+# Set up the logger
 logger = logging.getLogger(__name__)
+
 # Set the adaptive fullScreen mode
 Window.maximize()
 
