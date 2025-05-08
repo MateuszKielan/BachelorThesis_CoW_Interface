@@ -265,7 +265,7 @@ class ConverterScreen(Screen):
         Params:
             csv_path (str): path to the input file
         
-        Function utilizes build_schema from cow_csvw
+        Utilizes build_schema function from cow_csvw
         """
         input_path = Path(csv_path)
         output_metadata_path = input_path.parent / "metadata.json"
