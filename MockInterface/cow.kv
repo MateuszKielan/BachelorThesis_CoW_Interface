@@ -148,7 +148,9 @@ ScreenManager:
                     Rectangle:
                         pos: self.pos
                         size: self.size
-
+            Widget:
+                size_hint_y: None
+                height: 20
 
             BoxLayout:
                 size_hint_y: 0.1
@@ -156,7 +158,12 @@ ScreenManager:
                 spacing: 10
                 padding: 10
                 id: request_option_panel
-            
+
+            Widget:
+                size_hint_y: None
+                height: 80
+
+
             Widget:
                 size_hint_y: None
                 height: 1
@@ -166,6 +173,7 @@ ScreenManager:
                     Rectangle:
                         pos: self.pos
                         size: self.size
+
 
             BoxLayout:
                 size_hint_y: None

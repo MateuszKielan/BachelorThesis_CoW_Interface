@@ -104,7 +104,7 @@ class DataPopup(FloatLayout):
         table = MDDataTable(
             column_data=column_heads,
             row_data=row_data,
-            size_hint=(0.98, 0.85),
+            size_hint=(0.9, 0.85),
             pos_hint={"center_x": 0.5, "center_y": 0.5},
             use_pagination=True,
             rows_num=20
