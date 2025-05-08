@@ -1,3 +1,5 @@
+
+# Imports Section
 import requests
 import csv
 import json
