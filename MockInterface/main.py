@@ -133,18 +133,21 @@ class RecommendationPopup(FloatLayout):
 
     def __init__(self, header, organized_data, list_titles, request_results, rec_mode, **kwargs):
         super().__init__(**kwargs)
+        self.header = header
         self.build_table(header, organized_data, list_titles, request_results, rec_mode)
 
     def insert_instance(self, table, row):
-        print(table, row)
+       pass
 
     def show_recommendation_action_menu(self, instance_table, instance_row):
         logger.info("Row clicked")
-        content = BoxLayout(orientation='vertical')
+        logger.info(f"Table Data: {instance_table.row_data}")
+        logger.info(f"Row Data {instance_row}")
+        content = BoxLayout(orientation='vertical', size_hint= (1,1))
 
         button_insert = MDRaisedButton(
             text="Insert", 
-            on_press=lambda x: Clock.schedule_once(lambda dt: self.insert_instance(instance_table, instance_row)),
+            #on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)),
             pos_hint={"center_y": 0.5, "center_x":0.5}                                        
         )
         
@@ -174,6 +177,8 @@ class RecommendationPopup(FloatLayout):
         """
         # Clear all  previous widgets
         self.ids.popup_recommendations.clear_widgets()
+
+        self.header = header
 
         # Extract the best match index from request_results for the appropriate header
         index = [item[1] for item in request_results if item[0] == header]
@@ -207,6 +212,7 @@ class RecommendationPopup(FloatLayout):
             size_hint=(0.6, 0.3),
             pos_hint={"center_x": 0.5, "center_y": 0.3},
             use_pagination=True,
+            check = True,
             rows_num=20
         )
 
@@ -232,7 +238,8 @@ class RecommendationPopup(FloatLayout):
             size_hint_y=0.05
         ))
         self.ids.popup_recommendations.add_widget(table)
-        table.bind(on_row_press=self.show_recommendation_action_menu)
+        #table.bind(on_row_press=self.show_recommendation_action_menu)
+        table.bind(on_check_press=self.show_recommendation_action_menu)
 
 
     def dismiss_popup(self):
@@ -412,7 +419,23 @@ class ConverterScreen(Screen):
 
         Utilizes the CSVConverter from CoW.
         """
-        pass
+        try:
+            # Extract file paths
+            input_csv_path = self.selected_file
+            metadata_json_path = Path(input_csv_path).with_name(f"{Path(input_csv_path).stem}-metadata.json")
+
+            # Instantiate and run the converter
+            converter = CSVWConverter(
+                file_name=str(input_csv_path),
+                output_format="nquads",  # or "nq"
+                base="https://example.com/id/"  # replace if needed
+            )
+            converter.convert()
+
+            logger.info("Conversion to N-Quads completed successfully.")
+
+        except Exception as e:
+            logger.error(f"Error during conversion: {e}")
 
     def show_json(self):
         """
