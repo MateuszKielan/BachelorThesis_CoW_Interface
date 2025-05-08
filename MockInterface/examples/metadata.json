@@ -57,7 +57,7 @@
                 "@id": "http://purl.org/healthcarevocab/v1#PersonIdentificationCodeSequence",
                 "vocab": "dicom",
                 "type": "property",
-                "score": 0.40057206
+                "score": 0.40754858
             },
             {
                 "name": "dbpedia-owl:Surname",
@@ -65,7 +65,7 @@
                 "@id": "http://dbpedia.org/ontology/Surname",
                 "vocab": "dbpedia-owl",
                 "type": "class",
-                "score": 0.4829591
+                "score": 0.5121883
             },
             {
                 "name": "dbpedia-owl:championInDoubleMale",
@@ -73,7 +73,7 @@
                 "@id": "http://dbpedia.org/ontology/championInDoubleMale",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.18611622
+                "score": 0.18934335
             },
             {
                 "name": "dbpedia-owl:occupation",
@@ -81,7 +81,7 @@
                 "@id": "http://dbpedia.org/ontology/occupation",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.57501024
+                "score": 0.6035561
             }
         ]
     },
@@ -103,7 +103,7 @@
         "@id": "http://opendefinition.org/licenses/cc-by/"
     },
     "dc:modified": {
-        "@value": "2025-05-01",
+        "@value": "2025-05-08",
         "@type": "xsd:date"
     },
     "@id": "https://example.com/id/cow_person_example.csv"

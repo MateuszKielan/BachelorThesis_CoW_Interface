@@ -217,6 +217,18 @@ class ConverterScreen(Screen):
         self.rec_mode = "Homogenous"  # Changing in the switch_mode function
 
 
+    def show_help_popup(self):
+        content = BoxLayout(orientation='vertical')
+        content.add_widget(Label(text="This popup will contain help info about request types.", size_hint_y=None, height=100))
+
+        popup = Popup(title="Help: Request Types",
+                      content=content,
+                      size_hint=(None, None),
+                      size=(400, 200),
+                      auto_dismiss=True)
+        popup.open()
+
+
     def convert_with_cow(self, csv_path):
         """
         Function convert_with_cow that takes the CSV file and creates a JSON metadata

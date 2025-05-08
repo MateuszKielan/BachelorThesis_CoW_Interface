@@ -100,10 +100,55 @@ ScreenManager:
             # Title panel
             Label:
                 text: "Vocabulary Recommender"
-                font_size: 20
+                font_size: 40
                 bold: True
                 color: 0,0,0
                 size_hint_y: None
+
+            Widget:
+                size_hint_y: None
+                height: 1
+                canvas:
+                    Color:
+                        rgb: 0.6, 0.6, 0.6
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                spacing: 10
+                padding: [10, 0]
+                orientation: 'horizontal'
+
+                Label:
+                    text: "Choose request type"
+                    color: 0, 0, 0, 1
+                    font_size: 20
+                    size_hint_x: 0.5
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+                Button:
+                    text: "?"
+                    size_hint: None, None
+                    size: 30, 30
+                    pos_hint: {"center_y": 0.5}
+                    on_press: root.show_help_popup()
+                    
+            Widget:
+                size_hint_y: None
+                height: 1
+                canvas:
+                    Color:
+                        rgb: 0.6, 0.6, 0.6
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+
 
             # Request type choice panel
             BoxLayout:
