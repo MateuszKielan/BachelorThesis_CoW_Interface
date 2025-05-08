@@ -27,6 +27,7 @@ from utils import infer_column_type
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
+from kivy.clock import Clock
 #-----------------------------
 
 # Set up the logger
@@ -74,10 +75,6 @@ class StartingScreen(Screen):
         converter_screen = self.manager.get_screen("converter")
         converter_screen.display_recommendation(self.selected_file)
         self.manager.current = "converter"
-
-
-class ModeToolTip(MDTooltip):
-    pass 
 
 
 class DataPopup(FloatLayout):
@@ -136,8 +133,26 @@ class RecommendationPopup(FloatLayout):
 
     def __init__(self, header, organized_data, list_titles, request_results, rec_mode, **kwargs):
         super().__init__(**kwargs)
-        self.build_table(header, organized_data, list_titles, request_results,rec_mode)
+        self.build_table(header, organized_data, list_titles, request_results, rec_mode)
 
+    def insert_instance(self, table, row):
+        print(table, row)
+
+    def show_recommendation_action_menu(self, instance_table, instance_row):
+        logger.info("Row clicked")
+        content = BoxLayout(orientation='vertical')
+        button_insert = MDRaisedButton(text="Insert", on_press=lambda x: self.insert_instance(instance_table, instance_row))
+        content.add_widget(button_insert)
+
+        popup = Popup(
+            title = "Select Action",
+            size_hint=(None, None),
+            size=(500, 300),
+            auto_dismiss=True,
+            content = content
+        )
+
+        popup.open()
 
     def build_table(self, header, organized_data, list_titles, request_results, rec_mode):
         """
@@ -166,7 +181,7 @@ class RecommendationPopup(FloatLayout):
             best_table = MDDataTable(
                 column_data = list_titles,
                 row_data= best_match_data_homogenous,
-                size_hint=(1, 0.2),
+                size_hint=(0.6, 0.05),
                 pos_hint={"center_x": 0.5, "center_y": 0.6},
                 use_pagination=False,
             )
@@ -174,7 +189,7 @@ class RecommendationPopup(FloatLayout):
             best_table = MDDataTable(
                 column_data = list_titles,
                 row_data = best_match_data_single,
-                size_hint=(1, 0.2),
+                size_hint=(0.6, 0.05),
                 pos_hint={"center_x": 0.5, "center_y": 0.6},
                 use_pagination=False,
             )
@@ -183,18 +198,35 @@ class RecommendationPopup(FloatLayout):
         table = MDDataTable(
             column_data=list_titles,
             row_data=organized_data,
-            size_hint=(1, 0.6),
+            size_hint=(0.6, 0.3),
             pos_hint={"center_x": 0.5, "center_y": 0.3},
             use_pagination=True,
             rows_num=20
         )
 
         # Add the new tables to the widget with Labels
-        self.ids.popup_recommendations.add_widget(Label(text=f'Best match for {header}:', color=(1, 1, 1, 1), font_size='20sp', size_hint_y=0.05))
+        self.ids.popup_recommendations.add_widget(Label(
+            text=f'Best match for {header}:', 
+            color=(1, 1, 1, 1), 
+            font_size='20sp', 
+            size_hint_y=0.05
+        ))
         self.ids.popup_recommendations.add_widget(best_table)
-        self.ids.popup_recommendations.add_widget(Widget(size_hint_y=None, height=20)) # Create spacing Widget
-        self.ids.popup_recommendations.add_widget(Label(text=f'List of all matches:', color=(1, 1, 1, 1), font_size='20sp', size_hint_y=0.05))
+        
+        # Create spacing Widget
+        self.ids.popup_recommendations.add_widget(Widget(
+            size_hint_y=None, 
+            height=20
+        ))
+
+        self.ids.popup_recommendations.add_widget(Label(
+            text=f'List of all matches:', 
+            color=(1, 1, 1, 1), 
+            font_size='20sp', 
+            size_hint_y=0.05
+        ))
         self.ids.popup_recommendations.add_widget(table)
+        table.bind(on_row_press=self.show_recommendation_action_menu)
 
 
     def dismiss_popup(self):
