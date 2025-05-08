@@ -265,12 +265,21 @@ ScreenManager:
                         background_color: 1, 1, 1, 1
                         padding: [10, 10]
 
-                    Button:
-                        text: 'Save'
-                        on_press: root.save_json()
-                        size_hint: None, None
-                        pos_hint: {'center_x': 0.5, 'y':0.2}
-                        size: 300, 50
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Button:
+                            text: 'Save'
+                            on_press: root.save_json()
+                            size_hint: None, None
+                            pos_hint: {'center_x': 0.5, 'y':0.2}
+                            size: 300, 50
+                        
+                        Button:
+                            text: 'Convert'
+                            on_press: root.convert_json()
+                            size_hint: None, None
+                            pos_hint: {'center_x': 0.5, 'y':0.2}
+                            size: 300, 50
 
 
 # Display Full Dataset popup

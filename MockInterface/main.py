@@ -61,7 +61,7 @@ class StartingScreen(Screen):
             selection (arr): array of length 1 with a selected file
         """
         if selection:
-            self.selected_file = str(Path(selection[0]))
+            self.selected_file = Path(selection[0])
             file_path_name = str(Path(selection[0]).name)
             self.ids.file_path_label.text = file_path_name
 
@@ -343,7 +343,7 @@ class ConverterScreen(Screen):
         Utilizes build_schema function from cow_csvw
         """
         input_path = Path(csv_path)
-        output_metadata_path = input_path.parent / "metadata.json"
+        output_metadata_path = input_path.parent / f"{self.selected_file.name}-metadata.json"
 
         try:
             build_schema(str(input_path), str(output_metadata_path))
@@ -584,10 +584,10 @@ class ConverterScreen(Screen):
         self.selected_file = file_path
 
         # Convert the CSV to metadata JSON 
-        self.convert_with_cow(file_path)
+        self.convert_with_cow(str(file_path))
 
         # Get the headers from CSV file
-        headers = get_csv_headers(file_path)
+        headers = get_csv_headers(str(file_path))
 
         # Set the size of received matches
         size = 20
@@ -632,7 +632,7 @@ class ConverterScreen(Screen):
         self.create_header_buttons(headers, all_results, table)
 
         # Load CSV data for table
-        with open(file_path, newline='', encoding='utf-8') as csvfile:
+        with open(str(file_path), newline='', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             rows = list(reader)
             if not rows:
