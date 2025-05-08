@@ -23,7 +23,7 @@ import json
 import subprocess
 import logging
 from cow_csvw.converter.csvw import build_schema
-from utils import get_unique_count, infer_column_type
+from utils import infer_column_type
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
@@ -423,14 +423,14 @@ class ConverterScreen(Screen):
         table.clear_widgets()
 
         # Add a spacing widget
-        table.add_widget(Widget(size_hint_y=None, height=40))
+        table.add_widget(Widget(size_hint_y=None, height=20))
 
         # For Every header add a corresponding button with the appropriate data
         for header in headers:
             data = all_results[header]
 
             dtype = infer_column_type(header, self.selected_file) 
-            unique_count = get_unique_count(header, self.selected_file)
+            number_of_matches = len(all_results[header])
 
             card = MDCard(
                 orientation='vertical',
@@ -455,7 +455,7 @@ class ConverterScreen(Screen):
             ))
 
             card.add_widget(MDLabel(
-                text=f"Type: {dtype}   |   Unique values: {unique_count}",
+                text=f"Type: {dtype}   |   Nr Of Matches: {number_of_matches}",
                 theme_text_color="Secondary",
                 size_hint_y=None,
                 height=24
