@@ -22,7 +22,7 @@ import csv
 import json
 import subprocess
 import logging
-from cow_csvw.converter.csvw import build_schema
+from cow_csvw.converter.csvw import build_schema, CSVWConverter
 from utils import infer_column_type
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
@@ -236,7 +236,7 @@ class ConverterScreen(Screen):
             markup=True,
             halign="left",
             valign="middle",
-            text_size=(400, None),  # set width for wrapping, height will auto-adjust
+            text_size=(400, None),
             size_hint_y=None,
         )
 
@@ -249,6 +249,36 @@ class ConverterScreen(Screen):
 
         popup = Popup(
             title="Help: Request Types",
+            content=content,
+            size_hint=(None, None),
+            size=(500, 300),
+            auto_dismiss=True,
+        )
+
+        popup.open()
+
+    def show_recommendation_help_popup(self):
+        content = BoxLayout(orientation='vertical')
+        help_text = "Each card represents a column from your uploaded CSV file. It shows the column name, its detected data type, and how many unique values it contains. Use the 'Show Matches' button to view vocabulary suggestions tailored for that specific column."
+        
+        label = Label(
+            text=help_text,
+            markup=True,
+            halign="left",
+            valign="middle",
+            text_size=(400, None),
+            size_hint_y=None,
+        )
+
+        label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
+
+        scroll = ScrollView(size_hint=(1, 1))
+        scroll.add_widget(label)
+
+        content.add_widget(scroll)
+
+        popup = Popup(
+            title="Help: Recommendations",
             content=content,
             size_hint=(None, None),
             size=(500, 300),
@@ -337,6 +367,14 @@ class ConverterScreen(Screen):
         logger.info("File saved Successfully")
         self.show_json()
 
+
+    def convert_json(self):
+        """
+        Function convert_json that converts the metadata file into nquads file. 
+
+        Utilizes the CSVConverter from CoW.
+        """
+        pass
 
     def show_json(self):
         """
@@ -455,7 +493,7 @@ class ConverterScreen(Screen):
             ))
 
             card.add_widget(MDLabel(
-                text=f"Type: {dtype}   |   Nr Of Matches: {number_of_matches}",
+                text=f"Type: {dtype}  |  Matches: {number_of_matches}",
                 theme_text_color="Secondary",
                 size_hint_y=None,
                 height=24

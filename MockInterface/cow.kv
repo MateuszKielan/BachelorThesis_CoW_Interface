@@ -156,7 +156,11 @@ ScreenManager:
                 spacing: 10
                 padding: 10
                 id: request_option_panel
-            
+
+            Widget:
+                size_hint_y: None
+                height: 60
+
             Widget:
                 size_hint_y: None
                 height: 1
@@ -188,6 +192,8 @@ ScreenManager:
                     size_hint: None, None
                     size: 30, 30
                     pos_hint: {"center_y": 0.5}
+                    on_press: root.show_recommendation_help_popup()
+            
 
             Widget:
                 size_hint_y: None
@@ -209,8 +215,8 @@ ScreenManager:
                     orientation: 'vertical'
                     size_hint_y: None
                     height: self.minimum_height
-                    padding: 10
-                    spacing: 20
+                    padding: 5
+                    spacing: 15
 
 
         # Right Section - JSON Preview / Editing
