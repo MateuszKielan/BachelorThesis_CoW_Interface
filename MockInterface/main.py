@@ -222,7 +222,7 @@ class ConverterScreen(Screen):
         self.rec_mode = "Homogenous"  # Changing in the switch_mode function
 
 
-    def show_help_popup(self):
+    def show_request_help_popup(self):
         content = BoxLayout(orientation='vertical')
         help_text = (
         "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently. "
@@ -434,7 +434,8 @@ class ConverterScreen(Screen):
 
             card = MDCard(
                 orientation='vertical',
-                size_hint=(0.9, None),
+                size_hint=(0.85, None),
+                pos_hint={"center_x": 0.5},
                 height=160,
                 padding=10,
                 spacing=10,

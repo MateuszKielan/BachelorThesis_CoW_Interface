@@ -114,7 +114,8 @@ ScreenManager:
                     Rectangle:
                         pos: self.pos
                         size: self.size
-
+                        
+            # Request type choice panel
             BoxLayout:
                 size_hint_y: None
                 height: 40
@@ -137,7 +138,7 @@ ScreenManager:
                     size: 30, 30
                     pos_hint: {"center_y": 0.5}
                     on_press: root.show_help_popup()
-                    
+
             Widget:
                 size_hint_y: None
                 height: 1
@@ -149,8 +150,6 @@ ScreenManager:
                         size: self.size
 
 
-
-            # Request type choice panel
             BoxLayout:
                 size_hint_y: 0.1
                 orientation: 'horizontal'
@@ -160,13 +159,16 @@ ScreenManager:
             
             # Scrollview to prevent overflow
             ScrollView:
-                GridLayout:
+                do_scroll_x: False
+                do_scroll_y: True
+
+                BoxLayout:
                     id: vocab_recommender
-                    cols: 1
-                    pos_hint: {'center_x': 0.6, 'y': 0.9}
+                    orientation: 'vertical'
                     size_hint_y: None
                     height: self.minimum_height
-                    spacing: 5
+                    padding: 10
+                    spacing: 20
 
 
         # Right Section - JSON Preview / Editing
