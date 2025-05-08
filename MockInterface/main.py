@@ -141,7 +141,13 @@ class RecommendationPopup(FloatLayout):
     def show_recommendation_action_menu(self, instance_table, instance_row):
         logger.info("Row clicked")
         content = BoxLayout(orientation='vertical')
-        button_insert = MDRaisedButton(text="Insert", on_press=lambda x: self.insert_instance(instance_table, instance_row))
+
+        button_insert = MDRaisedButton(
+            text="Insert", 
+            on_press=lambda x: Clock.schedule_once(lambda dt: self.insert_instance(instance_table, instance_row)),
+            pos_hint={"center_y": 0.5, "center_x":0.5}                                        
+        )
+        
         content.add_widget(button_insert)
 
         popup = Popup(
