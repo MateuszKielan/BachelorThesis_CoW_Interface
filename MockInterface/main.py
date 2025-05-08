@@ -15,6 +15,7 @@ from screeninfo import get_monitors
 from kivy.core.window import Window
 from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from kivymd.uix.datatables import MDDataTable
+from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp
 from kivymd.uix.tooltip import MDTooltip
 import csv
@@ -22,6 +23,10 @@ import json
 import subprocess
 import logging
 from cow_csvw.converter.csvw import build_schema
+from utils import get_unique_count, infer_column_type
+from kivymd.uix.card import MDCard
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDRaisedButton
 #-----------------------------
 
 # Set up the logger
@@ -219,13 +224,37 @@ class ConverterScreen(Screen):
 
     def show_help_popup(self):
         content = BoxLayout(orientation='vertical')
-        content.add_widget(Label(text="This popup will contain help info about request types.", size_hint_y=None, height=100))
+        help_text = (
+        "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently. "
+        "This is useful when your data columns represent different types of information and you want the most accurate match for each.\n\n"
+        "[b]Homogenous:[/b] Finds a single vocabulary that works well for all columns together. "
+        "This is useful when your data is thematically consistent and you prefer using one shared vocabulary for easier semantic integration."
+        )
 
-        popup = Popup(title="Help: Request Types",
-                      content=content,
-                      size_hint=(None, None),
-                      size=(400, 200),
-                      auto_dismiss=True)
+        label = Label(
+            text=help_text,
+            markup=True,
+            halign="left",
+            valign="middle",
+            text_size=(400, None),  # set width for wrapping, height will auto-adjust
+            size_hint_y=None,
+        )
+
+        label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
+
+        scroll = ScrollView(size_hint=(1, 1))
+        scroll.add_widget(label)
+
+        content.add_widget(scroll)
+
+        popup = Popup(
+            title="Help: Request Types",
+            content=content,
+            size_hint=(None, None),
+            size=(500, 300),
+            auto_dismiss=True,
+        )
+
         popup.open()
 
 
@@ -399,16 +428,50 @@ class ConverterScreen(Screen):
         # For Every header add a corresponding button with the appropriate data
         for header in headers:
             data = all_results[header]
-            table.add_widget(Button(
-                text=f'{header}', 
-                on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, self.list_titles, self.request_results), # pass the corresponding data for every header
-                bold=True, color=(1, 1, 1, 1), 
-                size_hint=(None, None),
-                pos_hint={"x": 0.5}, 
-                size=(120, 80) # Later fix for relative size!!!
+
+            dtype = infer_column_type(header, self.selected_file) 
+            unique_count = get_unique_count(header, self.selected_file)
+
+            card = MDCard(
+                orientation='vertical',
+                size_hint=(0.9, None),
+                height=160,
+                padding=10,
+                spacing=10,
+                ripple_behavior=True,
+                md_bg_color=(0.95, 0.95, 0.95, 1),
+                shadow_softness=1,
+                elevation=4,
+            )
+
+            card.add_widget(MDLabel(
+                text=f"[b]Header:[/b] {header}",
+                markup=True,
+                theme_text_color="Primary",
+                font_style="Subtitle1",
+                size_hint_y=None,
+                height=30
             ))
 
-        logger.info("Set of header buttons created successfully")
+            card.add_widget(MDLabel(
+                text=f"Type: {dtype}   |   Unique values: {unique_count}",
+                theme_text_color="Secondary",
+                size_hint_y=None,
+                height=24
+            ))
+
+            card.add_widget(MDRaisedButton(
+                text="Show Matches",
+                size_hint=(None, None),
+                size=(150, 40),
+                pos_hint={"center_x": 0.5},
+                on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, self.list_titles, self.request_results)
+            ))
+
+            table.add_widget(Widget(size_hint_y=None, height=40))
+            table.add_widget(card)
+            logger.info("Set of header buttons created successfully")
+
 
     def display_recommendation(self, file_path):
         """
