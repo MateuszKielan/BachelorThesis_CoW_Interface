@@ -28,6 +28,7 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
 from kivy.clock import Clock
+from shutil import copyfile
 #-----------------------------
 
 # Set up the logger
@@ -343,10 +344,11 @@ class ConverterScreen(Screen):
         Utilizes build_schema function from cow_csvw
         """
         input_path = Path(csv_path)
-        output_metadata_path = input_path.parent / f"{self.selected_file.name}-metadata.json"
+        output_metadata_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
         try:
             build_schema(str(input_path), str(output_metadata_path))
+            logger.info(f"Saving metadata at {str(output_metadata_path)}")
         except Exception as e:
             pass
     
@@ -362,7 +364,7 @@ class ConverterScreen(Screen):
         """
 
         # Find the path for a metadata file
-        path = Path(__file__).parent / "examples" / "metadata.json"
+        path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
         # Read the JSON file 
         with open(path, 'r', encoding='utf-8') as json_file:
@@ -401,7 +403,8 @@ class ConverterScreen(Screen):
         Function save_json that saves changes made in the interface.
         """
         # Get the path of the metadata file 
-        path = Path(__file__).parent / "examples" / "metadata.json"
+        path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
+
 
         data = self.ids.json_editor.text
         data = json.loads(data)
@@ -419,17 +422,38 @@ class ConverterScreen(Screen):
 
         Utilizes the CSVConverter from CoW.
         """
+        input_csv_path = self.selected_file
+
+        if not self.selected_file.exists():
+            logger.error(f"CSV file does not exist at: {self.selected_file}")
+        else:
+            logger.info(f"CSV file does exist at: {self.selected_file}")
+
+        metadata_file = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
+
+        if not metadata_file.exists():
+            logger.error(f"Metadata file not found: {metadata_file}")
+        else:
+            logger.info(f"Metadata file found: {metadata_file}")
+
         try:
             # Extract file paths
-            input_csv_path = self.selected_file
-            metadata_json_path = Path(input_csv_path).with_name(f"{Path(input_csv_path).stem}-metadata.json")
+            input_csv_path = str(self.selected_file)
+            correct_metadata_path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
+            cow_expected_path = self.selected_file.with_name(f"{self.selected_file.name}-metadata.json")
 
+            # Ensure CoW finds the metadata file where it expects it
+            if not cow_expected_path.exists():
+                copyfile(correct_metadata_path, cow_expected_path)
+                logger.info(f"Copied metadata to CoW-expected path: {cow_expected_path}")
+            
             # Instantiate and run the converter
             converter = CSVWConverter(
-                file_name=str(input_csv_path),
-                output_format="nquads",  # or "nq"
-                base="https://example.com/id/"  # replace if needed
+                file_name=input_csv_path,
+                output_format="nquads",
+                base="https://example.com/id/"  
             )
+
             converter.convert()
 
             logger.info("Conversion to N-Quads completed successfully.")
@@ -443,7 +467,8 @@ class ConverterScreen(Screen):
         """
 
         # Get the path of the metadata file 
-        path = Path(__file__).parent / "examples" / "metadata.json"
+        path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
+
 
         # Open and Load the file 
         with open(path, 'r', encoding='utf-8') as json_file:
