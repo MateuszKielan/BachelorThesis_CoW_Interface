@@ -132,13 +132,56 @@ class RecommendationPopup(FloatLayout):
     """
 
 
-    def __init__(self, header, organized_data, list_titles, request_results, rec_mode, **kwargs):
+    def __init__(self, header, organized_data, list_titles, request_results, rec_mode, selected_file, **kwargs):
         super().__init__(**kwargs)
         self.header = header
+        self.selected_file = selected_file
         self.build_table(header, organized_data, list_titles, request_results, rec_mode)
 
     def insert_instance(self, table, row):
-       pass
+        print(type(row[0]))
+        print(self.header)
+        input_path = Path(self.selected_file)
+        data_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
+       
+        with open(data_path, 'r', encoding='utf-8') as json_file:
+            data = json.load(json_file) # Array of Dictionaries
+
+        
+        flag = False
+        for column in data['tableSchema']['columns']:
+            if (column['header'] == self.header):
+                flag = True
+                logger.info(f"Found a match in metadata for {self.header}")
+
+                # Add the best match data to the JSON  
+                row[0] = row[0].replace('[', '')
+                row[0] = row[0].replace(']','')
+                row[0] = row[0].replace("'","")
+                row[2] = row[2].replace('[', '')
+                row[2] = row[2].replace(']','')
+                row[2] = row[2].replace("'","")
+
+                column['name'] = row[0]
+                column['@id'] = id
+                column['vocab'] = row[1]
+                column['type'] = row[3]
+                column['score'] = row[4]
+
+                logger.info(f"Successfully added the metadata for {self.header}")
+
+        if flag == False:
+            logger.warning(f'Match in metadata for {self.header} NOT found')
+
+        # Write in the JSON file
+        with open(data_path, 'w', encoding='utf-8') as json_file:
+            json.dump(data, json_file, indent=4, ensure_ascii=False)
+            logger.info(f"Updated metadata written to {data_path}")
+        
+        app = MDApp.get_running_app()
+        converter_screen = app.root.get_screen("converter")
+        converter_screen.show_json()
+
 
     def show_recommendation_action_menu(self, instance_table, instance_row):
         logger.info("Row clicked")
@@ -148,7 +191,7 @@ class RecommendationPopup(FloatLayout):
 
         button_insert = MDRaisedButton(
             text="Insert", 
-            #on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)),
+            on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)),
             pos_hint={"center_y": 0.5, "center_x":0.5}                                        
         )
         
@@ -193,7 +236,7 @@ class RecommendationPopup(FloatLayout):
             best_table = MDDataTable(
                 column_data = list_titles,
                 row_data= best_match_data_homogenous,
-                size_hint=(0.6, 0.05),
+                size_hint=(0.6, 0.1),
                 pos_hint={"center_x": 0.5, "center_y": 0.6},
                 use_pagination=False,
             )
@@ -201,7 +244,7 @@ class RecommendationPopup(FloatLayout):
             best_table = MDDataTable(
                 column_data = list_titles,
                 row_data = best_match_data_single,
-                size_hint=(0.6, 0.05),
+                size_hint=(0.6, 0.1),
                 pos_hint={"center_x": 0.5, "center_y": 0.6},
                 use_pagination=False,
             )
@@ -386,6 +429,7 @@ class ConverterScreen(Screen):
                     column['vocab'] = res[index[0]][1]
                     column['type'] = res[index[0]][3]
                     column['score'] = res[index[0]][4]
+                    column['header'] = header
 
                     logger.info(f"Successfully added the metadata for {header}")
 
@@ -510,7 +554,7 @@ class ConverterScreen(Screen):
             list_titles(arr): list of table headers
         """
         # Pass the data to the popup
-        show = RecommendationPopup(header,data, list_titles, request_results, self.rec_mode)
+        show = RecommendationPopup(header,data, list_titles, request_results, self.rec_mode, self.selected_file)
 
         # Initialize and open window
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
