@@ -163,7 +163,7 @@ class RecommendationPopup(FloatLayout):
                 row[2] = row[2].replace("'","")
 
                 column['name'] = row[0]
-                column['@id'] = id
+                column['@id'] = row[2]
                 column['vocab'] = row[1]
                 column['type'] = row[3]
                 column['score'] = row[4]
@@ -238,7 +238,8 @@ class RecommendationPopup(FloatLayout):
                 row_data= best_match_data_homogenous,
                 size_hint=(0.6, 0.1),
                 pos_hint={"center_x": 0.5, "center_y": 0.6},
-                use_pagination=False,
+                check = True,
+                use_pagination=False
             )
         elif rec_mode == 'Single': # If mode is Single
             best_table = MDDataTable(
@@ -246,7 +247,8 @@ class RecommendationPopup(FloatLayout):
                 row_data = best_match_data_single,
                 size_hint=(0.6, 0.1),
                 pos_hint={"center_x": 0.5, "center_y": 0.6},
-                use_pagination=False,
+                check = True,
+                use_pagination=False
             )
 
         # Define the table of Matches
@@ -284,7 +286,7 @@ class RecommendationPopup(FloatLayout):
         self.ids.popup_recommendations.add_widget(table)
         #table.bind(on_row_press=self.show_recommendation_action_menu)
         table.bind(on_check_press=self.show_recommendation_action_menu)
-
+        best_table.bind(on_check_press=self.show_recommendation_action_menu)
 
     def dismiss_popup(self):
         """
@@ -389,11 +391,14 @@ class ConverterScreen(Screen):
         input_path = Path(csv_path)
         output_metadata_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
-        try:
-            build_schema(str(input_path), str(output_metadata_path))
-            logger.info(f"Saving metadata at {str(output_metadata_path)}")
-        except Exception as e:
+        if input_path.exists():
             pass
+        else:
+            try:
+                build_schema(str(input_path), str(output_metadata_path))
+                logger.info(f"Saving metadata at {str(output_metadata_path)}")
+            except Exception as e:
+                pass
     
 
     def substitute_recommendations(self, headers, all_results, request_results):
