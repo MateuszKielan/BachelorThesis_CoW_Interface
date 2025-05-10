@@ -139,6 +139,14 @@ class RecommendationPopup(FloatLayout):
         self.build_table(header, organized_data, list_titles, request_results, rec_mode)
 
     def insert_instance(self, table, row):
+        """
+        Function insert_instance that inserts the chosen row from the recommendation popup
+
+        Params:
+            table: whole table data
+            row: chosen row data
+            
+        """
         print(type(row[0]))
         print(self.header)
         input_path = Path(self.selected_file)
