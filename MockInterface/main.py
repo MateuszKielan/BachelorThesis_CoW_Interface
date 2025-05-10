@@ -147,22 +147,22 @@ class RecommendationPopup(FloatLayout):
             row: chosen row data
 
         """
-        print(type(row[0]))
-        print(self.header)
+        # Find Path of the file to read 
         input_path = Path(self.selected_file)
         data_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
        
+        # Open file in read
         with open(data_path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
-        
+        # Loop through the data in metadata
         flag = False
         for column in data['tableSchema']['columns']:
             if (column['header'] == self.header):
                 flag = True
                 logger.info(f"Found a match in metadata for {self.header}")
 
-                # Add the best match data to the JSON  
+                # Clean up the row data
                 row[0] = row[0].replace('[', '')
                 row[0] = row[0].replace(']','')
                 row[0] = row[0].replace("'","")
@@ -170,6 +170,7 @@ class RecommendationPopup(FloatLayout):
                 row[2] = row[2].replace(']','')
                 row[2] = row[2].replace("'","")
 
+                # Replace the parameters of the header with row data
                 column['name'] = row[0]
                 column['@id'] = row[2]
                 column['vocab'] = row[1]
@@ -178,6 +179,7 @@ class RecommendationPopup(FloatLayout):
 
                 logger.info(f"Successfully added the metadata for {self.header}")
 
+        # Check in case the header not found -> possiby display warning
         if flag == False:
             logger.warning(f'Match in metadata for {self.header} NOT found')
 
