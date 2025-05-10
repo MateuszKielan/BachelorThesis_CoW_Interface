@@ -202,19 +202,25 @@ class RecommendationPopup(FloatLayout):
             instance_table: table data 
             instance_row: row data
         """
+        # Logging the user action for debugging
         logger.info("Row clicked")
         logger.info(f"Table Data: {instance_table.row_data}")
         logger.info(f"Row Data {instance_row}")
+
+        # Create the widget
         content = BoxLayout(orientation='vertical', size_hint= (1,1))
 
+        # Create a button to insert the chosen match
         button_insert = MDRaisedButton(
             text="Insert", 
-            on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)),
+            on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)), # Use clocking to avoid error when conflicting with loading screen
             pos_hint={"center_y": 0.5, "center_x":0.5}                                        
         )
         
+        # Add the button to the widget
         content.add_widget(button_insert)
 
+        # Ininitialize the popup window
         popup = Popup(
             title = "Select Action",
             size_hint=(None, None),
@@ -223,6 +229,7 @@ class RecommendationPopup(FloatLayout):
             content = content
         )
 
+        # Open the popup window 
         popup.open()
 
     def build_table(self, header, organized_data, list_titles, request_results, rec_mode):
