@@ -195,6 +195,13 @@ class RecommendationPopup(FloatLayout):
 
 
     def show_recommendation_action_menu(self, instance_table, instance_row):
+        """
+        Function show_recommendation_action_menu that opens the popup window with insert option
+
+        Params:
+            instance_table: table data 
+            instance_row: row data
+        """
         logger.info("Row clicked")
         logger.info(f"Table Data: {instance_table.row_data}")
         logger.info(f"Row Data {instance_row}")
