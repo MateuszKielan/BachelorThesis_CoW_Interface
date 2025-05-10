@@ -498,8 +498,10 @@ class ConverterScreen(Screen):
 
         !FIX THE FILE COPY!
         """
+        # Selected file path
         input_csv_path = self.selected_file
 
+        # Check if the file exists
         if not self.selected_file.exists():
             logger.error(f"CSV file does not exist at: {self.selected_file}")
         else:
@@ -507,11 +509,13 @@ class ConverterScreen(Screen):
 
         metadata_file = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
+        # Check if the metadata file exists
         if not metadata_file.exists():
             logger.error(f"Metadata file not found: {metadata_file}")
         else:
             logger.info(f"Metadata file found: {metadata_file}")
 
+        # INEFFICIENT -> CHANGE
         try:
             # Extract file paths
             input_csv_path = str(self.selected_file)
@@ -532,6 +536,7 @@ class ConverterScreen(Screen):
 
             converter.convert()
 
+            # Add logging
             logger.info("Conversion to N-Quads completed successfully.")
 
         except Exception as e:
