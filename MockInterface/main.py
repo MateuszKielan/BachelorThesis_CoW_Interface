@@ -187,7 +187,8 @@ class RecommendationPopup(FloatLayout):
         with open(data_path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
             logger.info(f"Updated metadata written to {data_path}")
-        
+
+        # Retrieve the converter screen to updated the JSON preview
         app = MDApp.get_running_app()
         converter_screen = app.root.get_screen("converter")
         converter_screen.show_json()
