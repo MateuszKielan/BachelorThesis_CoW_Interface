@@ -145,7 +145,7 @@ class RecommendationPopup(FloatLayout):
         Params:
             table: whole table data
             row: chosen row data
-            
+
         """
         print(type(row[0]))
         print(self.header)
@@ -153,7 +153,7 @@ class RecommendationPopup(FloatLayout):
         data_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
        
         with open(data_path, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file) # Array of Dictionaries
+            data = json.load(json_file)
 
         
         flag = False
