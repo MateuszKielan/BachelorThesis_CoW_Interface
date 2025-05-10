@@ -495,6 +495,8 @@ class ConverterScreen(Screen):
         Function convert_json that converts the metadata file into nquads file. 
 
         Utilizes the CSVConverter from CoW.
+
+        !FIX THE FILE COPY!
         """
         input_csv_path = self.selected_file
 
