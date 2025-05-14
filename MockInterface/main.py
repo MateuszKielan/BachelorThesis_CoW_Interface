@@ -688,7 +688,7 @@ class ConverterScreen(Screen):
             2. Displays the headers on the middle page.
             3. Displays the recommendations on the middle page.
         """
-        
+        # Initialize a class variable with file path -> reusable in other functions
         self.selected_file = file_path
 
         # Convert the CSV to metadata JSON 
