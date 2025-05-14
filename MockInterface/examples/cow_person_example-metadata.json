@@ -52,21 +52,21 @@
         "primaryKey": "personID",
         "columns": [
             {
-                "name": "dicom:PersonIdentificationCodeSequence",
+                "name": "dicom:SequenceItem.PersonIdentificationCodeSequence",
                 "datatype": "string",
-                "@id": "http://purl.org/healthcarevocab/v1#PersonIdentificationCodeSequence",
+                "@id": "http://purl.org/healthcarevocab/v1#SequenceItem.PersonIdentificationCodeSequence",
                 "vocab": "dicom",
-                "type": "property",
-                "score": "0.40525717",
+                "type": "class",
+                "score": 0.3174554,
                 "header": "personID"
             },
             {
-                "name": "dbpedia-owl:Surname",
+                "name": "gndo:surname",
                 "datatype": "string",
-                "@id": "http://dbpedia.org/ontology/Surname",
-                "vocab": "dbpedia-owl",
-                "type": "class",
-                "score": "0.51218826",
+                "@id": "http://d-nb.info/standards/elementset/gnd#surname",
+                "vocab": "gndo",
+                "type": "property",
+                "score": 0.82916975,
                 "header": "surname"
             },
             {

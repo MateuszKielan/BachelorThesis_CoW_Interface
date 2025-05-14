@@ -140,58 +140,47 @@ class RecommendationPopup(FloatLayout):
 
     def insert_instance(self, table, row):
         """
-        Function insert_instance that inserts the chosen row from the recommendation popup
-
-        Params:
-            table: whole table data
-            row: chosen row data
-
+        Inserts the selected match into the metadata for the current header.
         """
-        # Find Path of the file to read 
-        input_path = Path(self.selected_file)
-        data_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
-       
-        # Open file in read
+        def clean(text):
+            return text.translate(str.maketrans('', '', "[]'"))
+
+        # Parse and sanitize the row values
+        name = clean(row[0])
+        vocab = clean(row[1])
+        uri = clean(row[2])
+        rdf_type = clean(row[3])
+        score = float(row[4]) if isinstance(row[4], (int, float, str)) else 0
+
+        data_path = self.selected_file.parent / f"{self.selected_file.name[:-4]}-metadata.json"
+
         with open(data_path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
-        # Loop through the data in metadata
-        flag = False
-        for column in data['tableSchema']['columns']:
-            if (column['header'] == self.header):
-                flag = True
-                logger.info(f"Found a match in metadata for {self.header}")
+        updated = False
+        for column in data.get('tableSchema', {}).get('columns', []):
+            if column.get('header') == self.header:
+                column.update({
+                    'name': name,
+                    '@id': uri,
+                    'vocab': vocab,
+                    'type': rdf_type,
+                    'score': score
+                })
+                updated = True
+                logger.info(f"[Inserted] {self.header} -> {name} ({vocab})")
 
-                # Clean up the row data
-                row[0] = row[0].replace('[', '')
-                row[0] = row[0].replace(']','')
-                row[0] = row[0].replace("'","")
-                row[2] = row[2].replace('[', '')
-                row[2] = row[2].replace(']','')
-                row[2] = row[2].replace("'","")
+        if not updated:
+            logger.warning(f"[Insert Failed] Header '{self.header}' not found in metadata.")
 
-                # Replace the parameters of the header with row data
-                column['name'] = row[0]
-                column['@id'] = row[2]
-                column['vocab'] = row[1]
-                column['type'] = row[3]
-                column['score'] = row[4]
-
-                logger.info(f"Successfully added the metadata for {self.header}")
-
-        # Check in case the header not found -> possiby display warning
-        if flag == False:
-            logger.warning(f'Match in metadata for {self.header} NOT found')
-
-        # Write in the JSON file
         with open(data_path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"Updated metadata written to {data_path}")
+            logger.info(f"[Metadata File Written] {data_path}")
 
-        # Retrieve the converter screen to updated the JSON preview
+        # Refresh preview
         app = MDApp.get_running_app()
-        converter_screen = app.root.get_screen("converter")
-        converter_screen.show_json()
+        app.root.get_screen("converter").show_json()
+
 
 
     def show_recommendation_action_menu(self, instance_table, instance_row):
@@ -339,6 +328,9 @@ class ConverterScreen(Screen):
 
 
     def show_request_help_popup(self):
+        """
+        Function show_request_help_popup thta displayes help information about the type of requests made.
+        """
         content = BoxLayout(orientation='vertical')
         help_text = (
         "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently. "
@@ -374,6 +366,9 @@ class ConverterScreen(Screen):
         popup.open()
 
     def show_recommendation_help_popup(self):
+        """
+        Function show_recommendation_help_popup that displays help information about the recommendation section.
+        """
         content = BoxLayout(orientation='vertical')
         help_text = "Each card represents a column from your uploaded CSV file. It shows the column name, its detected data type, and how many unique values it contains. Use the 'Show Matches' button to view vocabulary suggestions tailored for that specific column."
         
@@ -416,14 +411,14 @@ class ConverterScreen(Screen):
         input_path = Path(csv_path)
         output_metadata_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
-        if input_path.exists():
-            pass
+        if output_metadata_path.exists():
+            logger.info("Metadata file already exists. Loading data.")
         else:
             try:
                 build_schema(str(input_path), str(output_metadata_path))
                 logger.info(f"Saving metadata at {str(output_metadata_path)}")
             except Exception as e:
-                pass
+                logger.info("Metadata generation failed")
     
 
     def substitute_recommendations(self, headers, all_results, request_results):
@@ -432,7 +427,7 @@ class ConverterScreen(Screen):
         """
         path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
-        # Load once
+        # Load
         with open(path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
@@ -457,7 +452,7 @@ class ConverterScreen(Screen):
             else:
                 logger.warning(f"[Match Not Found] for header: {header}")
 
-        # Save once
+        # Save
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
             logger.info(f"[Metadata File Written] {path}")
@@ -761,18 +756,21 @@ class ConverterScreen(Screen):
         self.show_json()
 
         # Add two buttons to toggle between Single and Homogenous texts 
-        self.ids.request_option_panel.add_widget(Button(
+        self.single_button = Button(
             text='Single', 
             on_press=lambda x: self.switch_mode('Single', headers, all_results, table), 
             color=(1, 1, 1, 1)
-        ))
+        )
 
-        self.ids.request_option_panel.add_widget(Button(
+        self.homogenous_button = Button(
             text='Homogenous',
             on_press=lambda x: self.switch_mode('Homogenous', headers, all_results, table),
             color=(1, 1, 1, 1)
-        ))
-    
+        )
+
+        self.ids.request_option_panel.add_widget(self.single_button)
+        self.ids.request_option_panel.add_widget(self.homogenous_button)
+
         # Clear previews widgets
         self.ids.csv_preview_container.clear_widgets()
         self.ids.csv_preview_container.add_widget(self.csv_table)
