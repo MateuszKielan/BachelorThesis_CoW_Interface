@@ -428,48 +428,40 @@ class ConverterScreen(Screen):
 
     def substitute_recommendations(self, headers, all_results, request_results):
         """
-        Function substitute_recommendations that inserts the best matches into the JSON file.
-
-        Params:
-            header (list): list of headers
-            all_results (dict): dictionary with heders and all of their matches
-            request_results (list): list of tuples representing a header and the index for its best homogenus match
+        Updates the metadata file with best matches for each column.
         """
-
-        # Find the path for a metadata file
         path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
-        # Read the JSON file 
+        # Load once
         with open(path, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file) # Array of Dictionaries
+            data = json.load(json_file)
 
-        for header in headers:
-            res = all_results[header]
-            index = [item[1] for item in request_results if item[0] == header]
-         
-            flag = False
-            for column in data['tableSchema']['columns']:
-                if (column['name'] == header):
-                    flag = True
-                    logger.info(f"Found a match in metadata for {header}")
+        # Build a lookup dict for quick index access
+        index_lookup = {header: idx for header, idx in request_results}
 
-                    # Add the best match data to the JSON  
-                    column['name'] = res[index[0]][0][0]
-                    column['@id'] = res[index[0]][2][0]
-                    column['vocab'] = res[index[0]][1]
-                    column['type'] = res[index[0]][3]
-                    column['score'] = res[index[0]][4]
-                    column['header'] = header
+        for column in data.get('tableSchema', {}).get('columns', []):
+            header = column.get('name')
+            if header in all_results and header in index_lookup:
+                match = all_results[header][index_lookup[header]]
 
-                    logger.info(f"Successfully added the metadata for {header}")
+                column.update({
+                    'name': match[0][0],     # prefixed name
+                    '@id': match[2][0],      # URI
+                    'vocab': match[1],       # vocabulary.prefix
+                    'type': match[3],        # type
+                    'score': match[4],       # score
+                    'header': header         # original header for traceability
+                })
 
-            if flag == False:
-                logger.warning(f'Match in metadata for {header} NOT found')
+                logger.info(f"[Metadata Updated] {header} -> {match[0][0]}")
+            else:
+                logger.warning(f"[Match Not Found] for header: {header}")
 
-        # Write in the JSON file
+        # Save once
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"Updated metadata written to {path}")
+            logger.info(f"[Metadata File Written] {path}")
+
         
 
     def save_json(self):
