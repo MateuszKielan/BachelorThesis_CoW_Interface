@@ -783,6 +783,7 @@ class ConverterScreen(Screen):
             size_hint={0.5, None}
         )
 
+        self.highlight_switch()
         self.ids.request_option_panel.add_widget(self.single_button)
         self.ids.request_option_panel.add_widget(self.homogenous_button)
 
@@ -791,11 +792,10 @@ class ConverterScreen(Screen):
         self.ids.csv_preview_container.add_widget(self.csv_table)
 
         # Load Full dataset overview popup
-        open_popup = Button(
+        open_popup = MDRaisedButton(
             text='Load Full Dataset', 
             on_press=lambda x: self.show_popup(column_heads,row_data), 
-            size_hint=(None,None), 
-            size=(200,50), 
+            size_hint=(0.3, None),
             pos_hint={"center_x": 0.5}
         )
         
