@@ -586,7 +586,10 @@ class ConverterScreen(Screen):
         logger.info("Opening the Recommendation Popup")
 
 
-    def highligh_switch(self):
+    def highlight_switch(self):
+        """
+        Function highlight_switch that changes the color of the request buttons when clicking.
+        """
         if self.rec_mode == "Single":
             logger.info("Highliting Choice [Single Request]")
             self.single_button.md_bg_color = (0.2, 0.6, 0.86, 1) 
@@ -610,7 +613,7 @@ class ConverterScreen(Screen):
 
         # Reload the buttons 
         self.create_header_buttons(headers, all_results, table)
-        self.highligh_switch()
+        self.highlight_switch()
         logger.info(f"Mode switched to {self.rec_mode} requests")
 
 
