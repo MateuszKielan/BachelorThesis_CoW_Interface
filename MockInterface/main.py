@@ -139,64 +139,77 @@ class RecommendationPopup(FloatLayout):
         self.build_table(header, organized_data, list_titles, request_results, rec_mode)
 
     def insert_instance(self, table, row):
-        print(type(row[0]))
-        print(self.header)
-        input_path = Path(self.selected_file)
-        data_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
-       
+        """
+        Inserts the selected match into the metadata for the current header.
+        """
+        def clean(text):
+            return text.translate(str.maketrans('', '', "[]'"))
+
+        # Parse and sanitize the row values
+        name = clean(row[0])
+        vocab = clean(row[1])
+        uri = clean(row[2])
+        rdf_type = clean(row[3])
+        score = float(row[4]) if isinstance(row[4], (int, float, str)) else 0
+
+        data_path = self.selected_file.parent / f"{self.selected_file.name[:-4]}-metadata.json"
+
         with open(data_path, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file) # Array of Dictionaries
+            data = json.load(json_file)
 
-        
-        flag = False
-        for column in data['tableSchema']['columns']:
-            if (column['header'] == self.header):
-                flag = True
-                logger.info(f"Found a match in metadata for {self.header}")
+        updated = False
+        for column in data.get('tableSchema', {}).get('columns', []):
+            if column.get('header') == self.header:
+                column.update({
+                    'name': name,
+                    '@id': uri,
+                    'vocab': vocab,
+                    'type': rdf_type,
+                    'score': score
+                })
+                updated = True
+                logger.info(f"[Inserted] {self.header} -> {name} ({vocab})")
 
-                # Add the best match data to the JSON  
-                row[0] = row[0].replace('[', '')
-                row[0] = row[0].replace(']','')
-                row[0] = row[0].replace("'","")
-                row[2] = row[2].replace('[', '')
-                row[2] = row[2].replace(']','')
-                row[2] = row[2].replace("'","")
+        if not updated:
+            logger.warning(f"[Insert Failed] Header '{self.header}' not found in metadata.")
 
-                column['name'] = row[0]
-                column['@id'] = row[2]
-                column['vocab'] = row[1]
-                column['type'] = row[3]
-                column['score'] = row[4]
-
-                logger.info(f"Successfully added the metadata for {self.header}")
-
-        if flag == False:
-            logger.warning(f'Match in metadata for {self.header} NOT found')
-
-        # Write in the JSON file
         with open(data_path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"Updated metadata written to {data_path}")
-        
+            logger.info(f"[Metadata File Written] {data_path}")
+
+        # Refresh preview
         app = MDApp.get_running_app()
-        converter_screen = app.root.get_screen("converter")
-        converter_screen.show_json()
+        app.root.get_screen("converter").show_json()
+
 
 
     def show_recommendation_action_menu(self, instance_table, instance_row):
+        """
+        Function show_recommendation_action_menu that opens the popup window with insert option
+
+        Params:
+            instance_table: table data 
+            instance_row: row data
+        """
+        # Logging the user action for debugging
         logger.info("Row clicked")
         logger.info(f"Table Data: {instance_table.row_data}")
         logger.info(f"Row Data {instance_row}")
+
+        # Create the widget
         content = BoxLayout(orientation='vertical', size_hint= (1,1))
 
+        # Create a button to insert the chosen match
         button_insert = MDRaisedButton(
             text="Insert", 
-            on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)),
+            on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)), # Use clocking to avoid error when conflicting with loading screen
             pos_hint={"center_y": 0.5, "center_x":0.5}                                        
         )
         
+        # Add the button to the widget
         content.add_widget(button_insert)
 
+        # Ininitialize the popup window
         popup = Popup(
             title = "Select Action",
             size_hint=(None, None),
@@ -205,6 +218,7 @@ class RecommendationPopup(FloatLayout):
             content = content
         )
 
+        # Open the popup window 
         popup.open()
 
     def build_table(self, header, organized_data, list_titles, request_results, rec_mode):
@@ -314,6 +328,9 @@ class ConverterScreen(Screen):
 
 
     def show_request_help_popup(self):
+        """
+        Function show_request_help_popup thta displayes help information about the type of requests made.
+        """
         content = BoxLayout(orientation='vertical')
         help_text = (
         "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently. "
@@ -349,6 +366,9 @@ class ConverterScreen(Screen):
         popup.open()
 
     def show_recommendation_help_popup(self):
+        """
+        Function show_recommendation_help_popup that displays help information about the recommendation section.
+        """
         content = BoxLayout(orientation='vertical')
         help_text = "Each card represents a column from your uploaded CSV file. It shows the column name, its detected data type, and how many unique values it contains. Use the 'Show Matches' button to view vocabulary suggestions tailored for that specific column."
         
@@ -391,57 +411,52 @@ class ConverterScreen(Screen):
         input_path = Path(csv_path)
         output_metadata_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
-        try:
-            build_schema(str(input_path), str(output_metadata_path))
-            logger.info(f"Saving metadata at {str(output_metadata_path)}")
-        except Exception as e:
-            pass
+        if output_metadata_path.exists():
+            logger.info("Metadata file already exists. Loading data.")
+        else:
+            try:
+                build_schema(str(input_path), str(output_metadata_path))
+                logger.info(f"Saving metadata at {str(output_metadata_path)}")
+            except Exception as e:
+                logger.info("Metadata generation failed")
     
 
     def substitute_recommendations(self, headers, all_results, request_results):
         """
-        Function substitute_recommendations that inserts the best matches into the JSON file.
-
-        Params:
-            header (list): list of headers
-            all_results (dict): dictionary with heders and all of their matches
-            request_results (list): list of tuples representing a header and the index for its best homogenus match
+        Updates the metadata file with best matches for each column.
         """
-
-        # Find the path for a metadata file
         path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
-        # Read the JSON file 
+        # Load
         with open(path, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file) # Array of Dictionaries
+            data = json.load(json_file)
 
-        for header in headers:
-            res = all_results[header]
-            index = [item[1] for item in request_results if item[0] == header]
-         
-            flag = False
-            for column in data['tableSchema']['columns']:
-                if (column['name'] == header):
-                    flag = True
-                    logger.info(f"Found a match in metadata for {header}")
+        # Build a lookup dict for quick index access
+        index_lookup = {header: idx for header, idx in request_results}
 
-                    # Add the best match data to the JSON  
-                    column['name'] = res[index[0]][0][0]
-                    column['@id'] = res[index[0]][2][0]
-                    column['vocab'] = res[index[0]][1]
-                    column['type'] = res[index[0]][3]
-                    column['score'] = res[index[0]][4]
-                    column['header'] = header
+        for column in data.get('tableSchema', {}).get('columns', []):
+            header = column.get('name')
+            if header in all_results and header in index_lookup:
+                match = all_results[header][index_lookup[header]]
 
-                    logger.info(f"Successfully added the metadata for {header}")
+                column.update({
+                    'name': match[0][0],     # prefixed name
+                    '@id': match[2][0],      # URI
+                    'vocab': match[1],       # vocabulary.prefix
+                    'type': match[3],        # type
+                    'score': match[4],       # score
+                    'header': header         # original header for traceability
+                })
 
-            if flag == False:
-                logger.warning(f'Match in metadata for {header} NOT found')
+                logger.info(f"[Metadata Updated] {header} -> {match[0][0]}")
+            else:
+                logger.warning(f"[Match Not Found] for header: {header}")
 
-        # Write in the JSON file
+        # Save
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"Updated metadata written to {path}")
+            logger.info(f"[Metadata File Written] {path}")
+
         
 
     def save_json(self):
@@ -467,9 +482,13 @@ class ConverterScreen(Screen):
         Function convert_json that converts the metadata file into nquads file. 
 
         Utilizes the CSVConverter from CoW.
+
+        !FIX THE FILE COPY!
         """
+        # Selected file path
         input_csv_path = self.selected_file
 
+        # Check if the file exists
         if not self.selected_file.exists():
             logger.error(f"CSV file does not exist at: {self.selected_file}")
         else:
@@ -477,11 +496,13 @@ class ConverterScreen(Screen):
 
         metadata_file = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
+        # Check if the metadata file exists
         if not metadata_file.exists():
             logger.error(f"Metadata file not found: {metadata_file}")
         else:
             logger.info(f"Metadata file found: {metadata_file}")
 
+        # INEFFICIENT -> CHANGE
         try:
             # Extract file paths
             input_csv_path = str(self.selected_file)
@@ -502,6 +523,7 @@ class ConverterScreen(Screen):
 
             converter.convert()
 
+            # Add logging
             logger.info("Conversion to N-Quads completed successfully.")
 
         except Exception as e:
@@ -734,18 +756,21 @@ class ConverterScreen(Screen):
         self.show_json()
 
         # Add two buttons to toggle between Single and Homogenous texts 
-        self.ids.request_option_panel.add_widget(Button(
+        self.single_button = Button(
             text='Single', 
             on_press=lambda x: self.switch_mode('Single', headers, all_results, table), 
             color=(1, 1, 1, 1)
-        ))
+        )
 
-        self.ids.request_option_panel.add_widget(Button(
+        self.homogenous_button = Button(
             text='Homogenous',
             on_press=lambda x: self.switch_mode('Homogenous', headers, all_results, table),
             color=(1, 1, 1, 1)
-        ))
-    
+        )
+
+        self.ids.request_option_panel.add_widget(self.single_button)
+        self.ids.request_option_panel.add_widget(self.homogenous_button)
+
         # Clear previews widgets
         self.ids.csv_preview_container.clear_widgets()
         self.ids.csv_preview_container.add_widget(self.csv_table)
