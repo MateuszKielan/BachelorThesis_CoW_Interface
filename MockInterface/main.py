@@ -586,6 +586,17 @@ class ConverterScreen(Screen):
         logger.info("Opening the Recommendation Popup")
 
 
+    def highligh_switch(self):
+        if self.rec_mode == "Single":
+            logger.info("Highliting Choice [Single Request]")
+            self.single_button.md_bg_color = (0.2, 0.6, 0.86, 1) 
+            self.homogenous_button.md_bg_color = (0.9, 0.9, 0.9, 1)  
+        elif self.rec_mode == "Homogenous":
+            logger.info("Highliting Choice [Homogenous Request]")
+            self.single_button.md_bg_color = (0.9, 0.9, 0.9, 1)
+            self.homogenous_button.md_bg_color = (0.2, 0.6, 0.86, 1)
+
+
     def switch_mode(self, choice, headers, all_results, table):
         """
         Function switch_mode that switches conversion mode according to the button pressed
@@ -599,6 +610,7 @@ class ConverterScreen(Screen):
 
         # Reload the buttons 
         self.create_header_buttons(headers, all_results, table)
+        self.highligh_switch()
         logger.info(f"Mode switched to {self.rec_mode} requests")
 
 
@@ -756,16 +768,16 @@ class ConverterScreen(Screen):
         self.show_json()
 
         # Add two buttons to toggle between Single and Homogenous texts 
-        self.single_button = Button(
+        self.single_button = MDRaisedButton(
             text='Single', 
             on_press=lambda x: self.switch_mode('Single', headers, all_results, table), 
-            color=(1, 1, 1, 1)
+            size_hint={0.5, None}
         )
 
-        self.homogenous_button = Button(
+        self.homogenous_button = MDRaisedButton(
             text='Homogenous',
             on_press=lambda x: self.switch_mode('Homogenous', headers, all_results, table),
-            color=(1, 1, 1, 1)
+            size_hint={0.5, None}
         )
 
         self.ids.request_option_panel.add_widget(self.single_button)
