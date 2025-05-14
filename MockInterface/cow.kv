@@ -267,23 +267,18 @@ ScreenManager:
 
             BoxLayout:
                 orientation: 'horizontal'
-                size_hint: None, None
-                size: self.minimum_size
+                size_hint: 1, None
                 spacing: 20
                 pos_hint: {"center_x": 0.5, 'y': 0.2}
-                Button:
+                MDRaisedButton:
                     text: 'Save'
                     on_press: root.save_json()
-                    size_hint: None, None
-                    pos_hint: {'center_x': 0.5, 'y':0.2}
-                    size: 300, 50
+                    size_hint: 0.5, None
                         
-                Button:
+                MDRaisedButton:
                     text: 'Convert'
                     on_press: root.convert_json()
-                    size_hint: None, None
-                    pos_hint: {'center_x': 0.5, 'y':0.2}
-                    size: 300, 50
+                    size_hint: 0.5, None
 
 
 # Display Full Dataset popup
@@ -299,7 +294,7 @@ ScreenManager:
         BoxLayout:
             id: popup_data_container 
 
-        Button:
+        MDRaisedButton:
             text: "Close"
             on_press: root.dismiss_popup()
             size_hint: None, None
@@ -321,7 +316,7 @@ ScreenManager:
             id: popup_recommendations
             size_hint: 1,1
 
-        Button:
+        MDRaisedButton:
             text: "Close"
             on_press: root.dismiss_popup()
             size_hint: None, None

@@ -17,10 +17,8 @@ from requests_t import get_csv_headers, get_recommendations, organize_results, g
 from kivymd.uix.datatables import MDDataTable
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp
-from kivymd.uix.tooltip import MDTooltip
 import csv
 import json
-import subprocess
 import logging
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
 from utils import infer_column_type
@@ -593,10 +591,10 @@ class ConverterScreen(Screen):
         if self.rec_mode == "Single":
             logger.info("Highliting Choice [Single Request]")
             self.single_button.md_bg_color = (0.2, 0.6, 0.86, 1) 
-            self.homogenous_button.md_bg_color = (0.9, 0.9, 0.9, 1)  
+            self.homogenous_button.md_bg_color = (0.4, 0.4, 0.4, 1)  
         elif self.rec_mode == "Homogenous":
             logger.info("Highliting Choice [Homogenous Request]")
-            self.single_button.md_bg_color = (0.9, 0.9, 0.9, 1)
+            self.single_button.md_bg_color = (0.4, 0.4, 0.4, 1) 
             self.homogenous_button.md_bg_color = (0.2, 0.6, 0.86, 1)
 
 
