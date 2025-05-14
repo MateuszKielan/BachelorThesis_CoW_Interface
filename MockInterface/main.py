@@ -391,14 +391,11 @@ class ConverterScreen(Screen):
         input_path = Path(csv_path)
         output_metadata_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
-        if input_path.exists():
+        try:
+            build_schema(str(input_path), str(output_metadata_path))
+            logger.info(f"Saving metadata at {str(output_metadata_path)}")
+        except Exception as e:
             pass
-        else:
-            try:
-                build_schema(str(input_path), str(output_metadata_path))
-                logger.info(f"Saving metadata at {str(output_metadata_path)}")
-            except Exception as e:
-                pass
     
 
     def substitute_recommendations(self, headers, all_results, request_results):

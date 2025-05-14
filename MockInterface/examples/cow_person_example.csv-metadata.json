@@ -57,7 +57,8 @@
                 "@id": "http://purl.org/healthcarevocab/v1#PersonIdentificationCodeSequence",
                 "vocab": "dicom",
                 "type": "property",
-                "score": 0.40525717
+                "score": 0.40525717,
+                "header": "personID"
             },
             {
                 "name": "dbpedia-owl:Surname",
@@ -65,7 +66,8 @@
                 "@id": "http://dbpedia.org/ontology/Surname",
                 "vocab": "dbpedia-owl",
                 "type": "class",
-                "score": 0.51218826
+                "score": 0.51218826,
+                "header": "surname"
             },
             {
                 "name": "dbpedia-owl:populationPctMen",
@@ -73,7 +75,8 @@
                 "@id": "http://dbpedia.org/ontology/populationPctMen",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.19368377
+                "score": 0.19368377,
+                "header": "male"
             },
             {
                 "name": "dbpedia-owl:occupation",
@@ -81,7 +84,8 @@
                 "@id": "http://dbpedia.org/ontology/occupation",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.60278124
+                "score": 0.60278124,
+                "header": "occupation"
             }
         ]
     },
