@@ -147,7 +147,7 @@ class RecommendationPopup(FloatLayout):
         def clean(text):
             return text.translate(str.maketrans('', '', "[]'"))
 
-        # Parse and sanitize the row values
+        # Parse and clean the row values
         name = clean(row[0])
         vocab = clean(row[1])
         uri = clean(row[2])
@@ -179,9 +179,11 @@ class RecommendationPopup(FloatLayout):
             json.dump(data, json_file, indent=4, ensure_ascii=False)
             logger.info(f"Metadata File Written: {data_path}")
 
+        self.insert_popup.dismiss()
         # Refresh preview
         app = MDApp.get_running_app()
         app.root.get_screen("converter").show_json()
+        logger.info("Refreshed JSON Preview Screen")
 
 
 
@@ -212,7 +214,7 @@ class RecommendationPopup(FloatLayout):
         content.add_widget(button_insert)
 
         # Ininitialize the popup window
-        popup = Popup(
+        self.insert_popup = Popup(
             title = "Select Action",
             size_hint=(None, None),
             size=(500, 300),
@@ -221,7 +223,7 @@ class RecommendationPopup(FloatLayout):
         )
 
         # Open the popup window 
-        popup.open()
+        self.insert_popup.open()
 
     def build_table(self, header, organized_data, list_titles, request_results, rec_mode):
         """
