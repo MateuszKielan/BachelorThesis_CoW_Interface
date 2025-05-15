@@ -48,6 +48,8 @@ class StartingScreen(Screen):
         """
         Function select_file that opens filechooser.
         """
+        logger.info("Opening the file chooser")
+
         filechooser.open_file(on_selection=self.select_store)
         
 
