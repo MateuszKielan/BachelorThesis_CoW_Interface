@@ -73,6 +73,8 @@ class StartingScreen(Screen):
             1. Switches the screen to converter_screen
             2. Passes the file path to the converter_screen
         """
+        logger.info("Switching to Converter Screen")
+
         converter_screen = self.manager.get_screen("converter")
         converter_screen.display_recommendation(self.selected_file)
         self.manager.current = "converter"
@@ -150,7 +152,7 @@ class RecommendationPopup(FloatLayout):
         vocab = clean(row[1])
         uri = clean(row[2])
         rdf_type = clean(row[3])
-        score = float(row[4]) if isinstance(row[4], (int, float, str)) else 0
+        score = float(row[4])
 
         data_path = self.selected_file.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
@@ -171,11 +173,11 @@ class RecommendationPopup(FloatLayout):
                 logger.info(f"[Inserted] {self.header} -> {name} ({vocab})")
 
         if not updated:
-            logger.warning(f"[Insert Failed] Header '{self.header}' not found in metadata.")
+            logger.warning(f"Insert Failed: Header '{self.header}' not found in metadata.")
 
         with open(data_path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"[Metadata File Written] {data_path}")
+            logger.info(f"Metadata File Written: {data_path}")
 
         # Refresh preview
         app = MDApp.get_running_app()
