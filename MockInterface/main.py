@@ -781,9 +781,16 @@ class ConverterScreen(Screen):
             size_hint={0.5, None}
         )
 
+        self.replace_all_button = MDRaisedButton(
+            text='Replace All',
+            size_hint={0.5, None},
+            pos_hint={'center_x': 0.5}
+        )
+
         self.highlight_switch()
         self.ids.request_option_panel.add_widget(self.single_button)
         self.ids.request_option_panel.add_widget(self.homogenous_button)
+        self.ids.request_option_panel_under.add_widget(self.replace_all_button)
 
         # Clear previews widgets
         self.ids.csv_preview_container.clear_widgets()
