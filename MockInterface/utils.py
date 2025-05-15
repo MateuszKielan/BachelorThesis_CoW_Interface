@@ -15,6 +15,7 @@ def extract_statistics(cols: list, rows: list):
         rows (list): row data of the dataset.
 
     """
+    #
     df = pd.DataFrame(rows, columns=cols)
 
     null_values = df.isnull().sum()

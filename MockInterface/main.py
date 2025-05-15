@@ -302,9 +302,10 @@ class RecommendationPopup(FloatLayout):
             size_hint_y=0.05
         ))
         self.ids.popup_recommendations.add_widget(table)
-        #table.bind(on_row_press=self.show_recommendation_action_menu)
         table.bind(on_check_press=self.show_recommendation_action_menu)
         best_table.bind(on_check_press=self.show_recommendation_action_menu)
+
+        # Implement Inserting Your own instance HERE
 
     def dismiss_popup(self):
         """
@@ -457,17 +458,18 @@ class ConverterScreen(Screen):
                     'header': header         # original header for traceability
                 })
 
-                logger.info(f"[Metadata Updated] {header} -> {match[0][0]}")
+                logger.info(f"Metadata Updated {header} -> {match[0][0]}")
             else:
-                logger.warning(f"[Match Not Found] for header: {header}")
+                logger.warning(f"Match Not Found for header: {header}")
 
         # Save
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"[Metadata File Written] {path}")
+            logger.info(f"Metadata File Written {path}")
 
         logger.info("Updating the Screen")
         self.show_json()
+
 
     def substitute_recommendations(self, headers, all_results, request_results):
         """
@@ -570,7 +572,6 @@ class ConverterScreen(Screen):
 
             converter.convert()
 
-            # Add logging
             logger.info("Conversion to N-Quads completed successfully.")
 
         except Exception as e:
@@ -596,6 +597,7 @@ class ConverterScreen(Screen):
         self.ids.json_editor.text = display_json
         logger.info("Displaying File")
 
+
     def show_popup(self, column_heads, row_data):
         """
         Function show_popup that calls the DataPopup class to display the table 
@@ -612,6 +614,8 @@ class ConverterScreen(Screen):
 
         # Initialize and open window
         popupWindow = Popup(title="CSV Data", content=show, size_hint=(1, 1))
+
+        logger.info("Loading the full CSV dataset")
         popupWindow.open()
     
 
@@ -629,8 +633,9 @@ class ConverterScreen(Screen):
 
         # Initialize and open window
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
-        popupWindow.open()
+
         logger.info("Opening the Recommendation Popup")
+        popupWindow.open()
 
 
     def highlight_switch(self):
@@ -638,11 +643,11 @@ class ConverterScreen(Screen):
         Function highlight_switch that changes the color of the request buttons when clicking.
         """
         if self.rec_mode == "Single":
-            logger.info("Highliting Choice [Single Request]")
+            logger.info("Highliting Choice: [Single Request]")
             self.single_button.md_bg_color = (0.2, 0.6, 0.86, 1) 
             self.homogenous_button.md_bg_color = (0.4, 0.4, 0.4, 1)  
         elif self.rec_mode == "Homogenous":
-            logger.info("Highliting Choice [Homogenous Request]")
+            logger.info("Highliting Choice: [Homogenous Request]")
             self.single_button.md_bg_color = (0.4, 0.4, 0.4, 1) 
             self.homogenous_button.md_bg_color = (0.2, 0.6, 0.86, 1)
 
@@ -658,8 +663,10 @@ class ConverterScreen(Screen):
         # Set the variable to user choice
         self.rec_mode = choice
 
-        # Reload the buttons 
+        # Reload the cards 
+        logger.info("Reloading the header cards")
         self.create_header_buttons(headers, all_results, table)
+
         self.highlight_switch()
         logger.info(f"Mode switched to {self.rec_mode} requests")
 
@@ -725,7 +732,7 @@ class ConverterScreen(Screen):
 
             table.add_widget(Widget(size_hint_y=None, height=40))
             table.add_widget(card)
-            logger.info("Set of header buttons created successfully")
+            logger.info("Set of header cards created successfully")
 
 
     def display_recommendation(self, file_path):
@@ -742,6 +749,7 @@ class ConverterScreen(Screen):
         self.convert_with_cow(str(file_path))
 
         # Get the headers from CSV file
+        logger.info("Retrieving CSV headers")
         headers = get_csv_headers(str(file_path))
 
         # Set the size of received matches
@@ -763,18 +771,22 @@ class ConverterScreen(Screen):
         ]
 
         # For every header get recommendations and populate the all_results dictionary
+        logger.info("Populating the match dictionary")
         for header in headers:
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
             all_results[header] = organized_data
         
         # Get all the vocabularies from the request data
+        logger.info("Retrieve vocabulary list")
         vocabs = get_vocabs(all_results)
 
         # Calculate average score for every vocabulary
+        logger.info("Compute average score")
         scores = get_average_score(vocabs, all_results)
 
         # Find best vocabularies according to combiSQORE 
+        logger.info("Calculate Combi Score")
         combi_score_vocabularies = calculate_combi_score(all_results, scores)
         sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
         
