@@ -52,30 +52,30 @@
         "primaryKey": "personID",
         "columns": [
             {
-                "name": "dicom:SequenceItem.PersonIdentificationCodeSequence",
+                "name": "dicom:PersonIdentificationCodeSequence",
                 "datatype": "string",
-                "@id": "http://purl.org/healthcarevocab/v1#SequenceItem.PersonIdentificationCodeSequence",
+                "@id": "http://purl.org/healthcarevocab/v1#PersonIdentificationCodeSequence",
                 "vocab": "dicom",
-                "type": "class",
-                "score": 0.3174554,
+                "type": "property",
+                "score": 0.39816964,
                 "header": "personID"
             },
             {
-                "name": "gndo:surname",
+                "name": "dbpedia-owl:Surname",
                 "datatype": "string",
-                "@id": "http://d-nb.info/standards/elementset/gnd#surname",
-                "vocab": "gndo",
-                "type": "property",
-                "score": 0.82916975,
+                "@id": "http://dbpedia.org/ontology/Surname",
+                "vocab": "dbpedia-owl",
+                "type": "class",
+                "score": 0.5555556,
                 "header": "surname"
             },
             {
-                "name": "dbpedia-owl:populationPctMen",
+                "name": "dbpedia-owl:championInDoubleMale",
                 "datatype": "string",
-                "@id": "http://dbpedia.org/ontology/populationPctMen",
+                "@id": "http://dbpedia.org/ontology/championInDoubleMale",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.19368377,
+                "score": 0.18669683,
                 "header": "male"
             },
             {
@@ -84,7 +84,7 @@
                 "@id": "http://dbpedia.org/ontology/occupation",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.60278124,
+                "score": 0.60033333,
                 "header": "occupation"
             }
         ]

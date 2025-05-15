@@ -419,6 +419,50 @@ class ConverterScreen(Screen):
                 logger.info("Metadata generation failed")
     
 
+    def replace_all(self, headers, all_results, request_results):
+        """
+        Updates the metadata file with best matches for each column.
+        """
+        logger.info("Initilizing replacement")
+        path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
+
+        # Load
+        with open(path, 'r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+
+        logger.info(f"Mode detected: {self.rec_mode}")
+        # Build a lookup dict for quick index access
+        if self.rec_mode == 'Homogenous':
+            index_lookup = {header: idx for header, idx in request_results}
+        else:
+            index_lookup = {header: 0 for header, idx in request_results}
+
+        for column in data.get('tableSchema', {}).get('columns', []):
+            header = column.get('header')
+            if header in all_results and header in index_lookup:
+                match = all_results[header][index_lookup[header]]
+
+                column.update({
+                    'name': match[0][0],     # prefixed name
+                    '@id': match[2][0],      # URI
+                    'vocab': match[1],       # vocabulary.prefix
+                    'type': match[3],        # type
+                    'score': match[4],       # score
+                    'header': header         # original header for traceability
+                })
+
+                logger.info(f"[Metadata Updated] {header} -> {match[0][0]}")
+            else:
+                logger.warning(f"[Match Not Found] for header: {header}")
+
+        # Save
+        with open(path, 'w', encoding='utf-8') as json_file:
+            json.dump(data, json_file, indent=4, ensure_ascii=False)
+            logger.info(f"[Metadata File Written] {path}")
+
+        logger.info("Updating the Screen")
+        self.show_json()
+
     def substitute_recommendations(self, headers, all_results, request_results):
         """
         Updates the metadata file with best matches for each column.
@@ -455,7 +499,6 @@ class ConverterScreen(Screen):
             json.dump(data, json_file, indent=4, ensure_ascii=False)
             logger.info(f"[Metadata File Written] {path}")
 
-        
 
     def save_json(self):
         """
@@ -784,7 +827,8 @@ class ConverterScreen(Screen):
         self.replace_all_button = MDRaisedButton(
             text='Replace All',
             size_hint={0.5, None},
-            pos_hint={'center_x': 0.5}
+            pos_hint={'center_x': 0.5},
+            on_press= lambda x: self.replace_all(headers, all_results, self.request_results)
         )
 
         self.highlight_switch()
