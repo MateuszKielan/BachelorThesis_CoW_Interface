@@ -101,7 +101,7 @@ class DataPopup(FloatLayout):
             column_heads(arr): list of headers
             row_data(arr): list of data row by row
         """
-        self.ids.popup_recommendations.add_widget(Widget(size_hint_y=None, height=20))
+        self.ids.popup_data_container.add_widget(Widget(size_hint_y=None, height=20))
 
         # Define the table
         table = MDDataTable(
@@ -802,20 +802,18 @@ class ConverterScreen(Screen):
         logger.info("Retrieve vocabulary list")
         vocabs = get_vocabs(self.all_results)
 
-        # Calculate average score for every vocabulary
-        logger.info("Compute average score")
-
-        #scores = get_average_score(vocabs, all_results)
-        t = threading.Thread(target=compute_scores, args=(vocabs, self.all_results, score_data))
+        # Calculate average score for every vocabulary -> compute combi sqore
+        logger.info("Compute average score and compute Combi Score")
+        t = threading.Thread(target=self.compute_scores, args=(vocabs, self.all_results))
         t.start()
         t.join()
-        # Find best vocabularies according to combiSQORE 
-        logger.info("Calculate Combi Score")
+
+        #scores = get_average_score(vocabs, all_results)
         #combi_score_vocabularies = calculate_combi_score(all_results, scores)
         #sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
         
         # Retrieve indexes of best matches for every header 
-        self.request_results = retrieve_combiSQORE_recursion(all_results, self.sorted_combi_score_vocabularies, len(headers))
+        self.request_results = retrieve_combiSQORE_recursion(self.all_results, self.sorted_combi_score_vocabularies, len(headers))
         
         logger.info("Request processing finished")
         
@@ -879,10 +877,6 @@ class ConverterScreen(Screen):
         self.ids.request_option_panel.add_widget(self.single_button)
         self.ids.request_option_panel.add_widget(self.homogenous_button)
         self.ids.request_option_panel_under.add_widget(self.replace_all_button)
-
-        # Clear previews widgets
-        #self.ids.csv_preview_container.clear_widgets()
-        #self.ids.csv_preview_container.add_widget(self.csv_table)
 
         # Load Full dataset overview popup
         open_popup = MDRaisedButton(
