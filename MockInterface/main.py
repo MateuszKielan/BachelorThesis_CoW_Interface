@@ -669,6 +669,7 @@ class ConverterScreen(Screen):
         except Exception as e:
             logger.error(f"Error during conversion: {e}")
 
+
     def show_json(self):
         """
         Function show_json that displays the json file in the right section
@@ -889,7 +890,7 @@ class ConverterScreen(Screen):
 
         converter.join()
         query.join()
-
+        
         # Store the display widget
         table = self.ids.vocab_recommender
 

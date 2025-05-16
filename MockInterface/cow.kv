@@ -6,44 +6,56 @@ ScreenManager:
 # File Selection Screen
 <StartingScreen>:
     name: "start"
-    orientation: "vertical"
-    padding: 20
-    spacing: 10
-
     canvas.before:
         Color:
             rgb: 1, 1, 1 
         Rectangle:
             pos: self.pos
             size: self.size
+    FloatLayout:
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: None, None
+            width: 600
+            height: self.minimum_height
+            spacing: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
 
-    Label:
-        text: "Welcome to CoW Interface"
-        color: 0,0,0
-        font_size: 25
-        pos_hint: {"center_x": 0.5, "y": 0.08}
 
-    Button:
-        text: "Select File"
-        size_hint: None, None
-        size: 200, 50
-        pos_hint: {"center_x": 0.5, "y": 0.44}
-        on_press: root.select_file()
+            Label:
+                text: "Welcome to CoW Interface"
+                color: 0,0,0
+                font_size: 25
+                size_hint_y: None
+                height: 40
 
-    Label:
-        id: file_path_label
-        text: "No File Selected"
-        color: 0,0,0
-        size_hint_y: None
-        height: 40
-        pos_hint: {"center_x": 0.5, "y": 0.38}
-    
-    Button:
-        text: "Convert"
-        size_hint: None, None
-        size: 200, 50
-        pos_hint: {"center_x": 0.5, "y": 0.3}
-        on_press: root.switch()
+            MDTextField:
+                id: api_endpoint_data
+                hint_text: "Optional: Insert API endpoint"
+                size_hint: 0.6, None
+                pos_hint: {"center_x": 0.5}
+                height: 40
+
+            Button:
+                text: "Select File"
+                size_hint: None, None
+                size: 200, 50
+                pos_hint: {"center_x": 0.5}
+                on_press: root.select_file()
+
+            Label:
+                id: file_path_label
+                text: "No File Selected"
+                color: 0,0,0
+                size_hint_y: None
+                height: 40
+
+            Button:
+                text: "Convert"
+                size_hint: None, None
+                size: 200, 50
+                pos_hint: {"center_x": 0.5}
+                on_press: root.switch()
 
 # Converter Screen 
 <ConverterScreen>:
