@@ -27,6 +27,7 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
 from kivy.clock import Clock
 from shutil import copyfile
+from kivy.uix.textinput import TextInput
 import threading
 #-----------------------------
 
@@ -100,6 +101,7 @@ class DataPopup(FloatLayout):
             column_heads(arr): list of headers
             row_data(arr): list of data row by row
         """
+        self.ids.popup_recommendations.add_widget(Widget(size_hint_y=None, height=20))
 
         # Define the table
         table = MDDataTable(
@@ -295,6 +297,8 @@ class RecommendationPopup(FloatLayout):
             size_hint_y=None, 
             height=20
         ))
+
+
 
         self.ids.popup_recommendations.add_widget(Label(
             text=f'List of all matches:', 
@@ -735,11 +739,16 @@ class ConverterScreen(Screen):
             table.add_widget(card)
             logger.info("Set of header cards created successfully")
 
-
     def compute_scores(self, vocabs, all_results):
         scores = get_average_score(vocabs, all_results)
         combi_score_vocabularies = calculate_combi_score(all_results, scores)
         self.sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
+
+    def query_linked_open_vocabularies(self, headers, size):
+        for header in headers:
+            recommendations = get_recommendations(header, size)
+            organized_data = organize_results(recommendations)
+            self.all_results[header] = organized_data
 
     def display_recommendation(self, file_path):
         """
@@ -751,21 +760,33 @@ class ConverterScreen(Screen):
         # Initialize a class variable with file path -> reusable in other functions
         self.selected_file = file_path
 
-        # Convert the CSV to metadata JSON 
-        self.convert_with_cow(str(file_path))
-
         # Get the headers from CSV file
         logger.info("Retrieving CSV headers")
         headers = get_csv_headers(str(file_path))
 
+        # Dictionary {header: list of matches}
+        self.all_results = {}
+
         # Set the size of received matches
         size = 20
 
+        # Convert the CSV to metadata JSON 
+        converter = threading.Thread(target=self.convert_with_cow, args=(file_path,))
+        #self.convert_with_cow(str(file_path))
+
+        # For every header get recommendations and populate the all_results dictionary
+        logger.info("Populating the match dictionary")
+        query = threading.Thread(target=self.query_linked_open_vocabularies, args=(headers, size))
+        #self.query_linked_open_vocabularies(headers, size)
+
+        converter.start()
+        query.start()
+
+        converter.join()
+        query.join()
+
         # Store the display widget
         table = self.ids.vocab_recommender
-
-        # Dictionary {header: list of matches}
-        all_results = {}
 
         # List of titles with spacings
         self.list_titles = [
@@ -776,19 +797,14 @@ class ConverterScreen(Screen):
             ('score',dp(60))
         ]
 
-        # For every header get recommendations and populate the all_results dictionary
-        logger.info("Populating the match dictionary")
-        for header in headers:
-            recommendations = get_recommendations(header, size)
-            organized_data = organize_results(recommendations)
-            all_results[header] = organized_data
-        
+
         # Get all the vocabularies from the request data
         logger.info("Retrieve vocabulary list")
-        vocabs = get_vocabs(all_results)
+        vocabs = get_vocabs(self.all_results)
 
         # Calculate average score for every vocabulary
         logger.info("Compute average score")
+
         #scores = get_average_score(vocabs, all_results)
         t = threading.Thread(target=compute_scores, args=(vocabs, self.all_results, score_data))
         t.start()
@@ -802,10 +818,7 @@ class ConverterScreen(Screen):
         self.request_results = retrieve_combiSQORE_recursion(all_results, self.sorted_combi_score_vocabularies, len(headers))
         
         logger.info("Request processing finished")
-
-        # Create buttons for every header
-        self.create_header_buttons(headers, all_results, table)
-
+        
         # Load CSV data for table
         with open(str(file_path), newline='', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
@@ -814,17 +827,17 @@ class ConverterScreen(Screen):
                 return
 
         # Seperate headers and row data
-        column_heads = [(header, dp(25)) for header in rows[0]]
+        self.column_heads = [(header, dp(25)) for header in rows[0]]
         table_rows = rows[1:11] 
-        row_data = rows [1:]
+        self.row_data = rows [1:]
 
         # Remove old tables
         if hasattr(self, 'csv_table'):
-            self.remove_widget(self.csv_table)
+            self.ids.csv_preview_container.remove_widget(self.csv_table)
 
         # Create data overwiew table
         self.csv_table = MDDataTable(
-            column_data=column_heads,
+            column_data=self.column_heads,
             row_data=table_rows,
             size_hint=(1, 1),
             pos_hint={"center_x": 0.5, "center_y": 0.5},
@@ -832,21 +845,26 @@ class ConverterScreen(Screen):
             rows_num = 10
         )
 
+        #self.create_preview_table(file_path)
+        # Create buttons for every header
+        self.create_header_buttons(headers, self.all_results, table)
+
+
         # Show JSON file in the right section
         json_path = 'examples/metadata.json'
-        self.substitute_recommendations(headers, all_results, self.request_results)
+        self.substitute_recommendations(headers, self.all_results, self.request_results)
         self.show_json()
 
         # Add two buttons to toggle between Single and Homogenous texts 
         self.single_button = MDRaisedButton(
             text='Single', 
-            on_press=lambda x: self.switch_mode('Single', headers, all_results, table), 
+            on_press=lambda x: self.switch_mode('Single', headers, self.all_results, table), 
             size_hint={0.5, None}
         )
 
         self.homogenous_button = MDRaisedButton(
             text='Homogenous',
-            on_press=lambda x: self.switch_mode('Homogenous', headers, all_results, table),
+            on_press=lambda x: self.switch_mode('Homogenous', headers, self.all_results, table),
             size_hint={0.5, None}
         )
 
@@ -854,7 +872,7 @@ class ConverterScreen(Screen):
             text='Replace All',
             size_hint={0.5, None},
             pos_hint={'center_x': 0.5},
-            on_press= lambda x: self.replace_all(headers, all_results, self.request_results)
+            on_press= lambda x: self.replace_all(headers, self.all_results, self.request_results)
         )
 
         self.highlight_switch()
@@ -863,17 +881,19 @@ class ConverterScreen(Screen):
         self.ids.request_option_panel_under.add_widget(self.replace_all_button)
 
         # Clear previews widgets
-        self.ids.csv_preview_container.clear_widgets()
-        self.ids.csv_preview_container.add_widget(self.csv_table)
+        #self.ids.csv_preview_container.clear_widgets()
+        #self.ids.csv_preview_container.add_widget(self.csv_table)
 
         # Load Full dataset overview popup
         open_popup = MDRaisedButton(
             text='Load Full Dataset', 
-            on_press=lambda x: self.show_popup(column_heads,row_data), 
+            on_press=lambda x: self.show_popup(self.column_heads,self.row_data), 
             size_hint=(0.3, None),
             pos_hint={"center_x": 0.5}
         )
-        
+
+        self.ids.csv_preview_container.clear_widgets()
+        self.ids.csv_preview_container.add_widget(self.csv_table)
         self.ids.csv_preview_container.add_widget(open_popup)
 
 
