@@ -148,8 +148,14 @@ class DataPopup(FloatLayout):
 class RecommendationPopup(FloatLayout):
     """
     Class RecommendationPopup that implements the logic behind Recommendation popups for every header 
-    """
 
+    Attributes:
+        header: current table header
+        organized_data: match data for the header
+        list_titles: list of match parameters e.g prefixedName, uri, score...
+        rec_mode: mode of recommendation (Single or Homogenous)
+        selected_file: path to the selected file
+    """
 
     def __init__(self, header, organized_data, list_titles, request_results, rec_mode, selected_file, **kwargs):
         super().__init__(**kwargs)
@@ -157,9 +163,14 @@ class RecommendationPopup(FloatLayout):
         self.selected_file = selected_file
         self.build_table(header, organized_data, list_titles, request_results, rec_mode)
 
+
     def insert_instance(self, table, row):
         """
         Inserts the selected match into the metadata for the current header.
+
+        Params:
+            table: full table data
+            row: data of the selected row
         """
         def clean(text):
             """
@@ -174,9 +185,10 @@ class RecommendationPopup(FloatLayout):
         rdf_type = clean(row[3])
         score = float(row[4])
 
-        # choose the data path with only the name
+        # Choose the data path with only the name
         data_path = self.selected_file.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
+        # Open the csv file for reading
         with open(data_path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
@@ -194,9 +206,10 @@ class RecommendationPopup(FloatLayout):
                     'score': score    # score
                 })
 
-                updated = True
+                updated = True # If replaced update the flag
                 logger.info(f"[Inserted] {self.header} -> {name} ({vocab})")
 
+        # Display warning
         if not updated:
             logger.warning(f"Insert Failed: Header '{self.header}' not found in metadata.")
 
@@ -208,11 +221,10 @@ class RecommendationPopup(FloatLayout):
         # After Insert is Finished close the Popup
         self.insert_popup.dismiss()
 
-        # Refresh preview
+        # Refresh JSON preview
         app = MDApp.get_running_app()
         app.root.get_screen("converter").show_json()
         logger.info("Refreshed JSON Preview Screen")
-
 
 
     def show_recommendation_action_menu(self, instance_table, instance_row):
@@ -253,6 +265,7 @@ class RecommendationPopup(FloatLayout):
         # Open the popup window 
         self.insert_popup.open()
 
+
     def build_table(self, header, organized_data, list_titles, request_results, rec_mode):
         """
         Function build_table that builds the table for every header.
@@ -268,16 +281,17 @@ class RecommendationPopup(FloatLayout):
         # Clear all  previous widgets
         self.ids.popup_recommendations.clear_widgets()
 
+        # Update the class-wide variable with the received header
         self.header = header
 
         # Extract the best match index from request_results for the appropriate header
         index = [item[1] for item in request_results if item[0] == header]
 
         # Extract the best recommendation for both Single and Homogenous requests
-        best_match_data_homogenous = [organized_data[index[0]]]
-        best_match_data_single = [organized_data[0]]
+        best_match_data_homogenous = [organized_data[index[0]]]   # Retrieve the match indicated by the index
+        best_match_data_single = [organized_data[0]]              # Since matches are already sorted retrieve the first one
 
-        # Display the best_table according to mode 
+        # Display the best match table according to mode 
         if rec_mode == 'Homogenous': # If mode is Homogenous
             best_table = MDDataTable(
                 column_data = list_titles,
@@ -297,7 +311,7 @@ class RecommendationPopup(FloatLayout):
                 use_pagination=False
             )
 
-        # Define the table of Matches
+        # Define the table of all matches
         table = MDDataTable(
             column_data=list_titles,
             row_data=organized_data,
@@ -315,6 +329,8 @@ class RecommendationPopup(FloatLayout):
             font_size='20sp', 
             size_hint_y=0.05
         ))
+
+        # Add best table to the widget
         self.ids.popup_recommendations.add_widget(best_table)
         
         # Create spacing Widget
@@ -323,19 +339,21 @@ class RecommendationPopup(FloatLayout):
             height=20
         ))
 
-
-
+        # Add the title
         self.ids.popup_recommendations.add_widget(Label(
             text=f'List of all matches:', 
             color=(1, 1, 1, 1), 
             font_size='20sp', 
             size_hint_y=0.05
         ))
+
+        # Add all matches table to the widget
         self.ids.popup_recommendations.add_widget(table)
+
+        # Bind the insert functionality to every row of both tables 
         table.bind(on_check_press=self.show_recommendation_action_menu)
         best_table.bind(on_check_press=self.show_recommendation_action_menu)
 
-        # Implement Inserting Your own instance HERE
 
     def dismiss_popup(self):
         """
@@ -355,6 +373,9 @@ class RecommendationPopup(FloatLayout):
 class ConverterScreen(Screen):
     """
     Class ConverterScreen that implements logic behind the conversion layout
+
+    Attributes:
+        rec_mode: indicates the request method, singular or homogenous
     """
 
     def __init__(self, **kwargs):
@@ -366,7 +387,11 @@ class ConverterScreen(Screen):
         """
         Function show_request_help_popup thta displayes help information about the type of requests made.
         """
+
+        # Create a box layout for the helper content
         content = BoxLayout(orientation='vertical')
+
+        # insert the text of the helper button
         help_text = (
         "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently. "
         "This is useful when your data columns represent different types of information and you want the most accurate match for each.\n\n"
@@ -374,6 +399,7 @@ class ConverterScreen(Screen):
         "This is useful when your data is thematically consistent and you prefer using one shared vocabulary for easier semantic integration."
         )
 
+        # Bind the text to the Label
         label = Label(
             text=help_text,
             markup=True,
@@ -385,11 +411,13 @@ class ConverterScreen(Screen):
 
         label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
 
-        scroll = ScrollView(size_hint=(1, 1))
+        # Add the ScrollView property to make the popup more responsive
+        scroll = ScrollView(size_hint=(1, 1)) # Adjust it for the full page
         scroll.add_widget(label)
 
         content.add_widget(scroll)
 
+        # Initialize Popup
         popup = Popup(
             title="Help: Request Types",
             content=content,
@@ -398,6 +426,7 @@ class ConverterScreen(Screen):
             auto_dismiss=True,
         )
 
+        # Open the popup
         popup.open()
 
     def show_recommendation_help_popup(self):
@@ -405,8 +434,11 @@ class ConverterScreen(Screen):
         Function show_recommendation_help_popup that displays help information about the recommendation section.
         """
         content = BoxLayout(orientation='vertical')
+
+        # Help text 
         help_text = "Each card represents a column from your uploaded CSV file. It shows the column name, its detected data type, and how many unique values it contains. Use the 'Show Matches' button to view vocabulary suggestions tailored for that specific column."
         
+        # Bind text to the Label
         label = Label(
             text=help_text,
             markup=True,
@@ -418,11 +450,14 @@ class ConverterScreen(Screen):
 
         label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
 
+        # Add Scroll ability for enhanced responsiveness
         scroll = ScrollView(size_hint=(1, 1))
         scroll.add_widget(label)
 
+        # Add property to the main window
         content.add_widget(scroll)
 
+        # Instantiate Popup
         popup = Popup(
             title="Help: Recommendations",
             content=content,
@@ -431,6 +466,7 @@ class ConverterScreen(Screen):
             auto_dismiss=True,
         )
 
+        # Open popup
         popup.open()
 
 
@@ -443,14 +479,20 @@ class ConverterScreen(Screen):
         
         Utilizes build_schema function from cow_csvw
         """
+
+        # convert string to a Path object for further processing
         input_path = Path(csv_path)
+
+        # Retrieve the whole path + the retrieved file name with the file type for CoW conversion
+        #   The final path looks as following: csvFileName.csv-metadata.json
         output_metadata_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
+        # Check if the file was already generated
         if output_metadata_path.exists():
             logger.info("Metadata file already exists. Loading data.")
         else:
             try:
-                build_schema(str(input_path), str(output_metadata_path))
+                build_schema(str(input_path), str(output_metadata_path)) # Build the mapping file using the CoW implementation
                 logger.info(f"Saving metadata at {str(output_metadata_path)}")
             except Exception as e:
                 logger.info("Metadata generation failed")
@@ -461,25 +503,32 @@ class ConverterScreen(Screen):
         Updates the metadata file with best matches for each column.
         """
         logger.info("Initilizing replacement")
+
+        # Find the metadata path without the extension
         path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
-        # Load
+        # Load the file
         with open(path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
         logger.info(f"Mode detected: {self.rec_mode}")
 
-        # Build a lookup map for quick index access
+        # Build a lookup map for quick index access depending on the request mode 
         if self.rec_mode == 'Homogenous':
-            index_lookup = {header: idx for header, idx in request_results}
+            index_lookup = {header: idx for header, idx in request_results} # If homogenous than retrieve index for every header
         else:
-            index_lookup = {header: 0 for header, idx in request_results}
+            index_lookup = {header: 0 for header, idx in request_results} # If single take the first match
 
+        # Retrieve the column names from tableSchema
         for column in data.get('tableSchema', {}).get('columns', []):
+            # Get the header name for mapping purposes
             header = column.get('header')
+
+            # If header is present in both all_results and index_lookup
             if header in all_results and header in index_lookup:
                 match = all_results[header][index_lookup[header]]
-
+                
+                # Update the data in the file 
                 column.update({
                     'name': match[0][0],     # prefixed name
                     '@id': match[2][0],      # URI
@@ -493,22 +542,31 @@ class ConverterScreen(Screen):
             else:
                 logger.warning(f"Match Not Found for header: {header}")
 
-        # Save
+        # Save the changes
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
             logger.info(f"Metadata File Written {path}")
 
         logger.info("Updating the Screen")
+
+        # Update the json preview
         self.show_json()
 
 
     def substitute_recommendations(self, headers, all_results, request_results):
         """
         Updates the metadata file with best matches for each column.
+
+        Params:
+            headers: list of headers
+            all_results: dictionary of header: list of matches
+            request_results: array of tuples containt the header and corresponding best match
         """
+
+        # Retrieve the file path without the type name 
         path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
-        # Load
+        # Open the file 
         with open(path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
@@ -546,14 +604,17 @@ class ConverterScreen(Screen):
         # Get the path of the metadata file 
         path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
-
+        # Retieve the current text in the JSON 
         data = self.ids.json_editor.text
         data = json.loads(data)
 
+        # Save the Retrieved data into the fiel 
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=2, ensure_ascii=False)
 
         logger.info("File saved Successfully")
+
+        # Update the JSON preview
         self.show_json()
 
 
