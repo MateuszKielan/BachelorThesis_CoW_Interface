@@ -739,6 +739,7 @@ class ConverterScreen(Screen):
             table.add_widget(card)
             logger.info("Set of header cards created successfully")
 
+
     def query_linked_open_vocabularies(self, headers, size):
         for header in headers:
             recommendations = get_recommendations(header, size)
@@ -810,10 +811,7 @@ class ConverterScreen(Screen):
         self.request_results = retrieve_combiSQORE_recursion(self.all_results, sorted_combi_score_vocabularies, len(headers))
         
         logger.info("Request processing finished")
-
-        # Create buttons for every header
-        self.create_header_buttons(headers, self.all_results, table)
-
+        
         # Load CSV data for table
         with open(str(file_path), newline='', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
@@ -822,23 +820,28 @@ class ConverterScreen(Screen):
                 return
 
         # Seperate headers and row data
-        column_heads = [(header, dp(25)) for header in rows[0]]
+        self.column_heads = [(header, dp(25)) for header in rows[0]]
         table_rows = rows[1:11] 
-        row_data = rows [1:]
+        self.row_data = rows [1:]
 
         # Remove old tables
         if hasattr(self, 'csv_table'):
-            self.remove_widget(self.csv_table)
+            self.ids.csv_preview_container.remove_widget(self.csv_table)
 
         # Create data overwiew table
         self.csv_table = MDDataTable(
-            column_data=column_heads,
+            column_data=self.column_heads,
             row_data=table_rows,
             size_hint=(1, 1),
             pos_hint={"center_x": 0.5, "center_y": 0.5},
             use_pagination=True,
             rows_num = 10
         )
+
+        #self.create_preview_table(file_path)
+        # Create buttons for every header
+        self.create_header_buttons(headers, self.all_results, table)
+
 
         # Show JSON file in the right section
         json_path = 'examples/metadata.json'
@@ -871,17 +874,19 @@ class ConverterScreen(Screen):
         self.ids.request_option_panel_under.add_widget(self.replace_all_button)
 
         # Clear previews widgets
-        self.ids.csv_preview_container.clear_widgets()
-        self.ids.csv_preview_container.add_widget(self.csv_table)
+        #self.ids.csv_preview_container.clear_widgets()
+        #self.ids.csv_preview_container.add_widget(self.csv_table)
 
         # Load Full dataset overview popup
         open_popup = MDRaisedButton(
             text='Load Full Dataset', 
-            on_press=lambda x: self.show_popup(column_heads,row_data), 
+            on_press=lambda x: self.show_popup(self.column_heads,self.row_data), 
             size_hint=(0.3, None),
             pos_hint={"center_x": 0.5}
         )
-        
+
+        self.ids.csv_preview_container.clear_widgets()
+        self.ids.csv_preview_container.add_widget(self.csv_table)
         self.ids.csv_preview_container.add_widget(open_popup)
 
 
