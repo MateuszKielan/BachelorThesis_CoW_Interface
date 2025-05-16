@@ -39,7 +39,13 @@ Window.maximize()
 
 class StartingScreen(Screen):
     """
-    Class StartingScreen that implements logic begind Starting Screen
+    Class StartingScreen that implements logic behind file selection.
+
+    1. This class corresponds to the first screen user sees when opening the CoW Interface.
+    2. After user selects the file and presses "Convert" button the system switches to ConverterScreen class
+
+    Attributes:
+        None
     """
 
     def __init__(self, **kwargs):
@@ -52,6 +58,7 @@ class StartingScreen(Screen):
         """
         logger.info("Opening the file chooser")
 
+        # Utilizing external library filechooser
         filechooser.open_file(on_selection=self.select_store)
         
 
@@ -63,6 +70,7 @@ class StartingScreen(Screen):
         Params:
             selection (arr): array of length 1 with a selected file
         """
+        # If user has Selected the file then update the Path and display the label of the file name of the screen
         if selection:
             self.selected_file = Path(selection[0])
             file_path_name = str(Path(selection[0]).name)
@@ -75,16 +83,20 @@ class StartingScreen(Screen):
             1. Switches the screen to converter_screen
             2. Passes the file path to the converter_screen
         """
-        logger.info("Switching to Converter Screen")
 
+        # Invoking screen manager to switch to converter screen
         converter_screen = self.manager.get_screen("converter")
         converter_screen.display_recommendation(self.selected_file)
-        self.manager.current = "converter"
+        self.manager.current = "converter" # update current screen to converter screen
+
+        logger.info("Switching to Converter Screen")
 
 
 class DataPopup(FloatLayout):
     """
-    Class DataPopup that defines a popup page that displays full csv data table
+    Class DataPopup that defines a popup page that displays full csv data table.
+
+    By default it invokes build_table function that loads whole dataset into a MDDataTable.
     """
 
 
@@ -101,16 +113,17 @@ class DataPopup(FloatLayout):
             column_heads(arr): list of headers
             row_data(arr): list of data row by row
         """
+        # Add a spacing widget
         self.ids.popup_data_container.add_widget(Widget(size_hint_y=None, height=20))
 
         # Define the table
         table = MDDataTable(
-            column_data=column_heads,
-            row_data=row_data,
-            size_hint=(0.9, 0.85),
-            pos_hint={"center_x": 0.5, "center_y": 0.5},
-            use_pagination=True,
-            rows_num=20
+            column_data=column_heads,                     # column data 
+            row_data=row_data,                            # row data
+            size_hint=(0.9, 0.85),                        # size
+            pos_hint={"center_x": 0.5, "center_y": 0.5},  # position
+            use_pagination=True,                          # enable splitting data into pages
+            rows_num=20                                   # maximum row numbers per page
         )
 
         # Clear the previous table on launch and add the new table to the widget
@@ -122,10 +135,11 @@ class DataPopup(FloatLayout):
         """
         Function dismiss_popup that closes the popup.
         """
+        # Retrieve the parent of the popup
         parent = self.parent
         while parent:
             if isinstance(parent, Popup):
-                parent.dismiss()
+                parent.dismiss()        # close the popup
                 break
             parent = parent.parent
 
@@ -148,6 +162,9 @@ class RecommendationPopup(FloatLayout):
         Inserts the selected match into the metadata for the current header.
         """
         def clean(text):
+            """
+            Function clean that cleans the inserted results from unnecessary brackets
+            """
             return text.translate(str.maketrans('', '', "[]'"))
 
         # Parse and clean the row values
@@ -157,32 +174,40 @@ class RecommendationPopup(FloatLayout):
         rdf_type = clean(row[3])
         score = float(row[4])
 
+        # choose the data path with only the name
         data_path = self.selected_file.parent / f"{self.selected_file.name[:-4]}-metadata.json"
 
         with open(data_path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
+        # Initialize the flag to track success of the update
         updated = False
+
+        # Loop through all columns in the tableSchema
         for column in data.get('tableSchema', {}).get('columns', []):
             if column.get('header') == self.header:
                 column.update({
-                    'name': name,
-                    '@id': uri,
-                    'vocab': vocab,
-                    'type': rdf_type,
-                    'score': score
+                    'name': name,     # prefixed name 
+                    '@id': uri,       # uri
+                    'vocab': vocab,   # vocabulary 
+                    'type': rdf_type, # rdf type
+                    'score': score    # score
                 })
+
                 updated = True
                 logger.info(f"[Inserted] {self.header} -> {name} ({vocab})")
 
         if not updated:
             logger.warning(f"Insert Failed: Header '{self.header}' not found in metadata.")
 
+        # Save the modified data to the file 
         with open(data_path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
             logger.info(f"Metadata File Written: {data_path}")
 
+        # After Insert is Finished close the Popup
         self.insert_popup.dismiss()
+
         # Refresh preview
         app = MDApp.get_running_app()
         app.root.get_screen("converter").show_json()
@@ -443,7 +468,8 @@ class ConverterScreen(Screen):
             data = json.load(json_file)
 
         logger.info(f"Mode detected: {self.rec_mode}")
-        # Build a lookup dict for quick index access
+
+        # Build a lookup map for quick index access
         if self.rec_mode == 'Homogenous':
             index_lookup = {header: idx for header, idx in request_results}
         else:
@@ -739,16 +765,34 @@ class ConverterScreen(Screen):
             table.add_widget(card)
             logger.info("Set of header cards created successfully")
 
+
     def compute_scores(self, vocabs, all_results):
+        """
+        Function compute_scores that computes average scores in a separate thread. 
+
+        Params:
+            vocabs - list of vocabularies
+            all_results - dictionary with the headers and corresponding matches
+
+        """
         scores = get_average_score(vocabs, all_results)
         combi_score_vocabularies = calculate_combi_score(all_results, scores)
         self.sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
 
+
     def query_linked_open_vocabularies(self, headers, size):
+        """
+        Function query_linked_open_vocabularies that sends request to LOV API
+
+        Params:
+            headers - list of headerss
+            size - maximum number of matches
+        """
         for header in headers:
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
             self.all_results[header] = organized_data
+
 
     def display_recommendation(self, file_path):
         """
