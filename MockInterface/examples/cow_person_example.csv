@@ -1,21 +1,21 @@
 personID,surname,male,occupation
-012,Fumes,0,chimney sweep
-013,Careful,1,nurse
+011,Fumes,0,chimney sweep
+012,Careful,1,nurse
+013,Bushman,1,shrubber
+014,Oak,0,woodturner
+015,Fumes,0,chimney sweep
+016,Careful,1,nurse
 017,Bushman,1,shrubber
-019,Oak,0,woodturner
-012,Fumes,0,chimney sweep
-013,Careful,1,nurse
-017,Bushman,1,shrubber
-019,Oak,0,woodturner
-012,Fumes,0,chimney sweep
-013,Careful,1,nurse
-017,Bushman,1,shrubber
-019,Oak,0,woodturner
-012,Fumes,0,chimney sweep
-013,Careful,1,nurse
-017,Bushman,1,shrubber
-019,Oak,0,woodturner
-012,Fumes,0,chimney sweep
-013,Careful,1,nurse
-017,Bushman,1,shrubber
-019,Oak,0,woodturner
+018,Oak,0,woodturner
+019,Fumes,0,chimney sweep
+020,Careful,1,nurse
+021,Bushman,1,shrubber
+022,Oak,0,woodturner
+023,Fumes,0,chimney sweep
+024,Careful,1,nurse
+025,Bushman,1,shrubber
+026,Oak,0,woodturner
+027,Fumes,0,chimney sweep
+028,Careful,1,nurse
+029,Bushman,1,shrubber
+030,Oak,0,woodturner

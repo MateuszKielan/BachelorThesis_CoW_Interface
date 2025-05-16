@@ -27,6 +27,7 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
 from kivy.clock import Clock
 from shutil import copyfile
+import threading
 #-----------------------------
 
 # Set up the logger
@@ -735,6 +736,11 @@ class ConverterScreen(Screen):
             logger.info("Set of header cards created successfully")
 
 
+    def compute_scores(self, vocabs, all_results):
+        scores = get_average_score(vocabs, all_results)
+        combi_score_vocabularies = calculate_combi_score(all_results, scores)
+        self.sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
+
     def display_recommendation(self, file_path):
         """
         Function display_recommnedation:
@@ -783,15 +789,17 @@ class ConverterScreen(Screen):
 
         # Calculate average score for every vocabulary
         logger.info("Compute average score")
-        scores = get_average_score(vocabs, all_results)
-
+        #scores = get_average_score(vocabs, all_results)
+        t = threading.Thread(target=compute_scores, args=(vocabs, self.all_results, score_data))
+        t.start()
+        t.join()
         # Find best vocabularies according to combiSQORE 
         logger.info("Calculate Combi Score")
-        combi_score_vocabularies = calculate_combi_score(all_results, scores)
-        sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
+        #combi_score_vocabularies = calculate_combi_score(all_results, scores)
+        #sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
         
         # Retrieve indexes of best matches for every header 
-        self.request_results = retrieve_combiSQORE_recursion(all_results, sorted_combi_score_vocabularies, len(headers))
+        self.request_results = retrieve_combiSQORE_recursion(all_results, self.sorted_combi_score_vocabularies, len(headers))
         
         logger.info("Request processing finished")
 
