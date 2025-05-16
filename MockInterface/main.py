@@ -60,7 +60,6 @@ class StartingScreen(Screen):
 
         # Utilizing external library filechooser
         filechooser.open_file(on_selection=self.select_store)
-        
 
     def select_store(self, selection):
         """
@@ -83,6 +82,9 @@ class StartingScreen(Screen):
             1. Switches the screen to converter_screen
             2. Passes the file path to the converter_screen
         """
+        # Retrieve the API endpoint
+        text = self.ids.api_endpoint_data.text
+        logger.info(f"API endpoint: {text}")
 
         # Invoking screen manager to switch to converter screen
         converter_screen = self.manager.get_screen("converter")
@@ -890,7 +892,7 @@ class ConverterScreen(Screen):
 
         converter.join()
         query.join()
-        
+
         # Store the display widget
         table = self.ids.vocab_recommender
 
