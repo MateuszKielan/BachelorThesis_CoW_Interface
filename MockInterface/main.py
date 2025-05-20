@@ -113,9 +113,10 @@ class StartingScreen(Screen):
                 self.manager.current = "converter" # update current screen to converter screen
                 logger.info("Switching to Converter Screen")
             else:
+                logger.warning("File is empty")
                 self.show_warning("The file is empty. Please select a different file.")
         else:
-            logger.warning(f'No file selected')
+            logger.warning('No file selected')
             self.show_warning("Please select a file")
 
 
