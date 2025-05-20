@@ -58,7 +58,7 @@ class StartingScreen(Screen):
         """
         Function select_file that opens filechooser.
         """
-        logger.info("Opening the file chooser")
+        logger.info("File chooser: Opening...")
 
         # Utilizing external library filechooser
         filechooser.open_file(on_selection=self.select_store)
@@ -77,7 +77,7 @@ class StartingScreen(Screen):
             self.selected_file = Path(selection[0])
             file_path_name = str(Path(selection[0]).name)
             self.ids.file_path_label.text = file_path_name
-
+        logger.info("File Chooser: Closing...")
 
     def show_warning(self, message):
         """
@@ -112,7 +112,7 @@ class StartingScreen(Screen):
                 converter_screen = self.manager.get_screen("converter")
                 converter_screen.display_recommendation(self.selected_file)
                 self.manager.current = "converter" # update current screen to converter screen
-                logger.info("Switching to Converter Screen")
+                logger.info("Screen Manager: Switching to Converter Screen")
             else:
                 logger.warning("File is empty")
                 self.show_warning("The file is empty. Please select a different file.")
@@ -253,7 +253,7 @@ class RecommendationPopup(FloatLayout):
         # Refresh JSON preview
         app = MDApp.get_running_app()
         app.root.get_screen("converter").show_json()
-        logger.info("Refreshed JSON Preview Screen")
+        logger.info("Converter Screen: Refreshed JSON Preview Screen")
 
 
     def show_recommendation_action_menu(self, instance_table, instance_row):
@@ -265,9 +265,9 @@ class RecommendationPopup(FloatLayout):
             instance_row: row data
         """
         # Logging the user action for debugging
-        logger.info("Row clicked")
-        logger.info(f"Table Data: {instance_table.row_data}")
-        logger.info(f"Row Data {instance_row}")
+        logger.info("Recommendation Popup: Row clicked")
+        logger.info(f"Recommendation Popup: Table Data - {instance_table.row_data}")
+        logger.info(f"Recommendation Popup: Row Data - {instance_row}")
 
         # Create the widget
         content = BoxLayout(orientation='vertical', size_hint= (1,1))
@@ -530,20 +530,20 @@ class ConverterScreen(Screen):
 
         # Check if the file was already generated
         if output_metadata_path.exists():
-            logger.info("Metadata file already exists. Loading data.")
+            logger.info("CoW: Metadata file already exists. Loading data.")
         else:
             try:
                 build_schema(str(input_path), str(output_metadata_path)) # Build the mapping file using the CoW implementation
-                logger.info(f"Saving metadata at {str(output_metadata_path)}")
+                logger.info(f"CoW: Saving metadata at {str(output_metadata_path)}")
             except Exception as e:
-                logger.info("Metadata generation failed")
+                logger.info("CoW: Metadata generation failed")
     
 
     def replace_all(self, headers, all_results, request_results):
         """
         Updates the metadata file with best matches for each column.
         """
-        logger.info("Initilizing replacement")
+        logger.info("System: Initilizing replacement")
 
         # Find the metadata path without the extension
         path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
@@ -552,7 +552,7 @@ class ConverterScreen(Screen):
         with open(path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
-        logger.info(f"Mode detected: {self.rec_mode}")
+        logger.info(f"System: Mode detected: {self.rec_mode}")
 
         # Build a lookup map for quick index access depending on the request mode 
         if self.rec_mode == 'Homogenous':
@@ -579,16 +579,16 @@ class ConverterScreen(Screen):
                     'header': header         # original header for traceability
                 })
 
-                logger.info(f"Metadata Updated {header} -> {match[0][0]}")
+                logger.info(f"System: Metadata Updated {header} -> {match[0][0]}")
             else:
-                logger.warning(f"Match Not Found for header: {header}")
+                logger.warning(f"System: Match Not Found for header: {header}")
 
         # Save the changes
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"Metadata File Written {path}")
+            logger.info(f"System: Metadata File Written {path}")
 
-        logger.info("Updating the Screen")
+        logger.info("Converter Screen: Updating the Screen")
 
         # Update the json preview
         self.show_json()
@@ -628,14 +628,14 @@ class ConverterScreen(Screen):
                     'header': header         # original header for traceability
                 })
 
-                logger.info(f"[Metadata Updated] {header} -> {match[0][0]}")
+                logger.info(f"System: Metadata Updated - {header} -> {match[0][0]}")
             else:
-                logger.warning(f"[Match Not Found] for header: {header}")
+                logger.warning(f"System: Match Not Found - for header: {header}")
 
         # Save
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"[Metadata File Written] {path}")
+            logger.info(f"System: Metadata File Written - {path}")
 
 
     def save_json(self):
@@ -653,7 +653,7 @@ class ConverterScreen(Screen):
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=2, ensure_ascii=False)
 
-        logger.info("File saved Successfully")
+        logger.info("System: File saved Successfully")
 
         # Update the JSON preview
         self.show_json()
@@ -672,17 +672,17 @@ class ConverterScreen(Screen):
 
         # Check if the file exists
         if not self.selected_file.exists():
-            logger.error(f"CSV file does not exist at: {self.selected_file}")
+            logger.error(f"System: CSV file does not exist at: {self.selected_file}")
         else:
-            logger.info(f"CSV file does exist at: {self.selected_file}")
+            logger.info(f"System: CSV file does exist at: {self.selected_file}")
 
         metadata_file = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
         # Check if the metadata file exists
         if not metadata_file.exists():
-            logger.error(f"Metadata file not found: {metadata_file}")
+            logger.error(f"System: Metadata file not found: {metadata_file}")
         else:
-            logger.info(f"Metadata file found: {metadata_file}")
+            logger.info(f"System: Metadata file found: {metadata_file}")
 
         # INEFFICIENT -> CHANGE
         try:
@@ -694,7 +694,7 @@ class ConverterScreen(Screen):
             # Ensure CoW finds the metadata file where it expects it
             if not cow_expected_path.exists():
                 copyfile(correct_metadata_path, cow_expected_path)
-                logger.info(f"Copied metadata to CoW-expected path: {cow_expected_path}")
+                logger.info(f"System: Copied metadata to CoW-expected path: {cow_expected_path}")
             
             # Instantiate and run the converter
             converter = CSVWConverter(
@@ -705,10 +705,10 @@ class ConverterScreen(Screen):
 
             converter.convert()
 
-            logger.info("Conversion to N-Quads completed successfully.")
+            logger.info("CoW: Conversion to N-Quads completed successfully.")
 
         except Exception as e:
-            logger.error(f"Error during conversion: {e}")
+            logger.error(f"CoW: Error during conversion: {e}")
 
 
     def show_json(self):
@@ -729,7 +729,7 @@ class ConverterScreen(Screen):
 
         # Add to the editor widget
         self.ids.json_editor.text = display_json
-        logger.info("Displaying File")
+        logger.info("Converter Screen: Displaying File")
 
 
     def show_popup(self, column_heads, row_data):
@@ -749,7 +749,7 @@ class ConverterScreen(Screen):
         # Initialize and open window
         popupWindow = Popup(title="CSV Data", content=show, size_hint=(1, 1))
 
-        logger.info("Loading the full CSV dataset")
+        logger.info("Converter Screen: Loading the full CSV dataset")
         popupWindow.open()
     
 
@@ -768,7 +768,7 @@ class ConverterScreen(Screen):
         # Initialize and open window
         popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
 
-        logger.info("Opening the Recommendation Popup")
+        logger.info("Converter Screen: Opening the Recommendation Popup")
         popupWindow.open()
 
 
@@ -777,11 +777,11 @@ class ConverterScreen(Screen):
         Function highlight_switch that changes the color of the request buttons when clicking.
         """
         if self.rec_mode == "Single":
-            logger.info("Highliting Choice: [Single Request]")
+            logger.info("Converter Screen: Highliting Choice- Single Request")
             self.single_button.md_bg_color = (0.2, 0.6, 0.86, 1) 
             self.homogenous_button.md_bg_color = (0.4, 0.4, 0.4, 1)  
         elif self.rec_mode == "Homogenous":
-            logger.info("Highliting Choice: [Homogenous Request]")
+            logger.info("Converter Screen: Highliting Choice- Homogenous Request")
             self.single_button.md_bg_color = (0.4, 0.4, 0.4, 1) 
             self.homogenous_button.md_bg_color = (0.2, 0.6, 0.86, 1)
 
@@ -798,11 +798,11 @@ class ConverterScreen(Screen):
         self.rec_mode = choice
 
         # Reload the cards 
-        logger.info("Reloading the header cards")
+        logger.info("Converter Screen: Reloading the header cards")
         self.create_header_buttons(headers, all_results, table)
 
         self.highlight_switch()
-        logger.info(f"Mode switched to {self.rec_mode} requests")
+        logger.info(f"Converter Screen: Mode switched to {self.rec_mode} requests")
 
 
     def create_header_buttons(self, headers, all_results, table):
@@ -866,7 +866,7 @@ class ConverterScreen(Screen):
 
             table.add_widget(Widget(size_hint_y=None, height=40))
             table.add_widget(card)
-            logger.info("Set of header cards created successfully")
+            logger.info("Converter Screen: Set of header cards created successfully")
 
 
     def compute_scores(self, vocabs, all_results):
@@ -935,7 +935,7 @@ class ConverterScreen(Screen):
         rows = open_csv(file_path)
 
         # Get the headers from CSV file
-        logger.info("Retrieving CSV headers")
+        logger.info("Requests: Retrieving CSV headers")
         headers = get_csv_headers(str(file_path))
 
         # Dictionary {header: list of matches}
@@ -949,7 +949,7 @@ class ConverterScreen(Screen):
         #self.convert_with_cow(str(file_path))
 
         # For every header get recommendations and populate the all_results dictionary
-        logger.info("Populating the match dictionary")
+        logger.info("Requests: Populating the match dictionary")
         query = Thread(target=self.query_linked_open_vocabularies, args=(headers, size))
         #self.query_linked_open_vocabularies(headers, size)
 
@@ -972,11 +972,11 @@ class ConverterScreen(Screen):
         ]
 
         # Get all the vocabularies from the request data
-        logger.info("Retrieve vocabulary list")
+        logger.info("Requests: Retrieve vocabulary list")
         vocabs = get_vocabs(self.all_results)
 
         # Calculate average score for every vocabulary -> compute combi sqore
-        logger.info("Compute average score and compute Combi Score")
+        logger.info("Requests: Compute average score and compute Combi Score")
         t = Thread(target=self.compute_scores, args=(vocabs, self.all_results))
         t.start()
         t.join()
@@ -988,7 +988,7 @@ class ConverterScreen(Screen):
         # Retrieve indexes of best matches for every header 
         self.request_results = retrieve_combiSQORE_recursion(self.all_results, self.sorted_combi_score_vocabularies, len(headers))
         
-        logger.info("Request processing finished")
+        logger.info("Requests: Query processing finished")
 
         # Seperate headers and row data
         self.column_heads = [(header, dp(25)) for header in rows[0]]
