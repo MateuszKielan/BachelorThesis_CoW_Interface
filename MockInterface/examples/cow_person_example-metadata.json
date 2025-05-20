@@ -57,16 +57,16 @@
                 "@id": "http://purl.org/healthcarevocab/v1#PersonIdentificationCodeSequence",
                 "vocab": "dicom",
                 "type": "property",
-                "score": 0.3999372,
+                "score": 0.4010216,
                 "header": "personID"
             },
             {
-                "name": "foaf:surname",
+                "name": "dbpedia-owl:Surname",
                 "datatype": "string",
-                "@id": "http://xmlns.com/foaf/0.1/surname",
-                "vocab": "foaf",
-                "type": "property",
-                "score": 0.821435,
+                "@id": "http://dbpedia.org/ontology/Surname",
+                "vocab": "dbpedia-owl",
+                "type": "class",
+                "score": 0.5118517,
                 "header": "surname"
             },
             {
@@ -75,7 +75,7 @@
                 "@id": "http://dbpedia.org/ontology/championInDoubleMale",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.18565811,
+                "score": 0.18358582,
                 "header": "male"
             },
             {
@@ -83,8 +83,8 @@
                 "datatype": "string",
                 "@id": "http://dbpedia.org/ontology/occupation",
                 "vocab": "dbpedia-owl",
-                "type": "propedrty",
-                "score": 0.60095125,
+                "type": "property",
+                "score": 0.6013279,
                 "header": "occupation"
             }
         ]
@@ -107,7 +107,7 @@
         "@id": "http://opendefinition.org/licenses/cc-by/"
     },
     "dc:modified": {
-        "@value": "2025-05-16",
+        "@value": "2025-05-20",
         "@type": "xsd:date"
     },
     "@id": "https://example.com/id/cow_person_example.csv"

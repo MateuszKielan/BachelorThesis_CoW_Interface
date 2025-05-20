@@ -28,7 +28,7 @@ from kivymd.uix.button import MDRaisedButton
 from kivy.clock import Clock
 from shutil import copyfile
 from kivy.uix.textinput import TextInput
-import threading
+from threading import Thread, Lock
 #-----------------------------
 
 # Set up the logger
@@ -846,16 +846,40 @@ class ConverterScreen(Screen):
 
     def query_linked_open_vocabularies(self, headers, size):
         """
-        Function query_linked_open_vocabularies that sends request to LOV API
+        Function query_linked_open_vocabularies that sends request to LOV API separately for every header
+
+        Embedded function query_header executes query to API for every header separately
 
         Params:
-            headers - list of headerss
+            headers - list of headers
             size - maximum number of matches
         """
-        for header in headers:
+        # Initialize Lock
+        self.lock = Lock()
+
+        # Initialize list of Threads
+        threads = []
+
+        def query_header(header, size):
+            """
+            Function query_header that executes a thread for every header
+            """
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
-            self.all_results[header] = organized_data
+
+            # Lock overwriting the hash map
+            with self.lock:
+                self.all_results[header] = organized_data
+
+        # Loop through all the headers and create a separate thread
+        for header in headers:
+            header_thread = Thread(target=query_header, args=(header, size)) # Create a thread
+            threads.append(header_thread)                                    # Add thread to the list
+            header_thread.start()                                            # Start thread
+
+        # Wait for all the threads to finish
+        for t in threads:
+            t.join()
 
 
     def display_recommendation(self, file_path):
@@ -879,12 +903,12 @@ class ConverterScreen(Screen):
         size = 20
 
         # Convert the CSV to metadata JSON 
-        converter = threading.Thread(target=self.convert_with_cow, args=(file_path,))
+        converter = Thread(target=self.convert_with_cow, args=(file_path,))
         #self.convert_with_cow(str(file_path))
 
         # For every header get recommendations and populate the all_results dictionary
         logger.info("Populating the match dictionary")
-        query = threading.Thread(target=self.query_linked_open_vocabularies, args=(headers, size))
+        query = Thread(target=self.query_linked_open_vocabularies, args=(headers, size))
         #self.query_linked_open_vocabularies(headers, size)
 
         converter.start()
@@ -912,7 +936,7 @@ class ConverterScreen(Screen):
 
         # Calculate average score for every vocabulary -> compute combi sqore
         logger.info("Compute average score and compute Combi Score")
-        t = threading.Thread(target=self.compute_scores, args=(vocabs, self.all_results))
+        t = Thread(target=self.compute_scores, args=(vocabs, self.all_results))
         t.start()
         t.join()
 
@@ -927,7 +951,9 @@ class ConverterScreen(Screen):
         
         # Load CSV data for table
         with open(str(file_path), newline='', encoding='utf-8') as csvfile:
-            reader = csv.reader(csvfile)
+            dialect = csv.Sniffer().sniff(csvfile.read(1024))
+            csvfile.seek(0)
+            reader = csv.reader(csvfile, dialect)
             rows = list(reader)
             if not rows:
                 return
