@@ -53,6 +53,7 @@ class StartingScreen(Screen):
         super().__init__(**kwargs)
         self.selected_file = None
 
+
     def select_file(self):
         """
         Function select_file that opens filechooser.
@@ -85,13 +86,13 @@ class StartingScreen(Screen):
         Param:
             message (str): message to be displayed
         """
+        # Create a Warning display with a custom message
         MDSnackbar(
             MDLabel(
                 text=message
             ),
             md_bg_color='#FF0000'
         ).open()
-        #snack.text = message
         
 
     def switch(self):
@@ -104,7 +105,7 @@ class StartingScreen(Screen):
         text = self.ids.api_endpoint_data.text
         logger.info(f"API endpoint: {text}")
 
-        # Invoking screen manager to switch to converter screen
+        # Invoking screen manager to switch to converter screen if proper file selected
         if self.selected_file:
             rows = open_csv(self.selected_file)
             if len(rows) > 0:
