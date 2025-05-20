@@ -25,7 +25,7 @@ from utils import infer_column_type, open_csv
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
-from kivymd.uix.snackbar import Snackbar
+from kivymd.uix.snackbar import MDSnackbar
 from kivy.clock import Clock
 from shutil import copyfile
 from kivy.uix.textinput import TextInput
@@ -51,7 +51,7 @@ class StartingScreen(Screen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-    
+        self.selected_file = None
 
     def select_file(self):
         """
@@ -85,10 +85,13 @@ class StartingScreen(Screen):
         Param:
             message (str): message to be displayed
         """
-        snack = Snackbar()
-        snack.text = message
-        snack.duration = 3
-        snack.open()
+        MDSnackbar(
+            MDLabel(
+                text=message
+            ),
+            md_bg_color='#FF0000'
+        ).open()
+        #snack.text = message
         
 
     def switch(self):
@@ -100,19 +103,20 @@ class StartingScreen(Screen):
         # Retrieve the API endpoint
         text = self.ids.api_endpoint_data.text
         logger.info(f"API endpoint: {text}")
+
         # Invoking screen manager to switch to converter screen
-        rows = open_csv(self.selected_file)
-        if len(rows) > 0:
-            if self.selected_file:
+        if self.selected_file:
+            rows = open_csv(self.selected_file)
+            if len(rows) > 0:
                 converter_screen = self.manager.get_screen("converter")
                 converter_screen.display_recommendation(self.selected_file)
                 self.manager.current = "converter" # update current screen to converter screen
                 logger.info("Switching to Converter Screen")
             else:
-                self.show_warning('Please select a file')
+                self.show_warning("The file is empty. Please select a different file.")
         else:
-            self.show_warning("The file is empty. Please select a different file.")
-
+            logger.warning(f'No file selected')
+            self.show_warning("Please select a file")
 
 
 class DataPopup(FloatLayout):
