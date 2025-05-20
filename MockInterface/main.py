@@ -21,10 +21,11 @@ import csv
 import json
 import logging
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
-from utils import infer_column_type
+from utils import infer_column_type, open_csv
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.snackbar import Snackbar
 from kivy.clock import Clock
 from shutil import copyfile
 from kivy.uix.textinput import TextInput
@@ -50,7 +51,7 @@ class StartingScreen(Screen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
+    
 
     def select_file(self):
         """
@@ -60,6 +61,7 @@ class StartingScreen(Screen):
 
         # Utilizing external library filechooser
         filechooser.open_file(on_selection=self.select_store)
+
 
     def select_store(self, selection):
         """
@@ -76,6 +78,19 @@ class StartingScreen(Screen):
             self.ids.file_path_label.text = file_path_name
 
 
+    def show_warning(self, message):
+        """
+        Function show_warning that implements a warning when user selects an empty file.
+
+        Param:
+            message (str): message to be displayed
+        """
+        snack = Snackbar()
+        snack.text = message
+        snack.duration = 3
+        snack.open()
+        
+
     def switch(self):
         """
         Function switch that 
@@ -85,13 +100,19 @@ class StartingScreen(Screen):
         # Retrieve the API endpoint
         text = self.ids.api_endpoint_data.text
         logger.info(f"API endpoint: {text}")
-
         # Invoking screen manager to switch to converter screen
-        converter_screen = self.manager.get_screen("converter")
-        converter_screen.display_recommendation(self.selected_file)
-        self.manager.current = "converter" # update current screen to converter screen
+        rows = open_csv(self.selected_file)
+        if len(rows) > 0:
+            if self.selected_file:
+                converter_screen = self.manager.get_screen("converter")
+                converter_screen.display_recommendation(self.selected_file)
+                self.manager.current = "converter" # update current screen to converter screen
+                logger.info("Switching to Converter Screen")
+            else:
+                self.show_warning('Please select a file')
+        else:
+            self.show_warning("The file is empty. Please select a different file.")
 
-        logger.info("Switching to Converter Screen")
 
 
 class DataPopup(FloatLayout):
@@ -287,75 +308,87 @@ class RecommendationPopup(FloatLayout):
         self.header = header
 
         # Extract the best match index from request_results for the appropriate header
-        index = [item[1] for item in request_results if item[0] == header]
+        try:
+            index = [item[1] for item in request_results if item[0] == header]
 
-        # Extract the best recommendation for both Single and Homogenous requests
-        best_match_data_homogenous = [organized_data[index[0]]]   # Retrieve the match indicated by the index
-        best_match_data_single = [organized_data[0]]              # Since matches are already sorted retrieve the first one
+            # Extract the best recommendation for both Single and Homogenous requests
+            best_match_data_homogenous = [organized_data[index[0]]]   # Retrieve the match indicated by the index
+            best_match_data_single = [organized_data[0]]              # Since matches are already sorted retrieve the first one
 
-        # Display the best match table according to mode 
-        if rec_mode == 'Homogenous': # If mode is Homogenous
-            best_table = MDDataTable(
-                column_data = list_titles,
-                row_data= best_match_data_homogenous,
-                size_hint=(0.6, 0.1),
-                pos_hint={"center_x": 0.5, "center_y": 0.6},
+        except:
+            best_match_data_homogenous = []
+            best_match_data_single = []
+
+        if len(best_match_data_single) > 0 and len(best_match_data_homogenous) > 0:
+            # Display the best match table according to mode 
+            if rec_mode == 'Homogenous': # If mode is Homogenous
+                best_table = MDDataTable(
+                    column_data = list_titles,
+                    row_data= best_match_data_homogenous,
+                    size_hint=(0.6, 0.1),
+                    pos_hint={"center_x": 0.5, "center_y": 0.6},
+                    check = True,
+                    use_pagination=False
+                )
+            elif rec_mode == 'Single': # If mode is Single
+                best_table = MDDataTable(
+                    column_data = list_titles,
+                    row_data = best_match_data_single,
+                    size_hint=(0.6, 0.1),
+                    pos_hint={"center_x": 0.5, "center_y": 0.6},
+                    check = True,
+                    use_pagination=False
+                )
+
+            # Define the table of all matches
+            table = MDDataTable(
+                column_data=list_titles,
+                row_data=organized_data,
+                size_hint=(0.6, 0.3),
+                pos_hint={"center_x": 0.5, "center_y": 0.3},
+                use_pagination=True,
                 check = True,
-                use_pagination=False
-            )
-        elif rec_mode == 'Single': # If mode is Single
-            best_table = MDDataTable(
-                column_data = list_titles,
-                row_data = best_match_data_single,
-                size_hint=(0.6, 0.1),
-                pos_hint={"center_x": 0.5, "center_y": 0.6},
-                check = True,
-                use_pagination=False
+                rows_num=20
             )
 
-        # Define the table of all matches
-        table = MDDataTable(
-            column_data=list_titles,
-            row_data=organized_data,
-            size_hint=(0.6, 0.3),
-            pos_hint={"center_x": 0.5, "center_y": 0.3},
-            use_pagination=True,
-            check = True,
-            rows_num=20
-        )
+            # Add the new tables to the widget with Labels
+            self.ids.popup_recommendations.add_widget(Label(
+                text=f'Best match for {header}:', 
+                color=(1, 1, 1, 1), 
+                font_size='20sp', 
+                size_hint_y=0.05
+            ))
 
-        # Add the new tables to the widget with Labels
-        self.ids.popup_recommendations.add_widget(Label(
-            text=f'Best match for {header}:', 
-            color=(1, 1, 1, 1), 
-            font_size='20sp', 
-            size_hint_y=0.05
-        ))
+            # Add best table to the widget
+            self.ids.popup_recommendations.add_widget(best_table)
+            
+            # Create spacing Widget
+            self.ids.popup_recommendations.add_widget(Widget(
+                size_hint_y=None, 
+                height=20
+            ))
 
-        # Add best table to the widget
-        self.ids.popup_recommendations.add_widget(best_table)
-        
-        # Create spacing Widget
-        self.ids.popup_recommendations.add_widget(Widget(
-            size_hint_y=None, 
-            height=20
-        ))
+            # Add the title
+            self.ids.popup_recommendations.add_widget(Label(
+                text=f'List of all matches:', 
+                color=(1, 1, 1, 1), 
+                font_size='20sp', 
+                size_hint_y=0.05
+            ))
 
-        # Add the title
-        self.ids.popup_recommendations.add_widget(Label(
-            text=f'List of all matches:', 
-            color=(1, 1, 1, 1), 
-            font_size='20sp', 
-            size_hint_y=0.05
-        ))
+            # Add all matches table to the widget
+            self.ids.popup_recommendations.add_widget(table)
 
-        # Add all matches table to the widget
-        self.ids.popup_recommendations.add_widget(table)
-
-        # Bind the insert functionality to every row of both tables 
-        table.bind(on_check_press=self.show_recommendation_action_menu)
-        best_table.bind(on_check_press=self.show_recommendation_action_menu)
-
+            # Bind the insert functionality to every row of both tables 
+            table.bind(on_check_press=self.show_recommendation_action_menu)
+            best_table.bind(on_check_press=self.show_recommendation_action_menu)
+        else:
+            self.ids.popup_recommendations.add_widget(Label(
+                text='NO Matches found',
+                color=(1,1,1,1),
+                font_size='20sp',
+                size_hint_y=0.05
+            ))
 
     def dismiss_popup(self):
         """
@@ -892,6 +925,9 @@ class ConverterScreen(Screen):
         # Initialize a class variable with file path -> reusable in other functions
         self.selected_file = file_path
 
+        # Load CSV data for table
+        rows = open_csv(file_path)
+
         # Get the headers from CSV file
         logger.info("Retrieving CSV headers")
         headers = get_csv_headers(str(file_path))
@@ -947,15 +983,6 @@ class ConverterScreen(Screen):
         self.request_results = retrieve_combiSQORE_recursion(self.all_results, self.sorted_combi_score_vocabularies, len(headers))
         
         logger.info("Request processing finished")
-        
-        # Load CSV data for table
-        with open(str(file_path), newline='', encoding='utf-8') as csvfile:
-            dialect = csv.Sniffer().sniff(csvfile.read(1024))
-            csvfile.seek(0)
-            reader = csv.reader(csvfile, dialect)
-            rows = list(reader)
-            if not rows:
-                return
 
         # Seperate headers and row data
         self.column_heads = [(header, dp(25)) for header in rows[0]]

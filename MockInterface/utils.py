@@ -5,6 +5,27 @@ import typing
 import csv
 from collections.abc import Iterable
 #--------------------------------------------------------
+def open_csv(file_path):
+    """
+    Function open_reader that handles opening the file and delimeter detection.
+    """
+    with open(str(file_path), newline='', encoding='utf-8') as csvfile:
+            sample = csvfile.read(1024)
+
+            if not sample.strip():
+                return []
+            
+            dialect = csv.Sniffer().sniff(sample)
+                
+            csvfile.seek(0)
+            reader = csv.reader(csvfile, dialect)
+            rows = list(reader)
+
+            if not rows:
+                return
+            
+            return rows
+
 
 def extract_statistics(cols: list, rows: list):
     """

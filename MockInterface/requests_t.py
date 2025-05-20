@@ -56,7 +56,7 @@ def get_recommendations(header: str, size: int) -> dict:
         "page_size": size # Manually selected by users
     }
 
-    response = requests.get(recommender_url, params=params)
+    response = requests.get(recommender_url, params=params, timeout=30)
 
     results = response.json()
     
