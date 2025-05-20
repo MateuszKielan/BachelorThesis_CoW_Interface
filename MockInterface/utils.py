@@ -39,7 +39,9 @@ def infer_column_type(header, file_path):
 
     # Open the file 
     with open(file_path, newline='', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
+        dialect = csv.Sniffer().sniff(f.read(1024))
+        f.seek(0)
+        reader = csv.DictReader(f, dialect = dialect)
         values = []
 
         # loop through the rows 

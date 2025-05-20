@@ -929,7 +929,6 @@ class ConverterScreen(Screen):
             ('score',dp(60))
         ]
 
-
         # Get all the vocabularies from the request data
         logger.info("Retrieve vocabulary list")
         vocabs = get_vocabs(self.all_results)

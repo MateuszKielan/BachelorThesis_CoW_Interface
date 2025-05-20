@@ -32,7 +32,9 @@ def get_csv_headers(file_path: str) -> list:
     """
 
     with open(file_path, "r", encoding="utf-8") as csv_file:
-        reader = csv.reader(csv_file)
+        dialect = csv.Sniffer().sniff(csv_file.read(1024))
+        csv_file.seek(0)
+        reader = csv.reader(csv_file, dialect)
         headers = next(reader)
     return headers
 
