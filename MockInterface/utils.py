@@ -5,20 +5,25 @@ import typing
 import csv
 from collections.abc import Iterable
 #--------------------------------------------------------
+#def 
+
 def open_csv(file_path):
     """
     Function open_reader that handles opening the file and delimeter detection.
+    
+    Params:
+        file_path: path of the target csv file
     """
     with open(str(file_path), newline='', encoding='utf-8') as csvfile:
-            sample = csvfile.read(1024)
+            sample = csvfile.read(1024)           # Sample small chunk of the file 
 
-            if not sample.strip():
+            if not sample.strip():                # If empty return []
                 return []
             
-            dialect = csv.Sniffer().sniff(sample)
+            dialect = csv.Sniffer().sniff(sample) # Delimeter detection
                 
-            csvfile.seek(0)
-            reader = csv.reader(csvfile, dialect)
+            csvfile.seek(0)                       # Go back to the first index
+            reader = csv.reader(csvfile, dialect) 
             rows = list(reader)
 
             if not rows:

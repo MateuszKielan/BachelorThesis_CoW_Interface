@@ -980,10 +980,6 @@ class ConverterScreen(Screen):
         t = Thread(target=self.compute_scores, args=(vocabs, self.all_results))
         t.start()
         t.join()
-
-        #scores = get_average_score(vocabs, all_results)
-        #combi_score_vocabularies = calculate_combi_score(all_results, scores)
-        #sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
         
         # Retrieve indexes of best matches for every header 
         self.request_results = retrieve_combiSQORE_recursion(self.all_results, self.sorted_combi_score_vocabularies, len(headers))
