@@ -35,9 +35,6 @@ from threading import Thread, Lock
 # Set up the logger
 logger = logging.getLogger(__name__)
 
-# Set the adaptive fullScreen mode
-Window.maximize()
-
 class StartingScreen(Screen):
     """
     Class StartingScreen that implements logic behind file selection.
@@ -1043,6 +1040,8 @@ class CowApp(MDApp):
         """
         Build app function that runs the Screen Manager.
         """
+        # Set the adaptive fullScreen mode
+        Window.maximize()
         sm = ScreenManager()
         sm.add_widget(StartingScreen(name="start")) # File Selection Screen
         sm.add_widget(ConverterScreen(name="converter")) # Conversion Screen

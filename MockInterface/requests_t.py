@@ -186,6 +186,21 @@ def get_average_score(vocabs: list, all_results: dict) -> list[tuple]:
     return vocab_scores
 
 
+def normalize_scores(scores):
+    """
+    Function normalize_scores that takes list of scroes and normalizes them according to the min max formula
+    """
+    scores_dict = dict(scores)
+    min_score = min(scores_dict.values())
+    max_score = max(scores_dict.values())
+
+    for vocab in scores_dict:
+        score = scores_dict[vocab]
+        normalized_score = (score - min_score) / (max_score - min_score)
+        scores_dict[vocab] = normalized_score
+
+    return list(scores_dict.items())
+
 def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[tuple]:
     """
     Function calculate_combi_score that calculates combi score of every vocabulary based on:
@@ -220,6 +235,8 @@ def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[
         vocab_combi_score = vocab_similarity_score * vocab_query_coverage
 
         new_vocab_scores.append((vocab_name, vocab_combi_score))
+
+    new_vocab_scores = normalize_scores(new_vocab_scores)
 
     return new_vocab_scores
 
@@ -307,7 +324,6 @@ def retrieve_combiSQORE_recursion(all_results: dict, vocab_scores: list[tuple], 
 
     return retrieve_combiSQORE_recursion(all_results, vocab_scores[1:], num_headers, matched, still_unmatched)
 
-
 #--------------------------------------------------------------
 # Main Function to run the request
 def main():
@@ -336,6 +352,7 @@ def main():
     # Rank the vocabularies according to Query-Combinative-Ontology Similarity Score
     combi_score_vocabularies = calculate_combi_score(all_results, scores)
     sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
+    logger.info(f"Normalized combiSQOREs: {sorted_combi_score_vocabularies}")
 
     # Retrieve best results for homogenous requests
     request_result = retrieve_combiSQORE_recursion(all_results, sorted_combi_score_vocabularies, len(headers))
