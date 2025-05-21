@@ -61,13 +61,13 @@ class StartingScreen(Screen):
         filechooser.open_file(on_selection=self.select_store)
 
 
-    def select_store(self, selection):
+    def select_store(self, selection: list) -> None:
         """
         Function selct_store that: 
             1. Stores the selected file path.
             2. Updates the file name label.
         Params:
-            selection (arr): array of length 1 with a selected file
+            selection (list): list of length 1 with a selected file
         """
         # If user has Selected the file then update the Path and display the label of the file name of the screen
         if selection:
@@ -77,11 +77,12 @@ class StartingScreen(Screen):
         logger.info("File Chooser: Closing...")
 
 
-    def switch(self):
+    def switch(self) -> None:
         """
         Function switch that 
             1. Switches the screen to converter_screen
             2. Passes the file path to the converter_screen
+            3. Raises a warning window in case of a wrong file selection
         """
         # Retrieve the API endpoint
         text = self.ids.api_endpoint_data.text
@@ -116,9 +117,9 @@ class DataPopup(FloatLayout):
         self.build_table(column_heads, row_data)
 
 
-    def build_table(self, column_heads, row_data):
+    def build_table(self, column_heads: list, row_data: list):
         """
-        Function build_table that builds the table for the whole dataset.
+        Function build_table that builds the table inspection widget for the whole dataset.
 
         Params:
             column_heads(arr): list of headers
@@ -161,31 +162,37 @@ class RecommendationPopup(FloatLayout):
     Class RecommendationPopup that implements the logic behind Recommendation popups for every header 
 
     Attributes:
-        header: current table header
-        organized_data: match data for the header
-        list_titles: list of match parameters e.g prefixedName, uri, score...
-        rec_mode: mode of recommendation (Single or Homogenous)
-        selected_file: path to the selected file
+        header (str): current table header
+        organized_data (list): match data for the header
+        list_titles (list): list of match parameters e.g prefixedName, uri, score...
+        rec_mode (str): mode of recommendation (Single or Homogenous)
+        selected_file (str): path to the selected file
     """
 
-    def __init__(self, header, organized_data, list_titles, request_results, rec_mode, selected_file, **kwargs):
+    def __init__(self, header: str, organized_data: list, list_titles: list, request_results: list, rec_mode: str, selected_file: str, **kwargs):
         super().__init__(**kwargs)
         self.header = header
         self.selected_file = selected_file
         self.build_table(header, organized_data, list_titles, request_results, rec_mode)
 
 
-    def insert_instance(self, table, row):
+    def insert_instance(self, table: MDDataTable, row: list):
         """
-        Inserts the selected match into the metadata for the current header.
+        Inserts the selected match into the metadata file for the current header.
 
-        Params:
-            table: full table data
-            row: data of the selected row
+        Args:
+            table (MDDataTable): full table data
+            row (list): data of the selected row
         """
-        def clean(text):
+        def clean(text: str):
             """
             Function clean that cleans the inserted results from unnecessary brackets
+
+            Args:
+                text (str): text that needs to be cleaned
+            Returns:
+                text (str): text cleaned from the unnecessary punctuation
+
             """
             return text.translate(str.maketrans('', '', "[]'"))
 
@@ -238,14 +245,15 @@ class RecommendationPopup(FloatLayout):
         logger.info("Converter Screen: Refreshed JSON Preview Screen")
 
 
-    def show_recommendation_action_menu(self, instance_table, instance_row):
+    def show_recommendation_action_menu(self, instance_table: MDDataTable, instance_row: list):
         """
         Function show_recommendation_action_menu that opens the popup window with insert option
 
-        Params:
-            instance_table: table data 
-            instance_row: row data
+        Args:
+            instance_table (MDDataTable): table data 
+            instance_row (list): row data
         """
+        
         # Logging the user action for debugging
         logger.info("Recommendation Popup: Row clicked")
         logger.info(f"Recommendation Popup: Table Data - {instance_table.row_data}")
@@ -277,11 +285,11 @@ class RecommendationPopup(FloatLayout):
         self.insert_popup.open()
 
 
-    def build_table(self, header, organized_data, list_titles, request_results, rec_mode):
+    def build_table(self, header: str, organized_data: list, list_titles: list, request_results: list, rec_mode: str):
         """
         Function build_table that builds the table for every header.
 
-        Params:
+        Args:
             header (str): current header
             organized_data (list): list of matches for the header
             list_titles (list): list of titles for the output table columns
@@ -296,7 +304,7 @@ class RecommendationPopup(FloatLayout):
         self.header = header
 
         # Extract the best match index from request_results for the appropriate header
-        try:
+        try: 
             index = [item[1] for item in request_results if item[0] == header]
 
             # Extract the best recommendation for both Single and Homogenous requests
@@ -493,14 +501,14 @@ class ConverterScreen(Screen):
         popup.open()
 
 
-    def convert_with_cow(self, csv_path):
+    def convert_with_cow(self, csv_path: str):
         """
         Function convert_with_cow that takes the CSV file and creates a JSON metadata
-        
-        Params:
+        Utilizes build_schema function from cow_csvw
+
+        Args:
             csv_path (str): path to the input file
         
-        Utilizes build_schema function from cow_csvw
         """
 
         # convert string to a Path object for further processing
@@ -521,9 +529,14 @@ class ConverterScreen(Screen):
                 logger.info("CoW: Metadata generation failed")
     
 
-    def replace_all(self, headers, all_results, request_results):
+    def replace_all(self, headers: list, all_results: dict, request_results: list):
         """
         Updates the metadata file with best matches for each column.
+
+        Args;
+            headers (list): list of all the headers in the csv file
+            all_results: (dict): dictionary with all matches for every header from the headers
+            request_resuls (list): list of best matches for every header from headers
         """
         logger.info("System: Initilizing replacement")
 
@@ -576,14 +589,14 @@ class ConverterScreen(Screen):
         self.show_json()
 
 
-    def substitute_recommendations(self, headers, all_results, request_results):
+    def substitute_recommendations(self, headers: list, all_results: dict, request_results: list):
         """
         Updates the metadata file with best matches for each column.
 
         Params:
-            headers: list of headers
-            all_results: dictionary of header: list of matches
-            request_results: array of tuples containt the header and corresponding best match
+            headers (list): list of headers
+            all_results (dict): dictionary of header: list of matches
+            request_results (list): array of tuples containt the header and corresponding best match
         """
 
         # Retrieve the file path without the type name 
@@ -646,8 +659,6 @@ class ConverterScreen(Screen):
         Function convert_json that converts the metadata file into nquads file. 
 
         Utilizes the CSVConverter from CoW.
-
-        !FIX THE FILE COPY!
         """
         # Selected file path
         input_csv_path = self.selected_file
@@ -714,13 +725,13 @@ class ConverterScreen(Screen):
         logger.info("Converter Screen: Displaying File")
 
 
-    def show_popup(self, column_heads, row_data):
+    def show_popup(self, column_heads: list, row_data: list):
         """
         Function show_popup that calls the DataPopup class to display the table 
 
-        Params:
-            column_heads(arr): list of headers
-            row_data(arr): list of data row by row
+        Args:
+            column_heads (list): list of headers
+            row_data (list): list of data row by row
 
         Those parameters are only needed to pass it further to the DataPopup screen
         """
@@ -735,14 +746,14 @@ class ConverterScreen(Screen):
         popupWindow.open()
     
 
-    def open_recommendations(self,header, data, list_titles, request_results):
+    def open_recommendations(self,header: str, data: list, list_titles: list, request_results: list):
         """
         Function open recommendations that opens a recommendation popup.
 
-        Params:
-            header(str): name of the csv header
-            data(arr): list of data for the  
-            list_titles(arr): list of table headers
+        Args:
+            header (str): name of the csv header
+            data (list): list of data for the  
+            list_titles (list): list of table headers
         """
         # Pass the data to the popup
         show = RecommendationPopup(header,data, list_titles, request_results, self.rec_mode, self.selected_file)
@@ -768,13 +779,13 @@ class ConverterScreen(Screen):
             self.homogenous_button.md_bg_color = (0.2, 0.6, 0.86, 1)
 
 
-    def switch_mode(self, choice, headers, all_results, table):
+    def switch_mode(self, choice: str, headers: list, all_results: dict, table):
         """
         Function switch_mode that switches conversion mode according to the button pressed
 
         Params:
             choice (str): Single or Homogenous
-            headers, all_results, table: see create_header_buttons function
+            other: headers, all_results, table: see create_header_buttons function
         """
         # Set the variable to user choice
         self.rec_mode = choice

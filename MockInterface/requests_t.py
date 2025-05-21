@@ -25,9 +25,9 @@ def get_csv_headers(file_path: str) -> list:
     """
     Function get_csv_header that opens a file and extracts headers from the csv for parsing into the vocabulary
 
-    Params:
+    Args:
         file_path (str) : path of the file
-    Return:
+    Returns:
         headers (arr) : headers of the csv
     """
 
@@ -44,9 +44,9 @@ def get_recommendations(header: str, size: int) -> dict:
     """
     Function get_recommendations that receives headers and runs a get requests to the vocabulary api
 
-    Params:
+    Args:
         headers (arr): headers of the csv file
-    Return:
+    Returns:
         results (dict): results of the request for the given header
 
     """
@@ -70,7 +70,7 @@ def display_results(result: dict, name: str):
 
     !Only used for debugging!
     
-    Params:
+    Args:
         results (dict) : query results converted to json
         name (str): name of the header
     """
@@ -89,16 +89,17 @@ def display_results(result: dict, name: str):
 
 
 
-def organize_results(result:dict) -> list:
+def organize_results(result: dict) -> list:
     """
     Function organize_results that converts the query result into below specified format.
 
-    Params: 
-        - result: retrieved matches for the header
-    Return:
-        - match_arr (arr(arr)): array with the matches data
+    Args: 
+        result: retrieved matches for the header
 
+    Returns:
+        match_arr (arr(arr)): array with the matches data
         
+
     TARGET format:
 
     all_results {
@@ -108,6 +109,7 @@ def organize_results(result:dict) -> list:
 
     Function takes care of the following part: 
         match(i) = [prefixedName, vocabulary.prefix, uri, type, score]
+
     """
 
     # Initialize the array for matches
@@ -134,9 +136,9 @@ def get_vocabs(all_results: dict) -> list:
     """
     Function get_vocabs that finds all vocabularies in the recommendation matches.
 
-    Params:
+    Args:
         - all_results (dict): dictionary with matches for all headers
-    Return:
+    Returns:
         - vocabs (arr): array with unique vocabularies
     """
 
@@ -159,10 +161,10 @@ def get_average_score(vocabs: list, all_results: dict) -> list[tuple]:
     """
     Function get_average_score that computes average score for every distinct vocabulary.
 
-    Params:
+    Args:
         - vocabs (arr): list of all vocabularies.
         - all_results (dict): dictinary with matches for all header.
-    Return:
+    Returns:
         - vocab_scores (arr(tuple)): array with typles consisting of 
     """     
     # Initialize list of scores that will be filled with tuples of the following format:
@@ -186,9 +188,14 @@ def get_average_score(vocabs: list, all_results: dict) -> list[tuple]:
     return vocab_scores
 
 
-def normalize_scores(scores):
+def normalize_scores(scores: tuple[str, int]) -> tuple[str, int]:
     """
     Function normalize_scores that takes list of scroes and normalizes them according to the min max formula
+
+    Args:
+        scores (tuple(int,str)): tuple of vocabularies with corresponding scores
+    Returns:
+        scores (tuple(int,str)): tuple of voacbularies with corresponding normalized scores
     """
     scores_dict = dict(scores)
     min_score = min(scores_dict.values())
@@ -201,6 +208,7 @@ def normalize_scores(scores):
 
     return list(scores_dict.items())
 
+
 def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[tuple]:
     """
     Function calculate_combi_score that calculates combi score of every vocabulary based on:
@@ -209,11 +217,12 @@ def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[
 
         Query-Combinative-Ontology Similarity Score = SS * QC
 
-    Params:
+    Args:
         all_results (dict(list())) - data of all headers and all matches.
         vocab_scores (list(tuple))  - list of vocabularies with their corresponding scores.
         necesary_vocabs (list(tuple)) - list of necessary vocabularies identified in necessary vocabs function.
-    Return:
+
+    Returns:
         new_vocab_scores (list(tuple)) - list of vocabularies with the calculated combi score.
     """
 
@@ -241,15 +250,14 @@ def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[
     return new_vocab_scores
 
 
-
-def retrieve_combiSQORE(best_vocab: str, all_results: dict):
+def retrieve_combiSQORE(best_vocab: str, all_results: dict) -> list[tuple]:
     """
     Funciton retrieve_homogenous that retrieves the matches based on the best vocabulary based on combiSQORE
 
-    Params:
+    Args:
         - best_vocab (str): best vocabulary  (see the combiSQORE function)
-    Return:
-        - request_return (arr(tuple)): array containing tuples with the following format:
+    Returns:
+        - request_return (list(tuple)): array containing tuples with the following format:
             (header, match_index)
 
     Main logic:
@@ -284,7 +292,7 @@ def retrieve_combiSQORE_recursion(all_results: dict, vocab_scores: list[tuple], 
     """
     Recursive function to retrieve best matches for each header using lsit of ranked vocabularies.
 
-    Params:
+    Args:
         - all_results (dict): {header: list of matches}
         - vocab_scores (list): (vocab_name, score), sorted descending
         - matched (list): list of already matched (header, index) pairs
@@ -324,11 +332,19 @@ def retrieve_combiSQORE_recursion(all_results: dict, vocab_scores: list[tuple], 
 
     return retrieve_combiSQORE_recursion(all_results, vocab_scores[1:], num_headers, matched, still_unmatched)
 
+
 #--------------------------------------------------------------
 # Main Function to run the request
 def main():
     """
-    Main function to run the test requests
+    Main function to run the test requests.
+
+    Args:
+        None
+
+    Returns:
+        None
+
     """
     csv_file = "examples/cow_person_example.csv"
     headers = get_csv_headers(csv_file)

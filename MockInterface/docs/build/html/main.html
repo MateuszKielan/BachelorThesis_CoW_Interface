@@ -13,6 +13,8 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils module" href="utils.html" />
+    <link rel="prev" title="CoW Intelligent Interface documentation" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -30,8 +32,382 @@
 
           <div class="body" role="main">
             
-  <section id="main-module">
-<h1>main module<a class="headerlink" href="#main-module" title="Link to this heading">¶</a></h1>
+  <section id="module-main">
+<span id="main-module"></span><h1>main module<a class="headerlink" href="#module-main" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="main.ConverterScreen">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">ConverterScreen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Screen</span></code></p>
+<p>Class ConverterScreen that implements logic behind the conversion layout</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.ConverterScreen.rec_mode">
+<span class="sig-name descname"><span class="pre">rec_mode</span></span><a class="headerlink" href="#main.ConverterScreen.rec_mode" title="Link to this definition">¶</a></dt>
+<dd><p>indicates the request method, singular or homogenous</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocabs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.compute_scores" title="Link to this definition">¶</a></dt>
+<dd><p>Function compute_scores that computes average scores in a separate thread.</p>
+<dl class="simple">
+<dt>Params:</dt><dd><p>vocabs - list of vocabularies
+all_results - dictionary with the headers and corresponding matches</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.convert_json">
+<span class="sig-name descname"><span class="pre">convert_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.convert_json" title="Link to this definition">¶</a></dt>
+<dd><p>Function convert_json that converts the metadata file into nquads file.</p>
+<p>Utilizes the CSVConverter from CoW.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.convert_with_cow">
+<span class="sig-name descname"><span class="pre">convert_with_cow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.convert_with_cow" title="Link to this definition">¶</a></dt>
+<dd><p>Function convert_with_cow that takes the CSV file and creates a JSON metadata
+Utilizes build_schema function from cow_csvw</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>csv_path</strong> (<em>str</em>) – path to the input file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.create_header_buttons">
+<span class="sig-name descname"><span class="pre">create_header_buttons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">headers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.create_header_buttons" title="Link to this definition">¶</a></dt>
+<dd><p>Function create_header_buttons that adds a button for every widget in the file</p>
+<dl class="simple">
+<dt>Params:</dt><dd><p>headers (list): list of headers
+all_results (dict): dictionary of all headers with their matches
+table: display widget</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.display_recommendation">
+<span class="sig-name descname"><span class="pre">display_recommendation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.display_recommendation" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Function display_recommnedation:</dt><dd><ol class="arabic simple">
+<li><p>Retreitves the recommendation from the input csv.</p></li>
+<li><p>Displays the headers on the middle page.</p></li>
+<li><p>Displays the recommendations on the middle page.</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.highlight_switch">
+<span class="sig-name descname"><span class="pre">highlight_switch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.highlight_switch" title="Link to this definition">¶</a></dt>
+<dd><p>Function highlight_switch that changes the color of the request buttons when clicking.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.open_recommendations">
+<span class="sig-name descname"><span class="pre">open_recommendations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_titles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.open_recommendations" title="Link to this definition">¶</a></dt>
+<dd><p>Function open recommendations that opens a recommendation popup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>header</strong> (<em>str</em>) – name of the csv header</p></li>
+<li><p><strong>data</strong> (<em>list</em>) – list of data for the</p></li>
+<li><p><strong>list_titles</strong> (<em>list</em>) – list of table headers</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.query_linked_open_vocabularies">
+<span class="sig-name descname"><span class="pre">query_linked_open_vocabularies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">headers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.query_linked_open_vocabularies" title="Link to this definition">¶</a></dt>
+<dd><p>Function query_linked_open_vocabularies that sends request to LOV API separately for every header</p>
+<p>Embedded function query_header executes query to API for every header separately</p>
+<dl class="simple">
+<dt>Params:</dt><dd><p>headers - list of headers
+size - maximum number of matches</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.replace_all">
+<span class="sig-name descname"><span class="pre">replace_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.replace_all" title="Link to this definition">¶</a></dt>
+<dd><p>Updates the metadata file with best matches for each column.</p>
+<dl class="simple">
+<dt>Args;</dt><dd><p>headers (list): list of all the headers in the csv file
+all_results: (dict): dictionary with all matches for every header from the headers
+request_resuls (list): list of best matches for every header from headers</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.save_json">
+<span class="sig-name descname"><span class="pre">save_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.save_json" title="Link to this definition">¶</a></dt>
+<dd><p>Function save_json that saves changes made in the interface.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.show_json">
+<span class="sig-name descname"><span class="pre">show_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.show_json" title="Link to this definition">¶</a></dt>
+<dd><p>Function show_json that displays the json file in the right section</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.show_popup">
+<span class="sig-name descname"><span class="pre">show_popup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.show_popup" title="Link to this definition">¶</a></dt>
+<dd><p>Function show_popup that calls the DataPopup class to display the table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>column_heads</strong> (<em>list</em>) – list of headers</p></li>
+<li><p><strong>row_data</strong> (<em>list</em>) – list of data row by row</p></li>
+</ul>
+</dd>
+</dl>
+<p>Those parameters are only needed to pass it further to the DataPopup screen</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.show_recommendation_help_popup">
+<span class="sig-name descname"><span class="pre">show_recommendation_help_popup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.show_recommendation_help_popup" title="Link to this definition">¶</a></dt>
+<dd><p>Function show_recommendation_help_popup that displays help information about the recommendation section.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.show_request_help_popup">
+<span class="sig-name descname"><span class="pre">show_request_help_popup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.show_request_help_popup" title="Link to this definition">¶</a></dt>
+<dd><p>Function show_request_help_popup thta displayes help information about the type of requests made.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.substitute_recommendations">
+<span class="sig-name descname"><span class="pre">substitute_recommendations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.substitute_recommendations" title="Link to this definition">¶</a></dt>
+<dd><p>Updates the metadata file with best matches for each column.</p>
+<dl class="simple">
+<dt>Params:</dt><dd><p>headers (list): list of headers
+all_results (dict): dictionary of header: list of matches
+request_results (list): array of tuples containt the header and corresponding best match</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.ConverterScreen.switch_mode">
+<span class="sig-name descname"><span class="pre">switch_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">choice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.ConverterScreen.switch_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Function switch_mode that switches conversion mode according to the button pressed</p>
+<dl class="simple">
+<dt>Params:</dt><dd><p>choice (str): Single or Homogenous
+other: headers, all_results, table: see create_header_buttons function</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="main.CowApp">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">CowApp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.CowApp" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MDApp</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="main.CowApp.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.CowApp.build" title="Link to this definition">¶</a></dt>
+<dd><p>Build app function that runs the Screen Manager.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="main.DataPopup">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">DataPopup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_heads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.DataPopup" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">FloatLayout</span></code></p>
+<p>Class DataPopup that defines a popup page that displays full csv data table.</p>
+<p>By default it invokes build_table function that loads whole dataset into a MDDataTable.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="main.DataPopup.build_table">
+<span class="sig-name descname"><span class="pre">build_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.DataPopup.build_table" title="Link to this definition">¶</a></dt>
+<dd><p>Function build_table that builds the table inspection widget for the whole dataset.</p>
+<dl class="simple">
+<dt>Params:</dt><dd><p>column_heads(arr): list of headers
+row_data(arr): list of data row by row</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.DataPopup.dismiss_popup">
+<span class="sig-name descname"><span class="pre">dismiss_popup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.DataPopup.dismiss_popup" title="Link to this definition">¶</a></dt>
+<dd><p>Function dismiss_popup that closes the popup.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="main.RecommendationPopup">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">RecommendationPopup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organized_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_titles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rec_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.RecommendationPopup" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">FloatLayout</span></code></p>
+<p>Class RecommendationPopup that implements the logic behind Recommendation popups for every header</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.RecommendationPopup.header">
+<span class="sig-name descname"><span class="pre">header</span></span><a class="headerlink" href="#main.RecommendationPopup.header" title="Link to this definition">¶</a></dt>
+<dd><p>current table header</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.RecommendationPopup.organized_data">
+<span class="sig-name descname"><span class="pre">organized_data</span></span><a class="headerlink" href="#main.RecommendationPopup.organized_data" title="Link to this definition">¶</a></dt>
+<dd><p>match data for the header</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.RecommendationPopup.list_titles">
+<span class="sig-name descname"><span class="pre">list_titles</span></span><a class="headerlink" href="#main.RecommendationPopup.list_titles" title="Link to this definition">¶</a></dt>
+<dd><p>list of match parameters e.g prefixedName, uri, score…</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.RecommendationPopup.rec_mode">
+<span class="sig-name descname"><span class="pre">rec_mode</span></span><a class="headerlink" href="#main.RecommendationPopup.rec_mode" title="Link to this definition">¶</a></dt>
+<dd><p>mode of recommendation (Single or Homogenous)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.RecommendationPopup.selected_file">
+<span class="sig-name descname"><span class="pre">selected_file</span></span><a class="headerlink" href="#main.RecommendationPopup.selected_file" title="Link to this definition">¶</a></dt>
+<dd><p>path to the selected file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.RecommendationPopup.build_table">
+<span class="sig-name descname"><span class="pre">build_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organized_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_titles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rec_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.RecommendationPopup.build_table" title="Link to this definition">¶</a></dt>
+<dd><p>Function build_table that builds the table for every header.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>header</strong> (<em>str</em>) – current header</p></li>
+<li><p><strong>organized_data</strong> (<em>list</em>) – list of matches for the header</p></li>
+<li><p><strong>list_titles</strong> (<em>list</em>) – list of titles for the output table columns</p></li>
+<li><p><strong>request_results</strong> (<em>list</em>) – list of tuples of the headers and indexes of the best match</p></li>
+<li><p><strong>rec_mode</strong> (<em>str</em>) – mode of display (Single or Homogenous)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.RecommendationPopup.dismiss_popup">
+<span class="sig-name descname"><span class="pre">dismiss_popup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.RecommendationPopup.dismiss_popup" title="Link to this definition">¶</a></dt>
+<dd><p>Function dismiss_popup that closes the popup window</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.RecommendationPopup.insert_instance">
+<span class="sig-name descname"><span class="pre">insert_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MDDataTable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.RecommendationPopup.insert_instance" title="Link to this definition">¶</a></dt>
+<dd><p>Inserts the selected match into the metadata file for the current header.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table</strong> (<em>MDDataTable</em>) – full table data</p></li>
+<li><p><strong>row</strong> (<em>list</em>) – data of the selected row</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.RecommendationPopup.show_recommendation_action_menu">
+<span class="sig-name descname"><span class="pre">show_recommendation_action_menu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MDDataTable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance_row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.RecommendationPopup.show_recommendation_action_menu" title="Link to this definition">¶</a></dt>
+<dd><p>Function show_recommendation_action_menu that opens the popup window with insert option</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instance_table</strong> (<em>MDDataTable</em>) – table data</p></li>
+<li><p><strong>instance_row</strong> (<em>list</em>) – row data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="main.StartingScreen">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">StartingScreen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#main.StartingScreen" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Screen</span></code></p>
+<p>Class StartingScreen that implements logic behind file selection.</p>
+<ol class="arabic simple">
+<li><p>This class corresponds to the first screen user sees when opening the CoW Interface.</p></li>
+<li><p>After user selects the file and presses “Convert” button the system switches to ConverterScreen class</p></li>
+</ol>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.StartingScreen.None">
+<span class="sig-name descname"><span class="pre">None</span></span><a class="headerlink" href="#main.StartingScreen.None" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.StartingScreen.select_file">
+<span class="sig-name descname"><span class="pre">select_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#main.StartingScreen.select_file" title="Link to this definition">¶</a></dt>
+<dd><p>Function select_file that opens filechooser.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.StartingScreen.select_store">
+<span class="sig-name descname"><span class="pre">select_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#main.StartingScreen.None" title="main.StartingScreen.None"><span class="pre">None</span></a></span></span><a class="headerlink" href="#main.StartingScreen.select_store" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Function selct_store that:</dt><dd><ol class="arabic simple">
+<li><p>Stores the selected file path.</p></li>
+<li><p>Updates the file name label.</p></li>
+</ol>
+</dd>
+<dt>Params:</dt><dd><p>selection (list): list of length 1 with a selected file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.StartingScreen.switch">
+<span class="sig-name descname"><span class="pre">switch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#main.StartingScreen.None" title="main.StartingScreen.None"><span class="pre">None</span></a></span></span><a class="headerlink" href="#main.StartingScreen.switch" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Function switch that</dt><dd><ol class="arabic simple">
+<li><p>Switches the screen to converter_screen</p></li>
+<li><p>Passes the file path to the converter_screen</p></li>
+<li><p>Raises a warning window in case of a wrong file selection</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -51,11 +427,26 @@
 
 
 <h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">main module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#main.ConverterScreen"><code class="docutils literal notranslate"><span class="pre">ConverterScreen</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#main.CowApp"><code class="docutils literal notranslate"><span class="pre">CowApp</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#main.DataPopup"><code class="docutils literal notranslate"><span class="pre">DataPopup</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#main.RecommendationPopup"><code class="docutils literal notranslate"><span class="pre">RecommendationPopup</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#main.StartingScreen"><code class="docutils literal notranslate"><span class="pre">StartingScreen</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests_t.html">requests_t module</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">CoW Intelligent Interface documentation</a></li>
+      <li>Next: <a href="utils.html" title="next chapter">utils module</a></li>
   </ul></li>
 </ul>
 </div>

@@ -6,12 +6,14 @@ import csv
 from collections.abc import Iterable
 from kivymd.uix.label import MDLabel
 from kivymd.uix.snackbar import MDSnackbar
+from pathlib import Path
+from typing import List
 #--------------------------------------------------------
-def show_warning( message):
+def show_warning(message: str):
         """
-        Function show_warning that implements a warning when user selects an empty file.
+        Function show_warning that implements a warning with a custom message.
 
-        Param:
+        Args:
             message (str): message to be displayed
         """
         # Create a Warning display with a custom message
@@ -23,12 +25,16 @@ def show_warning( message):
         ).open()
 
 
-def open_csv(file_path):
+def open_csv(file_path: Path) -> list:
     """
     Function open_reader that handles opening the file and delimeter detection.
-    
-    Params:
-        file_path: path of the target csv file
+    Uses csv Sniffer to detect the delimeter of the file.
+
+    Args:
+        file_path (Path): path of the target csv file
+    Returns:
+        rows (list): list of row data from the csv file 
+
     """
     with open(str(file_path), newline='', encoding='utf-8') as csvfile:
             sample = csvfile.read(1024)           # Sample small chunk of the file 
@@ -48,7 +54,7 @@ def open_csv(file_path):
             return rows
 
 
-def extract_statistics(cols: list, rows: list):
+def extract_statistics(cols: list, rows: list) -> tuple[int, int, int]:
     """
     Function extract_statistics that takes a dataframe and extracts the follwing:
 
@@ -67,7 +73,7 @@ def extract_statistics(cols: list, rows: list):
     return null_values, num_cols, num_rows
 
 
-def infer_column_type(header, file_path):
+def infer_column_type(header: str, file_path: str) -> str:
     """
     Function infer_column_type that checks the type of data for the column for the corresponding header
 
