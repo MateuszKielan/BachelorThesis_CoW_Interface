@@ -21,7 +21,7 @@ import csv
 import json
 import logging
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
-from utils import infer_column_type, open_csv
+from utils import infer_column_type, open_csv, show_warning
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
@@ -79,21 +79,6 @@ class StartingScreen(Screen):
             self.ids.file_path_label.text = file_path_name
         logger.info("File Chooser: Closing...")
 
-    def show_warning(self, message):
-        """
-        Function show_warning that implements a warning when user selects an empty file.
-
-        Param:
-            message (str): message to be displayed
-        """
-        # Create a Warning display with a custom message
-        MDSnackbar(
-            MDLabel(
-                text=message
-            ),
-            md_bg_color='#FF0000'
-        ).open()
-        
 
     def switch(self):
         """
@@ -115,10 +100,10 @@ class StartingScreen(Screen):
                 logger.info("Screen Manager: Switching to Converter Screen")
             else:
                 logger.warning("File is empty")
-                self.show_warning("The file is empty. Please select a different file.")
+                show_warning("The file is empty. Please select a different file.")
         else:
             logger.warning('No file selected')
-            self.show_warning("Please select a file")
+            show_warning("Please select a file")
 
 
 class DataPopup(FloatLayout):

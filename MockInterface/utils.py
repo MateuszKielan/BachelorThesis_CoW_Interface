@@ -4,8 +4,24 @@ import numpy as np
 import typing
 import csv
 from collections.abc import Iterable
+from kivymd.uix.label import MDLabel
+from kivymd.uix.snackbar import MDSnackbar
 #--------------------------------------------------------
-#def 
+def show_warning( message):
+        """
+        Function show_warning that implements a warning when user selects an empty file.
+
+        Param:
+            message (str): message to be displayed
+        """
+        # Create a Warning display with a custom message
+        MDSnackbar(
+            MDLabel(
+                text=message
+            ),
+            md_bg_color='#FF0000'
+        ).open()
+
 
 def open_csv(file_path):
     """
