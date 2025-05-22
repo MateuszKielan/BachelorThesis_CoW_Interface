@@ -11,7 +11,6 @@ from kivy.lang import Builder
 from kivy.config import Config
 from plyer import filechooser
 from pathlib import Path
-from screeninfo import get_monitors
 from kivy.core.window import Window
 from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from kivymd.uix.datatables import MDDataTable
@@ -439,7 +438,7 @@ class ConverterScreen(Screen):
             text_size=(400, None),
             size_hint_y=None,
         )
-
+        # Bind the texture size to the label
         label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
 
         # Add the ScrollView property to make the popup more responsive
@@ -479,6 +478,7 @@ class ConverterScreen(Screen):
             size_hint_y=None,
         )
 
+        # Bind the texture size to the label
         label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
 
         # Add Scroll ability for enhanced responsiveness
