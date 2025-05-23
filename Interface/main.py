@@ -29,6 +29,7 @@ from kivy.clock import Clock
 from shutil import copyfile
 from kivy.uix.textinput import TextInput
 from threading import Thread, Lock
+from kivymd.uix.spinner import MDSpinner
 #-----------------------------
 
 # Set up the logger
@@ -79,7 +80,7 @@ class StartingScreen(Screen):
     def switch(self) -> None:
         """
         Function switch that 
-            1. Switches the screen to converter_screen
+            1. Switches the screen to loading_screen
             2. Passes the file path to the converter_screen
             3. Raises a warning window in case of a wrong file selection
         """
@@ -91,16 +92,72 @@ class StartingScreen(Screen):
         if self.selected_file:
             rows = open_csv(self.selected_file)
             if len(rows) > 0:
-                converter_screen = self.manager.get_screen("converter")
-                converter_screen.display_recommendation(self.selected_file)
-                self.manager.current = "converter" # update current screen to converter screen
-                logger.info("Screen Manager: Switching to Converter Screen")
+                # Clear any existing widgets in the loading screen
+                loading_screen = self.manager.get_screen("loading")
+                
+                # Switch to loading screen
+                self.manager.current = "loading"
+                
+                # Schedule the data loading and screen switch
+                def load_data(dt):
+                    converter_screen = self.manager.get_screen("converter")
+                    converter_screen.display_recommendation(self.selected_file)
+                    self.manager.current = "converter"
+                    logger.info("Screen Manager: Switching to Converter Screen")
+                
+                # Schedule the loading with a small delay to ensure loading screen is visible (0.5 seconds minimum for loading screen to be visible)
+                Clock.schedule_once(load_data, 0.5)
             else:
                 logger.warning("File is empty")
                 show_warning("The file is empty. Please select a different file.")
         else:
             logger.warning('No file selected')
             show_warning("Please select a file")
+
+
+class LoadingScreen(Screen):
+    """
+    Class LoadingScreen that displays a loading animation while data is being processed.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Create a FloatLayout as the main container
+        main_layout = FloatLayout()
+        
+        # Create a vertical box layout for the content
+        content_layout = BoxLayout(
+            orientation='vertical',
+            spacing=30,
+            padding=20,
+            size_hint=(0.8, 0.5),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
+        
+        # Add a spinning circle
+        spinner = MDSpinner(
+            size_hint=(None, None),
+            size=(46, 46),
+            pos_hint={'center_x': .5},
+            active=True
+        )
+        
+        # Add loading text
+        loading_label = MDLabel(
+            text="Loading... Processing your file and fetching recommendations",
+            halign="center",
+            theme_text_color="Primary",
+            font_style="H5"
+        )
+        
+        # Add widgets to content layout
+        content_layout.add_widget(spinner)
+        content_layout.add_widget(loading_label)
+        
+        # Add content layout to main layout
+        main_layout.add_widget(content_layout)
+        
+        # Add main layout to screen
+        self.add_widget(main_layout)
 
 
 class DataPopup(FloatLayout):
@@ -1056,7 +1113,8 @@ class CowApp(MDApp):
         # Set the adaptive fullScreen mode
         Window.maximize()
         sm = ScreenManager()
-        sm.add_widget(StartingScreen(name="start")) # File Selection Screen
+        sm.add_widget(StartingScreen(name="start"))      # File Selection Screen
+        sm.add_widget(LoadingScreen(name="loading"))     # Loading Screen
         sm.add_widget(ConverterScreen(name="converter")) # Conversion Screen
         return sm
     

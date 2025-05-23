@@ -1,6 +1,7 @@
 #:kivy 2.3.1
 ScreenManager:
     StartingScreen:
+    LoadingScreen:
     ConverterScreen:
 
 # File Selection Screen
@@ -57,6 +58,15 @@ ScreenManager:
                 size: 200, 50
                 pos_hint: {"center_x": 0.5}
                 on_press: root.switch()
+
+<LoadingScreen>:
+    name: "loading"
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
 # Converter Screen 
 <ConverterScreen>:
