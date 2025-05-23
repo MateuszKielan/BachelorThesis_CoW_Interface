@@ -92,11 +92,10 @@ class StartingScreen(Screen):
         if self.selected_file:
             rows = open_csv(self.selected_file)
             if len(rows) > 0:
-                # Clear any existing widgets in the loading screen
-                loading_screen = self.manager.get_screen("loading")
                 
                 # Switch to loading screen
                 self.manager.current = "loading"
+                logger.info("Screen Manager: Switching to Loading Screen")
                 
                 # Schedule the data loading and screen switch
                 def load_data(dt):
