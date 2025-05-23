@@ -10,7 +10,7 @@ Original CoW tool repository: https://github.com/CLARIAH/COW
 
 **Documentation**
 
-Coming Soon
+Link to the official documentation: https://mateuszkielan.github.io/BachelorThesis_CoW_Interface/
 
 **File Structure**
 
