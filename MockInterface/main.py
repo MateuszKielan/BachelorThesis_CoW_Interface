@@ -566,12 +566,13 @@ class ConverterScreen(Screen):
                 
                 # Update the data in the file 
                 column.update({
-                    'name': match[0][0],     # prefixed name
-                    '@id': match[2][0],      # URI
-                    'vocab': match[1],       # vocabulary.prefix
-                    'type': match[3],        # type
-                    'score': match[4],       # score
-                    'header': header         # original header for traceability
+                    'name': header,
+                    'prefixedName': match[0][0],  # prefixed name
+                    '@id': match[2][0],           # URI
+                    'propertyUrl': match[2][0],   # URI for CoW
+                    'vocab': match[1],            # vocabulary.prefix
+                    'type': match[3],             # type
+                    'score': match[4],            # score
                 })
 
                 logger.info(f"System: Metadata Updated {header} -> {match[0][0]}")
@@ -615,12 +616,13 @@ class ConverterScreen(Screen):
                 match = all_results[header][index_lookup[header]]
 
                 column.update({
-                    'name': match[0][0],     # prefixed name
-                    '@id': match[2][0],      # URI
-                    'vocab': match[1],       # vocabulary.prefix
-                    'type': match[3],        # type
-                    'score': match[4],       # score
-                    'header': header         # original header for traceability
+                    'name': header,
+                    'prefixedName': match[0][0],  # prefixed name
+                    '@id': match[2][0],           # URI
+                    'propertyUrl': match[2][0],   # URI for CoW
+                    'vocab': match[1],            # vocabulary.prefix
+                    'type': match[3],             # type
+                    'score': match[4],            # score
                 })
 
                 logger.info(f"System: Metadata Updated - {header} -> {match[0][0]}")
