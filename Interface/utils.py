@@ -82,14 +82,14 @@ def infer_column_type(header: str, file_path: str) -> str:
         file_path (str): path to the file 
 
     Return:
-        type (str): type of the column data
+        type (str): type of the column data. Returns "Mixed" if multiple types are detected.
     """
 
     # Open the file 
     with open(file_path, newline='', encoding='utf-8') as f:
         dialect = csv.Sniffer().sniff(f.read(1024))
         f.seek(0)
-        reader = csv.DictReader(f, dialect = dialect)
+        reader = csv.DictReader(f, dialect=dialect)
         values = []
 
         # loop through the rows 
@@ -100,22 +100,39 @@ def infer_column_type(header: str, file_path: str) -> str:
         # Check for missing values
         if len(values) == 0:
             return "Undefined"
-        elif all(v.isdigit() for v in values):
-            return "Integer"
-        elif all(v.lower() in ("0", "1") for v in values):
-            return "Boolean"
 
-        # Check if the values are an iterable (list, dict ...)
-        is_iter = False
-        for data in values:
-            if isinstance(data, Iterable) and type(data) != str:
-                is_iter = True
+        # Initialize type flags
+        has_int = False
+        has_bool = False
+        has_string = False
+        has_iterable = False
+        types_found = 0
+
+        # Check each value's type
+        for v in values:
+            if v.isdigit():
+                has_int = True
+                types_found += 1
+            elif v.lower() in ("0", "1", "true", "false"):
+                has_bool = True
+                types_found += 1
+            elif isinstance(v, Iterable) and type(v) != str:
+                has_iterable = True
+                types_found += 1
             else:
-                is_iter = False
-                break
+                has_string = True
+                types_found += 1
 
-        # If not iterable only string is left 
-        if is_iter == True:
+        # If found more than one type, return "Mixed"
+        if types_found > 1:
+            return "Mixed"
+
+        # Return the single type found
+        if has_int:
+            return "Integer"
+        elif has_bool:
+            return "Boolean"
+        elif has_iterable:
             return "Iterable"
         else:
             return "String"
