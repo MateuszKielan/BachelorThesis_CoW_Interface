@@ -6,6 +6,7 @@ from copy import deepcopy
 import logging
 import typing
 from SPARQLWrapper import SPARQLWrapper, JSON, N3
+import time 
 
 # Set up logger
 logging.basicConfig(

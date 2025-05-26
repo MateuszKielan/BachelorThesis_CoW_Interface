@@ -30,6 +30,8 @@ from shutil import copyfile
 from kivy.uix.textinput import TextInput
 from threading import Thread, Lock
 from kivymd.uix.spinner import MDSpinner
+import time
+
 #-----------------------------
 
 # Set up the logger
@@ -579,7 +581,11 @@ class ConverterScreen(Screen):
             logger.info("CoW: Metadata file already exists. Loading data.")
         else:
             try:
+                start_time_converter = time.time()
                 build_schema(str(input_path), str(output_metadata_path)) # Build the mapping file using the CoW implementation
+                end_time_converter = time.time()
+                total_execution_time_converter = end_time_converter - start_time_converter
+                logger.info(f"Total execution time of conversion: {total_execution_time_converter} seconds")
                 logger.info(f"CoW: Saving metadata at {str(output_metadata_path)}")
             except Exception as e:
                 logger.info("CoW: Metadata generation failed")
@@ -737,6 +743,7 @@ class ConverterScreen(Screen):
 
         # INEFFICIENT -> CHANGE
         try:
+            start_time_converter = time.time()
             # Extract file paths
             input_csv_path = str(self.selected_file)
             correct_metadata_path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
@@ -757,7 +764,9 @@ class ConverterScreen(Screen):
             converter.convert()
 
             logger.info("CoW: Conversion to N-Quads completed successfully.")
-
+            end_time_converter = time.time()
+            total_execution_time_converter = end_time_converter - start_time_converter
+            logger.info(f"Total execution time of conversion: {total_execution_time_converter} seconds")
         except Exception as e:
             logger.error(f"CoW: Error during conversion: {e}")
 
@@ -950,16 +959,25 @@ class ConverterScreen(Screen):
         # Initialize list of Threads
         threads = []
 
+        self.execution_times = {}
+
         def query_header(header, size):
             """
             Function query_header that executes a thread for every header
             """
+            start_time = time.time()
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
+            end_time = time.time()
+            execution_time = end_time - start_time              
 
             # Lock overwriting the hash map
             with self.lock:
                 self.all_results[header] = organized_data
+                end_time = time.time()
+                execution_time = end_time - start_time
+                self.execution_times[header] = execution_time
+                logger.info(f"Execution time for {header}: {execution_time} seconds")
 
         # Loop through all the headers and create a separate thread
         for header in headers:
@@ -995,7 +1013,7 @@ class ConverterScreen(Screen):
         # Set the size of received matches
         size = 20
 
-        # Convert the CSV to metadata JSON 
+        # Convert the CSV to metadata JSO
         converter = Thread(target=self.convert_with_cow, args=(file_path,))
         #self.convert_with_cow(str(file_path))
 
@@ -1029,6 +1047,7 @@ class ConverterScreen(Screen):
         ]
 
         # Get all the vocabularies from the request data
+        start_time_score = time.time()
         logger.info("Requests: Retrieve vocabulary list")
         vocabs = get_vocabs(self.all_results)
 
@@ -1042,7 +1061,9 @@ class ConverterScreen(Screen):
         self.request_results = retrieve_combiSQORE_recursion(self.all_results, self.sorted_combi_score_vocabularies, len(headers))
         
         logger.info("Requests: Query processing finished")
-
+        end_time_score = time.time()
+        total_execution_time_score = end_time_score - start_time_score
+        logger.info(f"Total execution time of score computation: {total_execution_time_score} seconds")
         # Seperate headers and row data
         self.column_heads = [(header, dp(25)) for header in rows[0]]
         table_rows = rows[1:11] 
