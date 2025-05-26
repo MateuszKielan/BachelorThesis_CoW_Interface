@@ -1000,8 +1000,14 @@ class ConverterScreen(Screen):
         #self.convert_with_cow(str(file_path))
 
         # For every header get recommendations and populate the all_results dictionary
-        logger.info("Requests: Populating the match dictionary")
-        query = Thread(target=self.query_linked_open_vocabularies, args=(headers, size))
+        # If no recommendations are found, the user is redirected to the start screen
+        try:
+            logger.info("Requests: Populating the match dictionary")
+            query = Thread(target=self.query_linked_open_vocabularies, args=(headers, size))
+        except Exception as e:
+            logger.error(f"Error fetching recommendations: {e}")
+            self.manager.current = "start"
+            
         #self.query_linked_open_vocabularies(headers, size)
 
         converter.start()

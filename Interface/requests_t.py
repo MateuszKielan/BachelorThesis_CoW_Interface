@@ -1,4 +1,3 @@
-
 # Imports Section
 import requests
 import csv
@@ -6,6 +5,7 @@ import json
 from copy import deepcopy
 import logging
 import typing
+from SPARQLWrapper import SPARQLWrapper, JSON, N3
 
 # Set up logger
 logging.basicConfig(
@@ -16,10 +16,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
-
 # Lov api url
 recommender_url = "https://lov.linkeddata.es/dataset/lov/api/v2/term/search"
+
 
 def get_csv_headers(file_path: str) -> list:
     """
@@ -55,10 +54,12 @@ def get_recommendations(header: str, size: int) -> dict:
         "category": "class", 
         "page_size": size # Manually selected by users
     }
-
-    response = requests.get(recommender_url, params=params, timeout=30)
-
-    results = response.json()
+    try:
+        response = requests.get(recommender_url, params=params, timeout=30)
+        results = response.json()
+    except Exception as e:
+        logger.error(f"Error fetching recommendations: {e}")
+        return []
     
     return results
 
@@ -346,7 +347,7 @@ def main():
         None
 
     """
-    csv_file = "examples/cow_person_example.csv"
+    csv_file = "Interface/examples/cow_person_example.csv"
     headers = get_csv_headers(csv_file)
     logger.info(f"List of retrieved headers {headers}")
     all_results = {}
