@@ -965,6 +965,7 @@ class ConverterScreen(Screen):
             """
             Function query_header that executes a thread for every header
             """
+            # Start time of query
             start_time = time.time()
             recommendations = get_recommendations(header, size)
             organized_data = organize_results(recommendations)
@@ -974,6 +975,8 @@ class ConverterScreen(Screen):
             # Lock overwriting the hash map
             with self.lock:
                 self.all_results[header] = organized_data
+                
+                # Measure execution time of query
                 end_time = time.time()
                 execution_time = end_time - start_time
                 self.execution_times[header] = execution_time
@@ -1047,6 +1050,7 @@ class ConverterScreen(Screen):
         ]
 
         # Get all the vocabularies from the request data
+        # Start time of score computation
         start_time_score = time.time()
         logger.info("Requests: Retrieve vocabulary list")
         vocabs = get_vocabs(self.all_results)
@@ -1059,11 +1063,14 @@ class ConverterScreen(Screen):
         
         # Retrieve indexes of best matches for every header 
         self.request_results = retrieve_combiSQORE_recursion(self.all_results, self.sorted_combi_score_vocabularies, len(headers))
-        
+
         logger.info("Requests: Query processing finished")
+
+        # Calculate total execution time of score computation
         end_time_score = time.time()
         total_execution_time_score = end_time_score - start_time_score
         logger.info(f"Total execution time of score computation: {total_execution_time_score} seconds")
+
         # Seperate headers and row data
         self.column_heads = [(header, dp(25)) for header in rows[0]]
         table_rows = rows[1:11] 
