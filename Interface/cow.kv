@@ -224,7 +224,6 @@ ScreenManager:
                     size: 30, 30
                     pos_hint: {"center_y": 0.5}
                     on_press: root.show_recommendation_help_popup()
-            
 
             Widget:
                 size_hint_y: None
@@ -235,6 +234,27 @@ ScreenManager:
                     Rectangle:
                         pos: self.pos
                         size: self.size
+
+            BoxLayout:
+                size_hint_y: None
+                height: 50
+                spacing: 10
+                padding: [10, 5]
+                orientation: 'horizontal'
+
+                TextInput:
+                    id: header_search
+                    hint_text: 'Search for header...'
+                    size_hint_x: 0.7
+                    height: 40
+                    multiline: False
+                    on_text_validate: root.search_header(self.text)
+
+                MDRaisedButton:
+                    text: "Search"
+                    size_hint_x: 0.3
+                    height: 40
+                    on_press: root.search_header(header_search.text)
 
             # Scrollview to prevent overflow
             ScrollView:

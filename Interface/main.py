@@ -469,6 +469,7 @@ class ConverterScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rec_mode = "Homogenous"  # Changing in the switch_mode function
+        self.headers = []  # Add this to store headers for search functionality
 
 
     def show_request_help_popup(self):
@@ -819,7 +820,7 @@ class ConverterScreen(Screen):
 
         Args:
             header (str): name of the csv header
-            data (list): list of data for the  
+            data (list): list of data for the header  
             list_titles (list): list of table headers
         """
         # Pass the data to the popup
@@ -993,6 +994,29 @@ class ConverterScreen(Screen):
             t.join()
 
 
+    def search_header(self, search_text):
+        """
+        Function search_header that searches for a header and opens its recommendation popup
+        
+        Args:
+            search_text (str): The header name to search for
+        """
+        # Convert both search text and headers to lowercase for case-insensitive search
+        search_text = search_text.lower().strip()
+        
+        # Find matching headers
+        matching_headers = [h for h in self.headers if h.lower().strip() == search_text]
+        
+        if matching_headers:
+            # Get the exact header (preserving original case)
+            header = matching_headers[0]
+            # Open recommendations for the found header
+            self.open_recommendations(header, self.all_results[header], self.list_titles, self.request_results)
+        else:
+            # Show warning if header not found
+            show_warning("Header not found")
+
+
     def display_recommendation(self, file_path):
         """
         Function display_recommnedation:
@@ -1009,6 +1033,7 @@ class ConverterScreen(Screen):
         # Get the headers from CSV file
         logger.info("Requests: Retrieving CSV headers")
         headers = get_csv_headers(str(file_path))
+        self.headers = headers  # Store headers for search functionality
 
         # Dictionary {header: list of matches}
         self.all_results = {}
@@ -1093,7 +1118,6 @@ class ConverterScreen(Screen):
         #self.create_preview_table(file_path)
         # Create buttons for every header
         self.create_header_buttons(headers, self.all_results, table)
-
 
         # Show JSON file in the right section
         json_path = 'examples/metadata.json'
