@@ -990,6 +990,7 @@ class ConverterScreen(Screen):
         
         logger.info(f"Converter Screen: Set of header cards created successfully (Page {self.current_page + 1} of {self.total_pages})")
 
+
     def change_page(self, direction, headers, all_results, table):
         """
         Function to change the current page of header cards
@@ -1002,6 +1003,7 @@ class ConverterScreen(Screen):
         """
         self.current_page = max(0, min(self.current_page + direction, self.total_pages - 1))
         self.create_header_buttons(headers, all_results, table)
+
 
     def compute_scores(self, vocabs, all_results):
         """
