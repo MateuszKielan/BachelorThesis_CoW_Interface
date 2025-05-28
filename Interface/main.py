@@ -947,8 +947,9 @@ class ConverterScreen(Screen):
         # Add pagination controls
         pagination_layout = BoxLayout(
             orientation='horizontal',
-            size_hint=(0.85, None),
+            size_hint=(None, None),
             height=50,
+            width=400,
             pos_hint={"center_x": 0.5},
             spacing=10
         )
@@ -957,22 +958,27 @@ class ConverterScreen(Screen):
         prev_button = MDRaisedButton(
             text="Previous",
             disabled=self.current_page == 0,
-            on_press=lambda x: self.change_page(-1, headers, all_results, table)
+            on_press=lambda x: self.change_page(-1, headers, all_results, table),
+            size_hint=(None, None),
+            pos_hint={"center_x": 0.5}
         )
         
         # Page indicator label
         page_label = MDLabel(
             text=f"Page {self.current_page + 1} of {self.total_pages}",
             halign='center',
-            size_hint_x=None,
-            width=150
+            size_hint = (None, None),
+            size=(150, 40),
+            pos_hint={"center_x": 0.5}
         )
 
         # Next page button
         next_button = MDRaisedButton(
             text="Next",
             disabled=self.current_page >= self.total_pages - 1,
-            on_press=lambda x: self.change_page(1, headers, all_results, table)
+            on_press=lambda x: self.change_page(1, headers, all_results, table),
+            size_hint=(None, None),
+            pos_hint={"center_x": 0.5}
         )
 
         pagination_layout.add_widget(prev_button)
