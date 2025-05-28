@@ -92,8 +92,15 @@ class StartingScreen(Screen):
 
         # Invoking screen manager to switch to converter screen if proper file selected
         if self.selected_file:
+
             rows = open_csv(self.selected_file)
             if len(rows) > 0:
+
+                # Check if the file is a CSV file
+                if not str(self.selected_file).lower().endswith('.csv'):
+                    logger.warning('Not a CSV file')
+                    show_warning("Please select a CSV file")
+                    return
                 
                 # Switch to loading screen
                 self.manager.current = "loading"
@@ -868,12 +875,12 @@ class ConverterScreen(Screen):
 
     def create_header_buttons(self, headers, all_results, table):
         """
-        Function create_header_buttons that adds a button for every widget in the file
-
+        Function create_header_buttons that adds a button for every widget in the file with pagination
+        
         Params:
             headers (list): list of headers
             all_results (dict): dictionary of all headers with their matches
-            table: display widget 
+            table: display widget
         """
         # Clear the previous buttons
         table.clear_widgets()
@@ -881,10 +888,19 @@ class ConverterScreen(Screen):
         # Add a spacing widget
         table.add_widget(Widget(size_hint_y=None, height=20))
 
-        # For Every header add a corresponding button with the appropriate data
-        for header in headers:
-            data = all_results[header]
+        # Calculate pagination info
+        self.cards_per_page = 5
+        self.current_page = getattr(self, 'current_page', 0)              # Get current page or default to 0
+        self.total_pages = (len(headers) - 1) // self.cards_per_page + 1  # Calculate total pages
+        
+        # Get the slice of headers for current page
+        start_idx = self.current_page * self.cards_per_page
+        end_idx = start_idx + self.cards_per_page
+        current_headers = headers[start_idx:end_idx]
 
+        # For Every header in current page add a corresponding button with the appropriate data
+        for header in current_headers:
+            data = all_results[header]
             dtype = infer_column_type(header, self.selected_file) 
             number_of_matches = len(all_results[header])
 
@@ -927,8 +943,59 @@ class ConverterScreen(Screen):
 
             table.add_widget(Widget(size_hint_y=None, height=40))
             table.add_widget(card)
-            logger.info("Converter Screen: Set of header cards created successfully")
 
+        # Add pagination controls
+        pagination_layout = BoxLayout(
+            orientation='horizontal',
+            size_hint=(0.85, None),
+            height=50,
+            pos_hint={"center_x": 0.5},
+            spacing=10
+        )
+
+        # Previous page button
+        prev_button = MDRaisedButton(
+            text="Previous",
+            disabled=self.current_page == 0,
+            on_press=lambda x: self.change_page(-1, headers, all_results, table)
+        )
+        
+        # Page indicator label
+        page_label = MDLabel(
+            text=f"Page {self.current_page + 1} of {self.total_pages}",
+            halign='center',
+            size_hint_x=None,
+            width=150
+        )
+
+        # Next page button
+        next_button = MDRaisedButton(
+            text="Next",
+            disabled=self.current_page >= self.total_pages - 1,
+            on_press=lambda x: self.change_page(1, headers, all_results, table)
+        )
+
+        pagination_layout.add_widget(prev_button)
+        pagination_layout.add_widget(page_label)
+        pagination_layout.add_widget(next_button)
+
+        table.add_widget(Widget(size_hint_y=None, height=20))
+        table.add_widget(pagination_layout)
+        
+        logger.info(f"Converter Screen: Set of header cards created successfully (Page {self.current_page + 1} of {self.total_pages})")
+
+    def change_page(self, direction, headers, all_results, table):
+        """
+        Function to change the current page of header cards
+        
+        Args:
+            direction (int): 1 for next page, -1 for previous page
+            headers (list): list of headers
+            all_results (dict): dictionary of all headers with their matches
+            table: display widget
+        """
+        self.current_page = max(0, min(self.current_page + direction, self.total_pages - 1))
+        self.create_header_buttons(headers, all_results, table)
 
     def compute_scores(self, vocabs, all_results):
         """
