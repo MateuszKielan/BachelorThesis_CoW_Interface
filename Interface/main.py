@@ -12,7 +12,7 @@ from kivy.config import Config
 from plyer import filechooser
 from pathlib import Path
 from kivy.core.window import Window
-from requests_t import get_csv_headers, get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
+from requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from kivymd.uix.datatables import MDDataTable
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp
@@ -20,7 +20,7 @@ import csv
 import json
 import logging
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
-from utils import infer_column_type, open_csv, show_warning
+from utils import infer_column_type, open_csv, show_warning, get_csv_headers
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton

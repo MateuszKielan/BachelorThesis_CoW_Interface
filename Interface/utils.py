@@ -9,6 +9,23 @@ from kivymd.uix.snackbar import MDSnackbar
 from pathlib import Path
 from typing import List
 #--------------------------------------------------------
+def get_csv_headers(file_path: str) -> list:
+    """
+    Function get_csv_header that opens a file and extracts headers from the csv for parsing into the vocabulary
+
+    Args:
+        file_path (str) : path of the file
+    Returns:
+        headers (arr) : headers of the csv
+    """
+
+    with open(file_path, "r", encoding="utf-8") as csv_file:
+        dialect = csv.Sniffer().sniff(csv_file.read(1024))
+        csv_file.seek(0)
+        reader = csv.reader(csv_file, dialect)
+        headers = next(reader)
+    return headers
+
 def show_warning(message: str):
         """
         Function show_warning that implements a warning with a custom message.
