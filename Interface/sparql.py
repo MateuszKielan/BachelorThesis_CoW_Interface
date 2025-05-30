@@ -30,6 +30,7 @@ def query_sparql_endpoint(endpoint_url: str, header: str) -> list:
         BIND(REPLACE(STR(?uri), "/[^/#]*$", "/") AS ?namespace)
     } LIMIT 10
     """
+
     sparql = SPARQLWrapper(endpoint_url)
     sparql.setQuery(sparql_query)
     sparql.setReturnFormat(JSON)
@@ -43,7 +44,16 @@ def query_sparql_endpoint(endpoint_url: str, header: str) -> list:
         return []
 
 
-def print_results(results: list) -> list:
+def print_results(results: list) -> None:
+    """
+    Helper function to print the results of the SPARQL query for debugging purposes.
+
+    Args:
+        results (list): A list of result bindings (dictionaries).
+
+    Returns:
+        None
+    """
     for res in results:
         print("--------------------------------")
         print("URI:", res['uri']['value'])
@@ -60,10 +70,42 @@ def print_results(results: list) -> list:
             print("Type:", res['type']['value'])
 
 
+def extract_results(results: list) -> list:
+    """
+    Function extract_results that extracts the results from the SPARQL query and returns a list of matches.
+
+    Args:
+        results (list): A list of result bindings (dictionaries).
+
+    Returns:
+        list: A list of matches.
+    """
+    match_arr = []
+
+    for res in results:
+        sub_match = []
+        if 'label' in res:
+            sub_match.append(res['label']['value'])        # prefixedName
+        if 'namespace' in res:
+            sub_match.append(res['namespace']['value'])    # vocabulary.prefix
+        if 'uri' in res:
+            sub_match.append(res['uri']['value'])          # uri
+        if 'class' in res:
+            sub_match.append(res['class']['value'])        # type
+        if 'comment' in res:
+            sub_match.append(res['comment']['value'])      # comment
+        if 'description' in res:
+            sub_match.append(res['description']['value'])  # description
+
+        match_arr.append(sub_match)
+    
+    return match_arr
+
+
 if __name__ == "__main__":
     endpoint = "https://dbpedia.org/sparql"
 
     results = query_sparql_endpoint(endpoint, 'Person')
     
-    print_results(results)
+    print(extract_results(results))
 
