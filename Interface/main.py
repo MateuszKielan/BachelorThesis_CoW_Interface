@@ -749,7 +749,6 @@ class ConverterScreen(Screen):
         else:
             logger.info(f"System: Metadata file found: {metadata_file}")
 
-        # INEFFICIENT -> CHANGE
         try:
             start_time_converter = time.time()
             # Extract file paths
