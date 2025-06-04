@@ -3,6 +3,7 @@ import requests
 import csv
 import json
 from copy import deepcopy
+from utils import get_csv_headers
 import logging
 import typing
 import time 
@@ -18,25 +19,6 @@ logger = logging.getLogger(__name__)
 
 # Lov api url
 recommender_url = "https://lov.linkeddata.es/dataset/lov/api/v2/term/search"
-
-
-def get_csv_headers(file_path: str) -> list:
-    """
-    Function get_csv_header that opens a file and extracts headers from the csv for parsing into the vocabulary
-
-    Args:
-        file_path (str) : path of the file
-    Returns:
-        headers (arr) : headers of the csv
-    """
-
-    with open(file_path, "r", encoding="utf-8") as csv_file:
-        dialect = csv.Sniffer().sniff(csv_file.read(1024))
-        csv_file.seek(0)
-        reader = csv.reader(csv_file, dialect)
-        headers = next(reader)
-    return headers
-
 
 
 def get_recommendations(header: str, size: int) -> dict:

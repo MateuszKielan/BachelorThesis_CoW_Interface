@@ -8,7 +8,40 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.snackbar import MDSnackbar
 from pathlib import Path
 from typing import List
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
 #--------------------------------------------------------
+
+def lemmatize_header(header: str) -> str:
+    """
+    Function lemmatize_header that lemmatizes the header using WordNetLemmatizer.
+
+    Args:
+        header (str): header to be lemmatized
+    Returns:
+        lemmatized_header (str): lemmatized header
+    """
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_header = lemmatizer.lemmatize(header, wordnet.NOUN)
+    return lemmatized_header
+
+def get_csv_headers(file_path: str) -> list:
+    """
+    Function get_csv_header that opens a file and extracts headers from the csv for parsing into the vocabulary
+
+    Args:
+        file_path (str) : path of the file
+    Returns:
+        headers (arr) : headers of the csv
+    """
+
+    with open(file_path, "r", encoding="utf-8") as csv_file:
+        dialect = csv.Sniffer().sniff(csv_file.read(1024))
+        csv_file.seek(0)
+        reader = csv.reader(csv_file, dialect)
+        headers = next(reader)
+    return headers
+
 def show_warning(message: str):
         """
         Function show_warning that implements a warning with a custom message.
