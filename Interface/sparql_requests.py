@@ -4,7 +4,7 @@ import difflib
 import math
 
 
-def query_sparql_endpoint(endpoint_url: str, header: str) -> list:
+def get_sparql_recommendations(endpoint_url: str, header: str) -> list:
     """
     Query a SPARQL endpoint and return the results as a list of bindings.
 
@@ -74,7 +74,7 @@ def print_results(results: list) -> None:
             print("Type:", res['type']['value'])
 
 
-def extract_results(results: list) -> list:
+def organize_sparql_results(results: list) -> list:
     """
     Function extract_results that extracts the results from the SPARQL query and returns a list of matches.
 
@@ -106,7 +106,7 @@ def extract_results(results: list) -> list:
     return match_arr
 
 
-def get_vocabs(all_results: list) -> list:
+def get_sparql_vocabs(all_results: list) -> list:
     """
     Function get_vocabs that extracts the vocabularies from the SPARQL query results.
 
@@ -161,7 +161,7 @@ def assign_match_scores(all_results):
     return all_results
 
 
-def get_average_score(vocabs: list, all_results: dict) -> list[tuple]:
+def get_average_sparql_score(vocabs: list, all_results: dict) -> list[tuple]:
     """
     Function get_average_score that computes average score for every distinct vocabulary.
 
@@ -192,7 +192,28 @@ def get_average_score(vocabs: list, all_results: dict) -> list[tuple]:
     return vocab_scores
 
 
-def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[tuple]:
+def normalize_scores(scores: tuple[str, int]) -> tuple[str, int]:
+    """
+    Function normalize_scores that takes list of scroes and normalizes them according to the min max formula
+
+    Args:
+        scores (tuple(int,str)): tuple of vocabularies with corresponding scores
+    Returns:
+        scores (tuple(int,str)): tuple of voacbularies with corresponding normalized scores
+    """
+    scores_dict = dict(scores)
+    min_score = min(scores_dict.values())
+    max_score = max(scores_dict.values())
+
+    for vocab in scores_dict:
+        score = scores_dict[vocab]
+        normalized_score = (score - min_score) / (max_score - min_score)
+        scores_dict[vocab] = normalized_score
+
+    return list(scores_dict.items())
+
+
+def calculate_sparql_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[tuple]:
     """
     Function calculate_combi_score that calculates combi score of every vocabulary based on:
         1. SS - Similarity score 
@@ -201,14 +222,76 @@ def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[
         Query-Combinative-Ontology Similarity Score = SS * QC
 
     Args:
-        all_results (dict): {header: list of matches}
+        all_results (dict(list())) - data of all headers and all matches.
+        vocab_scores (list(tuple))  - list of vocabularies with their corresponding scores.
+        necesary_vocabs (list(tuple)) - list of necessary vocabularies identified in necessary vocabs function.
+
+    Returns:
+        new_vocab_scores (list(tuple)) - list of vocabularies with the calculated combi score.
     """
     pass
+
+    new_vocab_scores = []
+
+    for vocab in vocab_scores:
+        
+        vocab_name = vocab[0]
+        vocab_similarity_score = vocab[1]
+        vocab_query_coverage = 0
+        vocab_combi_score = 0
+
+        for header in all_results:
+            for match in all_results[header]:
+
+                if match[1] == vocab_name:
+                    vocab_query_coverage += 1
+
+        vocab_combi_score = vocab_similarity_score * vocab_query_coverage
+
+        new_vocab_scores.append((vocab_name, vocab_combi_score))
+
+    new_vocab_scores = normalize_scores(new_vocab_scores)
+
+    return new_vocab_scores
+
+
+def retrieve_sparql_results(all_results: str, vocab_scores: str, num_headers: int, matched=None, unmatched=None) -> list[tuple]:
+    if matched is None:
+        matched = []
+    if unmatched is None:
+        unmatched = list(all_results.keys())
+
+    if not vocab_scores:
+        print("No more vocabularies to try.")
+        return matched
+
+    if len(matched) == num_headers:
+        return matched
+    
+    current_vocab = vocab_scores[0][0]
+    print(f"Trying vocabulary: {current_vocab}")
+
+    still_unmatched = []
+    
+    for header in unmatched:
+        found = False
+        for idx, match in enumerate(all_results[header]):
+            if match[1] == current_vocab:
+                print(f"Matched header '{header}' with vocab '{current_vocab}'")
+                matched.append((header, idx))
+                found = True
+                break
+        if not found:
+            print(f"No match for '{header}' in vocab '{current_vocab}'")
+            still_unmatched.append(header)
+
+    return retrieve_sparql_results(all_results, vocab_scores[1:], num_headers, matched, still_unmatched)
+
 
 
 if __name__ == "__main__":
     endpoint = "https://dbpedia.org/sparql"
-    csv_file = "examples/cow_person_example.csv"
+    csv_file = "Interface/examples/cow_person_example.csv"
     all_results = {}
 
     # Get the headers of the CSV file
@@ -217,11 +300,21 @@ if __name__ == "__main__":
     # Get the recommendations for each header
     for id, header in enumerate(headers):
         print(f"Getting recommendations for {header}")
-        recommendations = query_sparql_endpoint(endpoint, header)
-        header_matches = extract_results(recommendations)
+        recommendations = get_sparql_recommendations(endpoint, header)
+        header_matches = organize_sparql_results(recommendations)
         all_results[header] = header_matches
         print(f"Number of matches for {header}: {len(header_matches)}")
 
-    vocabs = get_vocabs(all_results)
+    vocabs = get_sparql_vocabs(all_results)
     print(f"Number of vocabularies: {len(vocabs)}")
     print(f"Vocabularies: {vocabs}")
+
+    # Compute estimated TF-like scores
+    scored_results = assign_match_scores(all_results)
+    print(scored_results)
+
+    avg_scores = get_average_sparql_score(vocabs, scored_results)
+    print(avg_scores)
+
+    combi_scores = calculate_sparql_combi_score(scored_results, avg_scores)
+    print(combi_scores)

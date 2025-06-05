@@ -13,6 +13,7 @@ from plyer import filechooser
 from pathlib import Path
 from kivy.core.window import Window
 from requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
+from sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results
 from kivymd.uix.datatables import MDDataTable
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp
@@ -87,8 +88,8 @@ class StartingScreen(Screen):
             3. Raises a warning window in case of a wrong file selection
         """
         # Retrieve the API endpoint
-        text = self.ids.api_endpoint_data.text
-        logger.info(f"API endpoint: {text}")
+        custom_endpoint = self.ids.api_endpoint_data.text
+        logger.info(f"API endpoint: {custom_endpoint}")
 
         # Invoking screen manager to switch to converter screen if proper file selected
         if self.selected_file:
@@ -109,7 +110,7 @@ class StartingScreen(Screen):
                 # Schedule the data loading and screen switch
                 def load_data(dt):
                     converter_screen = self.manager.get_screen("converter")
-                    converter_screen.display_recommendation(self.selected_file)
+                    converter_screen.display_recommendation(self.selected_file, custom_endpoint)
                     self.manager.current = "converter"
                     logger.info("Screen Manager: Switching to Converter Screen")
                 
@@ -749,7 +750,6 @@ class ConverterScreen(Screen):
         else:
             logger.info(f"System: Metadata file found: {metadata_file}")
 
-        # INEFFICIENT -> CHANGE
         try:
             start_time_converter = time.time()
             # Extract file paths
@@ -1018,6 +1018,13 @@ class ConverterScreen(Screen):
         combi_score_vocabularies = calculate_combi_score(all_results, scores)
         self.sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
 
+    def compute_sparql_scores(self, vocabs, all_results):
+        """
+        Function compute_sparql_scores that computes average scores in a separate thread. 
+        """
+        scores = get_average_sparql_score(vocabs, all_results)
+        combi_score_vocabularies = calculate_sparql_combi_score(all_results, scores)
+        self.sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
 
     def query_linked_open_vocabularies(self, headers, size):
         """
@@ -1068,6 +1075,46 @@ class ConverterScreen(Screen):
         for t in threads:
             t.join()
 
+    def query_sparql_endpoint(self, headers, size):
+        # Initialize Lock
+        self.lock = Lock()
+
+        # Initialize list of Threads
+        threads = []
+
+        self.execution_times = {}
+
+        def query_header(header, size):
+            """
+            Function query_header that executes a thread for every header
+            """
+            # Start time of query
+            start_time = time.time()
+            recommendations = get_sparql_recommendations(header, size)
+            organized_data = organize_sparql_results(recommendations)
+            end_time = time.time()
+            execution_time = end_time - start_time              
+
+            # Lock overwriting the hash map
+            with self.lock:
+                self.all_results[header] = organized_data
+                
+                # Measure execution time of query
+                end_time = time.time()
+                execution_time = end_time - start_time
+                self.execution_times[header] = execution_time
+                logger.info(f"Execution time for {header}: {execution_time} seconds")
+
+        # Loop through all the headers and create a separate thread
+        for header in headers:
+            header_thread = Thread(target=query_header, args=(header, size)) # Create a thread
+            threads.append(header_thread)                                    # Add thread to the list
+            header_thread.start()                                            # Start thread
+
+        # Wait for all the threads to finish
+        for t in threads:
+            t.join()
+
 
     def search_header(self, search_text):
         """
@@ -1092,62 +1139,26 @@ class ConverterScreen(Screen):
             show_warning("Header not found")
 
 
-    def display_recommendation(self, file_path):
+    def process_default_enpoint(self, file_path, headers, size):
         """
-        Function display_recommnedation:
-            1. Retreitves the recommendation from the input csv.
-            2. Displays the headers on the middle page.
-            3. Displays the recommendations on the middle page.
+        Function process_default_enpoint that processes the default endpoint.
         """
-        # Initialize a class variable with file path -> reusable in other functions
-        self.selected_file = file_path
-
-        # Load CSV data for table
-        rows = open_csv(file_path)
-
-        # Get the headers from CSV file
-        logger.info("Requests: Retrieving CSV headers")
-        headers = get_csv_headers(str(file_path))
-        self.headers = headers  # Store headers for search functionality
-
-        # Dictionary {header: list of matches}
-        self.all_results = {}
-
-        # Set the size of received matches
-        size = 20
-
         # Convert the CSV to metadata JSO
         converter = Thread(target=self.convert_with_cow, args=(file_path,))
         #self.convert_with_cow(str(file_path))
-
-        # For every header get recommendations and populate the all_results dictionary
-        # If no recommendations are found, the user is redirected to the start screen
         try:
             logger.info("Requests: Populating the match dictionary")
             query = Thread(target=self.query_linked_open_vocabularies, args=(headers, size))
         except Exception as e:
             logger.error(f"Error fetching recommendations: {e}")
             self.manager.current = "start"
-            
+        
         #self.query_linked_open_vocabularies(headers, size)
-
         converter.start()
         query.start()
 
         converter.join()
         query.join()
-
-        # Store the display widget
-        table = self.ids.vocab_recommender
-
-        # List of titles with spacings
-        self.list_titles = [
-            ('prefixedName', dp(60)), 
-            ('vocabulary.prefix', dp(60)), 
-            ('uri',dp(60)),
-            ('type',dp(60)), 
-            ('score',dp(60))
-        ]
 
         # Get all the vocabularies from the request data
         # Start time of score computation
@@ -1170,6 +1181,85 @@ class ConverterScreen(Screen):
         end_time_score = time.time()
         total_execution_time_score = end_time_score - start_time_score
         logger.info(f"Total execution time of score computation: {total_execution_time_score} seconds")
+
+        # List of titles with spacings
+        self.list_titles = [
+            ('prefixedName', dp(60)), 
+            ('vocabulary.prefix', dp(60)), 
+            ('uri',dp(60)),
+            ('type',dp(60)), 
+            ('score',dp(60))
+        ]
+        
+    def process_custom_endpoint(self, file_path, headers, size):
+        """
+        Function process_custom_endpoint that processes the custom endpoint.
+        """
+        # Convert the CSV to metadata JSO
+        converter = Thread(target=self.convert_with_cow, args=(file_path,))
+
+        try:
+            logger.info("Requests: Populating the match dictionary")
+            query = Thread(target=self.query_sparql_endpoint, args=(headers, size))
+        except Exception as e:
+            logger.error(f"Error fetching recommendations: {e}")
+            self.manager.current = "start"
+
+        converter.start()
+        query.start()
+
+        converter.join()
+        query.join()
+
+        # Get all the vocabularies from the request data
+        # Start time of score computation
+        start_time_score = time.time()
+        logger.info("Requests: Retrieve vocabulary list")
+        vocabs = get_sparql_vocabs(self.all_results)
+
+        # Calculate average score for every vocabulary -> compute combi sqore
+        logger.info("Requests: Compute average score and compute Combi Score")
+        t = Thread(target=self.compute_sparql_scores, args=(vocabs, self.all_results))
+        t.start()
+        t.join()
+
+        # Test the results - return to the starting screen
+        self.manager.current = "start"
+
+
+    def display_recommendation(self, file_path, custom_endpoint=""):
+        """
+        Function display_recommnedation:
+            1. Retreitves the recommendation from the input csv.
+            2. Displays the headers on the middle page.
+            3. Displays the recommendations on the middle page.
+        """
+        
+        # Initialize a class variable with file path -> reusable in other functions
+        self.selected_file = file_path
+
+        # Load CSV data for table
+        rows = open_csv(file_path)
+
+        # Get the headers from CSV file
+        logger.info("Requests: Retrieving CSV headers")
+        headers = get_csv_headers(str(file_path))
+        self.headers = headers  # Store headers for search functionality
+
+        # Dictionary {header: list of matches}
+        self.all_results = {}
+
+        # Set the size of received matches
+        size = 20
+
+        # Processing the endpoint depending on the user input
+        if custom_endpoint == "":
+            self.process_default_enpoint(file_path, headers, size)
+        else:
+            self.process_custom_endpoint(file_path, headers, size)
+
+        # Store the display widget
+        table = self.ids.vocab_recommender
 
         # Seperate headers and row data
         self.column_heads = [(header, dp(25)) for header in rows[0]]
