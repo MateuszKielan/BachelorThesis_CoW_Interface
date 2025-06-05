@@ -365,6 +365,16 @@ class RecommendationPopup(FloatLayout):
         # Clear all  previous widgets
         self.ids.popup_recommendations.clear_widgets()
 
+        if not organized_data or len(organized_data) == 0:
+            self.ids.popup_recommendations.add_widget(Label(
+                text='NO Matches found',
+                color=(1,1,1,1),
+                font_size='20sp',
+                size_hint_y=0.05
+            ))
+            return  # Prevent Table creation
+        
+
         # Update the class-wide variable with the received header
         self.header = header
 
@@ -869,6 +879,10 @@ class ConverterScreen(Screen):
             data (list): list of data for the header  
             list_titles (list): list of table headers
         """
+        if not data or len(data) == 0:
+            show_warning("Couldn't load the data, try again")
+            return
+
         self.show_loading_screen()
 
         def show_popup_after_loading(dt):

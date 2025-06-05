@@ -59,7 +59,7 @@
                 "propertyUrl": "http://purl.org/healthcarevocab/v1#PersonIdentificationCodeSequence",
                 "vocab": "dicom",
                 "type": "property",
-                "score": 0.41087267
+                "score": 0.39727527
             },
             {
                 "name": "surname",
@@ -69,17 +69,17 @@
                 "propertyUrl": "http://dbpedia.org/ontology/Surname",
                 "vocab": "dbpedia-owl",
                 "type": "class",
-                "score": 0.5492199
+                "score": 0.5555556
             },
             {
                 "name": "male",
                 "datatype": "string",
-                "@id": "http://dbpedia.org/ontology/championInDoubleMale",
-                "prefixedName": "dbpedia-owl:championInDoubleMale",
-                "propertyUrl": "http://dbpedia.org/ontology/championInDoubleMale",
+                "@id": "http://dbpedia.org/ontology/populationPctMen",
+                "prefixedName": "dbpedia-owl:populationPctMen",
+                "propertyUrl": "http://dbpedia.org/ontology/populationPctMen",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.18781535
+                "score": 0.19040094
             },
             {
                 "name": "occupation",
@@ -89,7 +89,7 @@
                 "propertyUrl": "http://dbpedia.org/ontology/occupation",
                 "vocab": "dbpedia-owl",
                 "type": "property",
-                "score": 0.60276234
+                "score": 0.6000188
             }
         ]
     },
@@ -111,7 +111,7 @@
         "@id": "http://opendefinition.org/licenses/cc-by/"
     },
     "dc:modified": {
-        "@value": "2025-05-23",
+        "@value": "2025-06-05",
         "@type": "xsd:date"
     },
     "@id": "https://example.com/id/cow_person_example.csv"
