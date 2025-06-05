@@ -203,6 +203,7 @@ def calculate_combi_score(all_results: dict, vocab_scores: list[tuple]) -> list[
     Args:
         all_results (dict): {header: list of matches}
     """
+    pass
 
 
 if __name__ == "__main__":
@@ -224,7 +225,3 @@ if __name__ == "__main__":
     vocabs = get_vocabs(all_results)
     print(f"Number of vocabularies: {len(vocabs)}")
     print(f"Vocabularies: {vocabs}")
-
-    # Compute estimated TF-like scores
-    scored_results = assign_match_scores(all_results)
-    print(scored_results)
