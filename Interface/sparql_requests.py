@@ -288,10 +288,9 @@ def retrieve_sparql_results(all_results: str, vocab_scores: str, num_headers: in
     return retrieve_sparql_results(all_results, vocab_scores[1:], num_headers, matched, still_unmatched)
 
 
-
 if __name__ == "__main__":
     endpoint = "https://dbpedia.org/sparql"
-    csv_file = "Interface/examples/cow_person_example.csv"
+    csv_file = "examples/cow_person_example.csv"
     all_results = {}
 
     # Get the headers of the CSV file
@@ -318,3 +317,6 @@ if __name__ == "__main__":
 
     combi_scores = calculate_sparql_combi_score(scored_results, avg_scores)
     print(combi_scores)
+
+    request_results = retrieve_sparql_results(all_results, combi_scores, 4)
+    print(request_results)

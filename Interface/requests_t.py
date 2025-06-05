@@ -38,9 +38,19 @@ def get_recommendations(header: str, size: int) -> dict:
     }
     try:
         response = requests.get(recommender_url, params=params, timeout=30)
+        response.raise_for_status()
         results = response.json()
+    except requests.exceptions.Timeout:
+        logger.warning(f"Timeout when querying API for header: {header}")
+        return []
+    except requests.exceptions.ConnectionError:
+        logger.warning("Could not connect to the API.")
+        return []
+    except requests.exceptions.HTTPError as e:
+        logger.warning(f"HTTP error: {e}")
+        return []
     except Exception as e:
-        logger.error(f"Error fetching recommendations: {e}")
+        logger.warning(f"Unexpected error: {e}")
         return []
     
     return results
@@ -110,7 +120,7 @@ def organize_results(result: dict) -> list:
         sub_match.append(matches[id]['score'])
 
         match_arr.append(sub_match)
-    
+
     return match_arr
 
 
@@ -345,7 +355,6 @@ def main():
     logger.info(f"List of retrieved vocabularies")
 
     # Calculate a score for every vocabulary
-    scores = get_average_score(vocabs, all_results)
     logger.info(f"List of vocabularies with averaged Tf-IDF score {scores}")
 
     # Rank the vocabularies according to Query-Combinative-Ontology Similarity Score

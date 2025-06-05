@@ -478,6 +478,15 @@ class ConverterScreen(Screen):
         super().__init__(**kwargs)
         self.rec_mode = "Homogenous"  # Changing in the switch_mode function
         self.headers = []  # Add this to store headers for search functionality
+        self.sorted_combi_score_vocabularies = [] 
+
+
+    def show_loading_screen(self):
+        self.manager.current = "loading"
+
+
+    def show_converter_screen(self):
+        self.manager.current = "converter"
 
 
     def show_request_help_popup(self):
@@ -635,25 +644,40 @@ class ConverterScreen(Screen):
             if header in all_results and header in index_lookup:
                 match = all_results[header][index_lookup[header]]
                 
-                # Update the data in the file 
-                column.update({
-                    'name': header,
-                    'prefixedName': match[0][0],  # prefixed name
-                    '@id': match[2][0],           # URI
-                    'propertyUrl': match[2][0],   # URI for CoW
-                    'vocab': match[1],            # vocabulary.prefix
-                    'type': match[3],             # type
-                    'score': match[4],            # score
-                })
+                if self.custom_endpoint == "":
+                    # Update the data in the file 
+                    column.update({
+                        'name': header,
+                        'prefixedName': match[0][0],  # prefixed name
+                        '@id': match[2][0],           # URI
+                        'propertyUrl': match[2][0],   # URI for CoW
+                        'vocab': match[1],            # vocabulary.prefix
+                        'type': match[3],             # type
+                        'score': match[4],            # score
+                    })
+                else:
+                    column.update({
+                        'name': header,
+                        'prefixedName': match[0],     # prefixed name
+                        '@id': match[2],              # URI
+                        'propertyUrl': match[2],      # URI for CoW
+                        'vocab': match[1],            # vocabulary.prefix
+                        'type': match[3],             # type
+                        'score': match[4],            # score
+                    })
 
                 logger.info(f"System: Metadata Updated {header} -> {match[0][0]}")
             else:
                 logger.warning(f"System: Match Not Found for header: {header}")
 
         # Save the changes
-        with open(path, 'w', encoding='utf-8') as json_file:
-            json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"System: Metadata File Written {path}")
+        try:
+            with open(path, 'w', encoding='utf-8') as json_file:
+                json.dump(data, json_file, indent=4, ensure_ascii=False)
+                logger.info(f"System: Metadata File Written {path}")
+        except Exception as e:
+            logger.warning(f"Error writing metadata file: {e}")
+            show_warning("Could not write the metadata file. Please check file permission.")
 
         logger.info("Converter Screen: Updating the Screen")
 
@@ -686,24 +710,39 @@ class ConverterScreen(Screen):
             if header in all_results and header in index_lookup:
                 match = all_results[header][index_lookup[header]]
 
-                column.update({
-                    'name': header,
-                    'prefixedName': match[0][0],  # prefixed name
-                    '@id': match[2][0],           # URI
-                    'propertyUrl': match[2][0],   # URI for CoW
-                    'vocab': match[1],            # vocabulary.prefix
-                    'type': match[3],             # type
-                    'score': match[4],            # score
-                })
+                if self.custom_endpoint =="":
+                    column.update({
+                        'name': header,
+                        'prefixedName': match[0][0],  # prefixed name
+                        '@id': match[2][0],           # URI
+                        'propertyUrl': match[2][0],   # URI for CoW
+                        'vocab': match[1],            # vocabulary.prefix
+                        'type': match[3],             # type
+                        'score': match[4],            # score
+                    })
+                else:
+                    column.update({
+                        'name': header,
+                        'prefixedName': match[0],     # prefixed name
+                        '@id': match[2],              # URI
+                        'propertyUrl': match[2],      # URI for CoW
+                        'vocab': match[1],            # vocabulary.prefix
+                        'type': match[3],             # type
+                        'score': match[4],            # score
+                    })
 
                 logger.info(f"System: Metadata Updated - {header} -> {match[0][0]}")
             else:
                 logger.warning(f"System: Match Not Found - for header: {header}")
 
         # Save
-        with open(path, 'w', encoding='utf-8') as json_file:
-            json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"System: Metadata File Written - {path}")
+        try:
+            with open(path, 'w', encoding='utf-8') as json_file:
+                json.dump(data, json_file, indent=4, ensure_ascii=False)
+                logger.info(f"System: Metadata File Written - {path}")
+        except Exception as e:
+            logger.warning(f"Error writing metadata file: {e}")
+            show_warning("Could not write the metadata file. PLease check file permissions.")
 
 
     def save_json(self):
@@ -830,15 +869,20 @@ class ConverterScreen(Screen):
             data (list): list of data for the header  
             list_titles (list): list of table headers
         """
-        # Pass the data to the popup
-        show = RecommendationPopup(header,data, list_titles, request_results, self.rec_mode, self.selected_file)
+        self.show_loading_screen()
 
-        # Initialize and open window
-        popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
+        def show_popup_after_loading(dt):
+            # Pass the data to the popup
+            show = RecommendationPopup(header,data, list_titles, request_results, self.rec_mode, self.selected_file)
 
-        logger.info("Converter Screen: Opening the Recommendation Popup")
-        popupWindow.open()
+            # Initialize and open window
+            popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))
 
+            logger.info("Converter Screen: Opening the Recommendation Popup")
+            popupWindow.open()
+            self.show_converter_screen()
+
+        Clock.schedule_once(show_popup_after_loading, 1)
 
     def highlight_switch(self):
         """
@@ -1018,11 +1062,15 @@ class ConverterScreen(Screen):
         combi_score_vocabularies = calculate_combi_score(all_results, scores)
         self.sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
 
+
     def compute_sparql_scores(self, vocabs, all_results):
         """
         Function compute_sparql_scores that computes average scores in a separate thread. 
         """
-        scores = get_average_sparql_score(vocabs, all_results)
+        scored_results = assign_match_scores(all_results)
+        logger.info(f"Scored_results: {scored_results}")
+        scores = get_average_sparql_score(vocabs, scored_results)
+        logger.info(f"Vocabulary scores: {scores}")
         combi_score_vocabularies = calculate_sparql_combi_score(all_results, scores)
         self.sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
 
@@ -1075,6 +1123,7 @@ class ConverterScreen(Screen):
         for t in threads:
             t.join()
 
+
     def query_sparql_endpoint(self, headers, size):
         # Initialize Lock
         self.lock = Lock()
@@ -1090,7 +1139,7 @@ class ConverterScreen(Screen):
             """
             # Start time of query
             start_time = time.time()
-            recommendations = get_sparql_recommendations(header, size)
+            recommendations = get_sparql_recommendations(self.custom_endpoint, header)
             organized_data = organize_sparql_results(recommendations)
             end_time = time.time()
             execution_time = end_time - start_time              
@@ -1223,6 +1272,26 @@ class ConverterScreen(Screen):
         t.start()
         t.join()
 
+
+        self.request_results = retrieve_sparql_results(self.all_results, self.sorted_combi_score_vocabularies, len(headers))
+        logger.info(f"Request results: {self.request_results}")
+
+
+        logger.info("Requests: Query processing finished")
+
+        # Calculate total execution time of score computation
+        end_time_score = time.time()
+        total_execution_time_score = end_time_score - start_time_score
+        logger.info(f"Total execution time of score computation: {total_execution_time_score} seconds")
+
+        # List of titles with spacings
+        self.list_titles = [
+            ('prefixedName', dp(60)), 
+            ('vocabulary.prefix', dp(60)), 
+            ('uri',dp(60)),
+            ('type',dp(60)), 
+            ('score',dp(60))
+        ]
         # Test the results - return to the starting screen
         self.manager.current = "start"
 
@@ -1238,8 +1307,14 @@ class ConverterScreen(Screen):
         # Initialize a class variable with file path -> reusable in other functions
         self.selected_file = file_path
 
+        self.custom_endpoint = custom_endpoint
+
         # Load CSV data for table
-        rows = open_csv(file_path)
+        try:
+            rows = open_csv(file_path)
+        except Exception as e:
+            logger.warning(f"Error reading file: {e}")
+            show_warning("Could not read the file. Please check the file format and encoding.")
 
         # Get the headers from CSV file
         logger.info("Requests: Retrieving CSV headers")
@@ -1275,7 +1350,7 @@ class ConverterScreen(Screen):
             column_data=self.column_heads,
             row_data=table_rows,
             size_hint=(1, 1),
-            pos_hint={"center_x": 0.5, "center_y": 0.5},
+            pos_hint={"center_x": 0.5, "y": 0.6},
             use_pagination=True,
             rows_num = 10
         )
@@ -1318,8 +1393,8 @@ class ConverterScreen(Screen):
         open_popup = MDRaisedButton(
             text='Load Full Dataset', 
             on_press=lambda x: self.show_popup(self.column_heads,self.row_data), 
-            size_hint=(0.3, None),
-            pos_hint={"center_x": 0.5}
+            size_hint=(0.5, None),
+            pos_hint={"center_x": 0.5, 'y': 0.2}
         )
 
         self.ids.csv_preview_container.clear_widgets()
