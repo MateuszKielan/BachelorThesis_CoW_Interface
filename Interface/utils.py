@@ -8,22 +8,7 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.snackbar import MDSnackbar
 from pathlib import Path
 from typing import List
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import wordnet
-#--------------------------------------------------------
-
-def lemmatize_header(header: str) -> str:
-    """
-    Function lemmatize_header that lemmatizes the header using WordNetLemmatizer.
-
-    Args:
-        header (str): header to be lemmatized
-    Returns:
-        lemmatized_header (str): lemmatized header
-    """
-    lemmatizer = WordNetLemmatizer()
-    lemmatized_header = lemmatizer.lemmatize(header, wordnet.NOUN)
-    return lemmatized_header
+#------------------------------------------
 
 def get_csv_headers(file_path: str) -> list:
     """
