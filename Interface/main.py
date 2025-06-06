@@ -9,7 +9,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.lang import Builder
 from kivy.config import Config
-from plyer import filechooser
+from tkinter import Tk, filedialog
 from pathlib import Path
 from kivy.core.window import Window
 from requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
@@ -21,7 +21,7 @@ import csv
 import json
 import logging
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
-from utils import infer_column_type, open_csv, show_warning, get_csv_headers
+from utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
@@ -32,7 +32,6 @@ from kivy.uix.textinput import TextInput
 from threading import Thread, Lock
 from kivymd.uix.spinner import MDSpinner
 import time
-
 #-----------------------------
 
 # Set up the logger
@@ -60,8 +59,18 @@ class StartingScreen(Screen):
         """
         logger.info("File chooser: Opening...")
 
-        # Utilizing external library filechooser
-        filechooser.open_file(on_selection=self.select_store)
+        logger.info("File chooser: Opening...")
+        root = Tk()
+        root.withdraw()  # Hide the root window
+        file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
+        root.destroy()
+
+        if file_path:
+            self.selected_file = Path(file_path)
+            self.ids.file_path_label.text = self.selected_file.name
+            logger.info(f"File selected: {file_path}")
+        else:
+            logger.info("No file selected.")
 
 
     def select_store(self, selection: list) -> None:
@@ -280,9 +289,9 @@ class RecommendationPopup(FloatLayout):
 
         # Loop through all columns in the tableSchema
         for column in data.get('tableSchema', {}).get('columns', []):
-            if column.get('header') == self.header:
+            if column.get('name') == self.header:
                 column.update({
-                    'name': name,     # prefixed name 
+                    'prefixedName': name,     # prefixed name 
                     '@id': uri,       # uri
                     'vocab': vocab,   # vocabulary 
                     'type': rdf_type, # rdf type
@@ -331,7 +340,8 @@ class RecommendationPopup(FloatLayout):
         button_insert = MDRaisedButton(
             text="Insert", 
             on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)), # Use clocking to avoid error when conflicting with loading screen
-            pos_hint={"center_y": 0.5, "center_x":0.5}                                        
+            size_hint=(None, None),
+            pos_hint={"center_x":0.5, "y": 0.6}                                        
         )
         
         # Add the button to the widget
@@ -648,7 +658,7 @@ class ConverterScreen(Screen):
         # Retrieve the column names from tableSchema
         for column in data.get('tableSchema', {}).get('columns', []):
             # Get the header name for mapping purposes
-            header = column.get('header')
+            header = column.get('name')
 
             # If header is present in both all_results and index_lookup
             if header in all_results and header in index_lookup:
@@ -720,7 +730,7 @@ class ConverterScreen(Screen):
             if header in all_results and header in index_lookup:
                 match = all_results[header][index_lookup[header]]
 
-                if self.custom_endpoint =="":
+                if self.custom_endpoint == "":
                     column.update({
                         'name': header,
                         'prefixedName': match[0][0],  # prefixed name
@@ -821,6 +831,7 @@ class ConverterScreen(Screen):
             converter.convert()
 
             logger.info("CoW: Conversion to N-Quads completed successfully.")
+            show_success_message("Conversion to N-Quads completed successfully.")
             end_time_converter = time.time()
             total_execution_time_converter = end_time_converter - start_time_converter
             logger.info(f"Total execution time of conversion: {total_execution_time_converter} seconds")
@@ -859,7 +870,16 @@ class ConverterScreen(Screen):
 
         Those parameters are only needed to pass it further to the DataPopup screen
         """
+        # Show loading screen
+        self.manager.current = "loading"
 
+        # Schedule the data loading after a delay
+        Clock.schedule_once(lambda dt: self.load_full_dataset(column_heads, row_data), 0.5)
+
+    def load_full_dataset(self, column_heads, row_data):
+        """
+        Function to load the full dataset and display it in a popup.
+        """
         # Pass the data to the popup
         show = DataPopup(column_heads, row_data)
 
@@ -868,7 +888,10 @@ class ConverterScreen(Screen):
 
         logger.info("Converter Screen: Loading the full CSV dataset")
         popupWindow.open()
-    
+
+        # Switch back to the converter screen after loading
+        self.manager.current = "converter"
+
 
     def open_recommendations(self,header: str, data: list, list_titles: list, request_results: list):
         """
@@ -1110,22 +1133,27 @@ class ConverterScreen(Screen):
             """
             Function query_header that executes a thread for every header
             """
-            # Start time of query
-            start_time = time.time()
-            recommendations = get_recommendations(header, size)
-            organized_data = organize_results(recommendations)
-            end_time = time.time()
-            execution_time = end_time - start_time              
-
-            # Lock overwriting the hash map
-            with self.lock:
-                self.all_results[header] = organized_data
-                
-                # Measure execution time of query
+            try:
+                # Start time of query
+                start_time = time.time()
+                recommendations = get_recommendations(header, size)
+                organized_data = organize_results(recommendations)
                 end_time = time.time()
-                execution_time = end_time - start_time
-                self.execution_times[header] = execution_time
-                logger.info(f"Execution time for {header}: {execution_time} seconds")
+                execution_time = end_time - start_time              
+
+                # Lock overwriting the hash map
+                with self.lock:
+                    self.all_results[header] = organized_data
+                    
+                    # Measure execution time of query
+                    end_time = time.time()
+                    execution_time = end_time - start_time
+                    self.execution_times[header] = execution_time
+                    logger.info(f"Execution time for {header}: {execution_time} seconds")
+
+            except Exception as e:
+                logger.info(f"Error querying header: {e}")
+                show_warning("Ooops... Something went wrong")
 
         # Loop through all the headers and create a separate thread
         for header in headers:
@@ -1151,22 +1179,27 @@ class ConverterScreen(Screen):
             """
             Function query_header that executes a thread for every header
             """
-            # Start time of query
-            start_time = time.time()
-            recommendations = get_sparql_recommendations(self.custom_endpoint, header)
-            organized_data = organize_sparql_results(recommendations)
-            end_time = time.time()
-            execution_time = end_time - start_time              
-
-            # Lock overwriting the hash map
-            with self.lock:
-                self.all_results[header] = organized_data
-                
-                # Measure execution time of query
+            try:
+                # Start time of query
+                start_time = time.time()
+                recommendations = get_sparql_recommendations(self.custom_endpoint, header)
+                organized_data = organize_sparql_results(recommendations)
                 end_time = time.time()
-                execution_time = end_time - start_time
-                self.execution_times[header] = execution_time
-                logger.info(f"Execution time for {header}: {execution_time} seconds")
+                execution_time = end_time - start_time              
+
+                # Lock overwriting the hash map
+                with self.lock:
+                    self.all_results[header] = organized_data
+                    
+                    # Measure execution time of query
+                    end_time = time.time()
+                    execution_time = end_time - start_time
+                    self.execution_times[header] = execution_time
+                    logger.info(f"Execution time for {header}: {execution_time} seconds")
+            except Exception as e:
+                logger.info(f"Error querying header: {e}")
+                show_warning("Ooops... Something went wrong")
+
 
         # Loop through all the headers and create a separate thread
         for header in headers:
@@ -1206,35 +1239,47 @@ class ConverterScreen(Screen):
         """
         Function process_default_enpoint that processes the default endpoint.
         """
-        # Convert the CSV to metadata JSO
-        converter = Thread(target=self.convert_with_cow, args=(file_path,))
-        #self.convert_with_cow(str(file_path))
+        try:
+            # Convert the CSV to metadata JSON
+            converter = Thread(target=self.convert_with_cow, args=(file_path,))
+            converter.start()
+        except Exception as e:
+            logger.error(f"Error starting conversion thread: {e}")
+            show_warning("Something went wrong with converting your file to metadata. Please try again.")
+            self.manager.current = "converter"
+            return 
+
         try:
             logger.info("Requests: Populating the match dictionary")
             query = Thread(target=self.query_linked_open_vocabularies, args=(headers, size))
+            query.start()
         except Exception as e:
-            logger.error(f"Error fetching recommendations: {e}")
+            logger.error(f"Error starting query thread: {e}")
             self.manager.current = "start"
-        
-        #self.query_linked_open_vocabularies(headers, size)
-        converter.start()
-        query.start()
+            return 
 
-        converter.join()
-        query.join()
+        # Wait for both threads to finish
+        converter.join(timeout=20)
+        query.join(timeout=20)
+
+        # Check if threads completed successfully
+        if converter.is_alive() or query.is_alive():
+            logger.warning("One or more threads did not complete in time.")
+            show_warning("Processing is taking longer than expected. Please try again.")
+            self.manager.current = "start"
+            return
 
         # Get all the vocabularies from the request data
-        # Start time of score computation
         start_time_score = time.time()
         logger.info("Requests: Retrieve vocabulary list")
         vocabs = get_vocabs(self.all_results)
 
-        # Calculate average score for every vocabulary -> compute combi sqore
+        # Calculate average score for every vocabulary -> compute combi score
         logger.info("Requests: Compute average score and compute Combi Score")
         t = Thread(target=self.compute_scores, args=(vocabs, self.all_results))
         t.start()
         t.join()
-        
+
         # Retrieve indexes of best matches for every header 
         self.request_results = retrieve_combiSQORE_recursion(self.all_results, self.sorted_combi_score_vocabularies, len(headers))
 
@@ -1249,9 +1294,9 @@ class ConverterScreen(Screen):
         self.list_titles = [
             ('prefixedName', dp(60)), 
             ('vocabulary.prefix', dp(60)), 
-            ('uri',dp(60)),
-            ('type',dp(60)), 
-            ('score',dp(60))
+            ('uri', dp(60)),
+            ('type', dp(60)), 
+            ('score', dp(60))
         ]
         
     def process_custom_endpoint(self, file_path, headers, size):

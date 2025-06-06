@@ -27,6 +27,7 @@ def get_csv_headers(file_path: str) -> list:
         headers = next(reader)
     return headers
 
+
 def show_warning(message: str):
         """
         Function show_warning that implements a warning with a custom message.
@@ -40,6 +41,15 @@ def show_warning(message: str):
                 text=message
             ),
             md_bg_color='#FF0000'
+        ).open()
+
+
+def show_success_message(message: str):
+    MDSnackbar(
+            MDLabel(
+                text=message
+            ),
+            md_bg_color='#4CAF50'
         ).open()
 
 
@@ -124,25 +134,30 @@ def infer_column_type(header: str, file_path: str) -> str:
         has_bool = False
         has_string = False
         has_iterable = False
-        types_found = 0
+        types_found = []
 
         # Check each value's type
         for v in values:
             if v.isdigit():
                 has_int = True
-                types_found += 1
+                if "int" not in types_found:
+                    types_found.append("int")
             elif v.lower() in ("0", "1", "true", "false"):
                 has_bool = True
-                types_found += 1
+                if "bool" not in types_found:
+                    types_found.append("bool")
             elif isinstance(v, Iterable) and type(v) != str:
                 has_iterable = True
-                types_found += 1
+                if "iter" not in types_found:
+                    types_found.append("iter")
             else:
                 has_string = True
-                types_found += 1
+                if "str" not in types_found:
+                    types_found.append("str")
+                
 
         # If found more than one type, return "Mixed"
-        if types_found > 1:
+        if len(types_found) > 1:
             return "Mixed"
 
         # Return the single type found
