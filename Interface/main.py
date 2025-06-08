@@ -792,7 +792,7 @@ class ConverterScreen(Screen):
 
         Utilizes the CSVConverter from CoW.
         """
-        multiprocessing.freeze_support()
+        #multiprocessing.freeze_support()
         # Selected file path
         input_csv_path = self.selected_file
 
@@ -825,6 +825,7 @@ class ConverterScreen(Screen):
             # Instantiate and run the converter
             converter = CSVWConverter(
                 file_name=input_csv_path,
+                processes=1,
                 output_format="nquads",
                 base="https://example.com/id/"  
             )
