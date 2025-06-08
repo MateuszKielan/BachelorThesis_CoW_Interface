@@ -32,6 +32,7 @@ from kivy.uix.textinput import TextInput
 from threading import Thread, Lock
 from kivymd.uix.spinner import MDSpinner
 import time
+import multiprocessing
 #-----------------------------
 
 # Set up the logger
@@ -785,13 +786,13 @@ class ConverterScreen(Screen):
         # Update the JSON preview
         self.show_json()
 
-
     def convert_json(self):
         """
         Function convert_json that converts the metadata file into nquads file. 
 
         Utilizes the CSVConverter from CoW.
         """
+        multiprocessing.freeze_support()
         # Selected file path
         input_csv_path = self.selected_file
 
@@ -902,6 +903,10 @@ class ConverterScreen(Screen):
             data (list): list of data for the header  
             list_titles (list): list of table headers
         """
+        if header not in self.all_results or not self.all_results[header]:
+            show_warning("No data available for this header. Try running the recommendation again.")
+            return
+
         if not data or len(data) == 0:
             show_warning("Couldn't load the data, try again")
             return

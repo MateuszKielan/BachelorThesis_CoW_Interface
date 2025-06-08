@@ -37,7 +37,7 @@ def get_recommendations(header: str, size: int) -> dict:
         "page_size": size # Manually selected by users
     }
     try:
-        response = requests.get(recommender_url, params=params, timeout=30)
+        response = requests.get(recommender_url, params=params, timeout=10)
         response.raise_for_status()
         results = response.json()
     except requests.exceptions.Timeout:
