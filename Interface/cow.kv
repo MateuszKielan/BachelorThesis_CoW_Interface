@@ -99,7 +99,7 @@ ScreenManager:
 
             Label:
                 text: "CSV Preview"
-                font_size: 20
+                font_size: 40
                 bold: True
                 color: 0, 0, 0
                 size_hint_y: None
@@ -290,7 +290,7 @@ ScreenManager:
 
             Label:
                 text: "JSON Preview"
-                font_size: 20
+                font_size: 40
                 bold: True
                 size_hint_y: None
                 height: 40
@@ -365,6 +365,28 @@ ScreenManager:
         BoxLayout:
             orientation: "vertical"
             id: popup_recommendations
+            size_hint: 1,1
+
+        MDRaisedButton:
+            text: "Close"
+            on_press: root.dismiss_popup()
+            size_hint: None, None
+            size: 300, 50
+            pos_hint: {"center_x": 0.5, "y": 0.3}
+
+
+<VocabularyScorePopup>
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "Vocabulary Ranking Preview"
+            color: 1,1,1
+            size_hint_y: 0.1
+            font_size: 20
+
+        BoxLayout:
+            orientation: "vertical"
+            id: popup_vocab_recommendations
             size_hint: 1,1
 
         MDRaisedButton:

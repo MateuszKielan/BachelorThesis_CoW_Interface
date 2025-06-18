@@ -21,7 +21,7 @@ import csv
 import json
 import logging
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
-from utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message
+from utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
@@ -485,7 +485,84 @@ class RecommendationPopup(FloatLayout):
                 break
             parent = parent.parent
 
+class VocabularyScorePopup(FloatLayout):
+    def __init__(self, vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores, **kwargs):
+        super().__init__(**kwargs)
+        self.vocabulary_match_scores = vocabulary_match_scores
+        self.vocabulary_coverage_score = vocabulary_coverage_score
+        self.vocabulary_scores = vocabulary_scores
+        self.build_table(vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores)
 
+    def build_table(self, vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores):
+        """
+        Builds the vocabulary scores table with proper error handling.
+        """
+        self.ids.popup_vocab_recommendations.clear_widgets()
+        
+        # Add error handling for empty data
+        if not vocabulary_match_scores or not vocabulary_scores:
+            self.ids.popup_vocab_recommendations.add_widget(Label(
+                text='No vocabulary data available',
+                color=(1,1,1,1),
+                font_size='20sp',
+                size_hint_y=0.05
+            ))
+            return
+        
+        try:
+            vocab_data = create_vocab_row_data(vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores)
+            logger.info(f"Row_data: {vocab_data}")
+            
+            # Check if we have valid data
+            if not vocab_data:
+                self.ids.popup_vocab_recommendations.add_widget(Label(
+                    text='No vocabulary data available',
+                    color=(1,1,1,1),
+                    font_size='20sp',
+                    size_hint_y=0.05
+                ))
+                return
+            
+            list_col_names = [
+                ("vocabularies", dp(60)), 
+                ("Average Match Score", dp(60)), 
+                ("Number of Produced Matches", dp(60)),
+                ("Combi Score", dp(60))
+            ]
+
+            table = MDDataTable(
+                column_data=list_col_names,
+                row_data=vocab_data,
+                size_hint=(0.6, 0.3),
+                pos_hint={"center_x": 0.5, "center_y": 0.3},
+                use_pagination=True,
+                check=False,  # Disable row selection to prevent crashes
+                rows_num=20
+            )
+            
+            self.ids.popup_vocab_recommendations.add_widget(table)
+            
+        except Exception as e:
+            logger.error(f"Error building vocabulary table: {e}")
+            self.ids.popup_vocab_recommendations.add_widget(Label(
+                text=f'Error loading vocabulary data: {str(e)}',
+                color=(1,1,1,1),
+                font_size='16sp',
+                size_hint_y=0.05
+            ))
+            
+    def dismiss_popup(self):
+        """
+        Function dismiss_popup that closes the popup window
+        """
+        parent = self.parent
+
+        # Search for the lowest parent
+        while parent:
+            if isinstance(parent, Popup):
+                parent.dismiss()
+                break
+            parent = parent.parent
 
 class ConverterScreen(Screen):
     """
@@ -927,6 +1004,43 @@ class ConverterScreen(Screen):
 
         Clock.schedule_once(show_popup_after_loading, 1)
 
+
+    def open_vocabulary_recommendations(self, vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores):
+        """
+        Function open recommendations that opens a recommendation popup.
+
+        Args:
+            header (str): name of the csv header
+            data (list): list of data for the header  
+            list_titles (list): list of table headers
+        """
+        if len(vocabulary_match_scores) == 0:
+            show_warning("No vocabulary data available")
+            return
+
+        if len(vocabulary_scores) == 0:
+            show_warning("Couldn't load the data, try again")
+            return
+        
+        if len(vocabulary_coverage_score) == 0:
+            show_warning("Couldn't load the data, try again")
+            return
+
+        self.show_loading_screen()
+
+        def show_popup_after_loading(dt):
+            # Pass the data to the popup
+            show = VocabularyScorePopup(vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores)
+
+            # Initialize and open window
+            popupWindow = Popup(title=f'Vocabulary Ranking data', content=show,size_hint=(1,1))
+
+            logger.info("Converter Screen: Opening the Recommendation Popup")
+            popupWindow.open()
+            self.show_converter_screen()
+
+        Clock.schedule_once(show_popup_after_loading, 1)
+
     def highlight_switch(self):
         """
         Function highlight_switch that changes the color of the request buttons when clicking.
@@ -985,8 +1099,50 @@ class ConverterScreen(Screen):
         end_idx = start_idx + self.cards_per_page
         current_headers = headers[start_idx:end_idx]
 
+        vocab_card = MDCard(
+            orientation='vertical',
+                size_hint=(0.85, None),
+                pos_hint={"center_x": 0.5},
+                height=160,
+                padding=10,
+                spacing=10,
+                ripple_behavior=True,
+                md_bg_color=(0.95, 0.95, 0.95, 1),
+                shadow_softness=1,
+                elevation=4,
+        )
+
+        vocab_card.add_widget(MDLabel(
+                text=f"[b]Vocabulary Scores[/b]",
+                markup=True,
+                theme_text_color="Primary",
+                font_style="Subtitle1",
+                size_hint_y=None,
+                height=30
+            ))
+        
+
+        vocab_card.add_widget(MDLabel(
+                text=f"Vocabularies: {len(self.vocabulary_match_scores)}",
+                theme_text_color="Secondary",
+                size_hint_y=None,
+                height=24
+            ))
+
+
+        vocab_card.add_widget(MDRaisedButton(
+                text="Show Scores",
+                size_hint=(None, None),
+                size=(150, 40),
+                pos_hint={"center_x": 0.5},
+                on_press = lambda x, v=self.vocabulary_match_scores, vc= self.vocab_coverage_score, vm= self.vocabulary_scores: self.open_vocabulary_recommendations(v, vc, vm)
+        ))
+        
+        table.add_widget(vocab_card)
+
         # For Every header in current page add a corresponding button with the appropriate data
         for header in current_headers:
+            logger.info(f"creating a card for {header}")
             data = all_results[header]
             dtype = infer_column_type(header, self.selected_file) 
             number_of_matches = len(all_results[header])
@@ -1102,8 +1258,14 @@ class ConverterScreen(Screen):
 
         """
         scores = get_average_score(vocabs, all_results)
-        combi_score_vocabularies = calculate_combi_score(all_results, scores)
+        self.vocabulary_match_scores = scores
+        logger.info(f"Quality of matches {self.vocabulary_match_scores}")
+        combi_score_vocabularies, self.vocab_coverage_score = calculate_combi_score(all_results, scores)
+        logger.info(f"Coverage Score: {self.vocab_coverage_score}")
+        self.vocabulary_scores = combi_score_vocabularies
+        logger.info(f"Combi_score {self.vocabulary_scores}")
         self.sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
+
 
 
     def compute_sparql_scores(self, vocabs, all_results):

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List
 #------------------------------------------
 
+
 def get_csv_headers(file_path: str) -> list:
     """
     Function get_csv_header that opens a file and extracts headers from the csv for parsing into the vocabulary
@@ -169,3 +170,36 @@ def infer_column_type(header: str, file_path: str) -> str:
             return "Iterable"
         else:
             return "String"
+
+
+def create_vocab_row_data(vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores):
+    """
+    Creates row data for vocabulary scores table by combining match scores, coverage scores, and popularity scores.
+    Sorts the result by popularity score (last column) in descending order.
+    
+    Args:
+        vocabulary_match_scores: List of tuples with (vocabulary_name, average_match_score)
+        vocabulary_coverage_score: List of tuples with (vocabulary_name, coverage_score)
+        vocabulary_scores: List of tuples with (vocabulary_name, popularity_score)
+    
+    Returns:
+        List of tuples with (vocabulary_name, average_match_score, coverage_score, popularity_score) sorted by popularity
+    """
+    if not vocabulary_match_scores or not vocabulary_scores or not vocabulary_coverage_score:
+        return []
+    
+    # Create dictionaries for quick lookup of scores
+    popularity_dict = {vocab[0]: vocab[1] for vocab in vocabulary_scores}
+    coverage_dict = {vocab[0]: vocab[1] for vocab in vocabulary_coverage_score}
+    
+    # Combine the data
+    result = []
+    for vocab_name, match_score in vocabulary_match_scores:
+        popularity_score = popularity_dict.get(vocab_name, 0.0)
+        coverage_score = coverage_dict.get(vocab_name, 0.0)
+        result.append((vocab_name, match_score, coverage_score, popularity_score))
+    
+    # Sort by the last score (popularity score) in descending order
+    result.sort(key=lambda x: x[3], reverse=True)
+    
+    return result
