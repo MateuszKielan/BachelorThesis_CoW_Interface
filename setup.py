@@ -34,5 +34,6 @@ setup(
         'SPARQLWrapper',
         'cow-csvw'
     ],
-    entry_points={'console_scripts' : [ 'scow = scow.main:main' ]},
+    entry_points={'console_scripts': ['scow = main:main']},
 )
+
