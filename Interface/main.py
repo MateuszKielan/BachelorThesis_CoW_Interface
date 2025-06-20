@@ -1641,6 +1641,9 @@ class CowApp(MDApp):
         sm.add_widget(LoadingScreen(name="loading"))     # Loading Screen
         sm.add_widget(ConverterScreen(name="converter")) # Conversion Screen
         return sm
+
+def main():
+    CowApp().run()
     
 if __name__ == '__main__':
-    CowApp().run()
+    main()
