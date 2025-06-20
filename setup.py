@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 version = '0.1'
@@ -23,7 +23,8 @@ setup(
     zip_safe=True,
     keywords=['rdf', 'linked data', 'csv', 'GUI', 'converter'],
     python_requires='>=3.8',
-    packages = ['scow'],
+    packages=find_packages(where='Interface'),
+    package_dir={'': 'Interface'},
     install_requires=[
         'kivy',
         'kivymd',
@@ -33,6 +34,5 @@ setup(
         'SPARQLWrapper',
         'cow-csvw'
     ],
-    package_dir = {'scow': 'Interface'},
     entry_points={'console_scripts' : [ 'scow = scow.main:main' ]},
 )
