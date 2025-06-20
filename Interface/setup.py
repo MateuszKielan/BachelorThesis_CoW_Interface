@@ -24,6 +24,15 @@ setup(
     keywords=['rdf', 'linked data', 'csv', 'GUI', 'converter'],
     python_requires='>=3.8',
     packages = ['scow'],
+    install_requires=[
+        'kivy',
+        'kivymd',
+        'requests',
+        'pandas',
+        'numpy',
+        'SPARQLWrapper',
+        'cow-csvw'
+    ],
     package_dir = {'scow': 'Interface'},
     entry_points={'console_scripts' : [ 'scow = scow.main:main' ]},
 )
