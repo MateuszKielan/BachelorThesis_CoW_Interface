@@ -8,17 +8,47 @@ The tool integrates Csv on the Web (CoW) as well as a vocabulary recommender for
 
 Original CoW tool repository: https://github.com/CLARIAH/COW
 
-**Documentation**
+**Instalation**
 
-Link to the official documentation: https://mateuszkielan.github.io/BachelorThesis_CoW_Interface/
+Step 1: Create a Virtual Environment
+Windows:
 
-**File Structure**
+nginx
+Copy
+Edit
+python -m venv cowEnv
+cowEnv\Scripts\activate
+macOS/Linux:
 
-main.py - contains the interface structure and workflow
+bash
+Copy
+Edit
+python3 -m venv cowEnv
+source cowEnv/bin/activate
+Step 2: Clone the Repository
+bash
+Copy
+Edit
+git clone https://github.com/MateuszKielan/BachelorThesis_CoW_Interface.git
+Step 3: Navigate to the Project Folder
+bash
+Copy
+Edit
+cd BachelorThesis_CoW_Interface
+Step 4: Install the Tool with pip
+nginx
+Copy
+Edit
+pip install -e .
+▶Step 5: Run the Tool via CLI
+nginx
+Copy
+Edit
+scow
+If the scow command doesn’t work, you can launch the interface manually:
 
-cow.kv - styling file for the interface
-
-requests_t.py - handles the API calls and the vocabulary recommender
-
-utils.py - contains helper functions 
+bash
+Copy
+Edit
+python Interface/main.py
 
