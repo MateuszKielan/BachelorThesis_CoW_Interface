@@ -10,9 +10,17 @@ Original CoW tool repository: https://github.com/CLARIAH/COW
 
 **Instalation**
 
-### 1. Create a Virtual Environment
+### 1. Create and run Virtual Environment
 
 **Windows:**
 ```bash
 python -m venv cowEnv
 cowEnv\Scripts\activate
+```
+
+**macOS/Linux
+```bash
+python3 -m venv cowEnv
+source cowEnv/bin/activate
+```
+
