@@ -1,14 +1,14 @@
-#### **CoW Interface**
+# **CoW Interface**
 
 This repository is dedicated to the developement of the Intelligent conversion tool from tabular to linked data. 
 
-#### **Project Description**
+## **Project Description**
 
 The tool integrates Csv on the Web (CoW) as well as a vocabulary recommender for ranking vocabularies and instances. It is offers user the ability to select instances based on table context.
 
 Original CoW tool repository: https://github.com/CLARIAH/COW
 
-#### **Instalation**
+## **Instalation**
 
 ### 1. Create and run Virtual Environment
 
