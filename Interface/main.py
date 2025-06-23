@@ -12,8 +12,8 @@ from kivy.config import Config
 from tkinter import Tk, filedialog
 from pathlib import Path
 from kivy.core.window import Window
-from requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
-from sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results
+from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
+from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results
 from kivymd.uix.datatables import MDDataTable
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp
