@@ -20,7 +20,7 @@ cowEnv\Scripts\activate
 
 **macOS/Linux**
 ```bash
-python3 -m venv cowEnv
+python -m venv cowEnv
 source cowEnv/bin/activate
 ```
 ### 2. Navigate to the environment
