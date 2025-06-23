@@ -21,7 +21,7 @@ import csv
 import json
 import logging
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
-from utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data
+from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
