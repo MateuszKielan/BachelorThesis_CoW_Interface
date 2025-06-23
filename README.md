@@ -10,18 +10,16 @@ Original CoW tool repository: https://github.com/CLARIAH/COW
 
 ## **Instalation**
 
-### 1. Create and run Virtual Environment
+### 1. Create Environment
 
 **Windows:**
 ```bash
 python -m venv cowEnv
-cowEnv\Scripts\activate
 ```
 
 **macOS/Linux**
 ```bash
 python -m venv cowEnv
-source cowEnv/bin/activate
 ```
 ### 2. Navigate to the environment
 ```bash
@@ -38,13 +36,27 @@ cd BachelorThesis_CoW_Interface
 ```
 
 ### 5. Install the tool with pip
+
+**Windows**
 ```bash
 pip install .
 ```
 
+**macOS/Linux**
+```bash
+../bin/pip install .
+```
+
 ### 6. Run the Tool 
+
+**Windows**
 ```bash
 scow
+```
+
+**macOS/Linux**
+```bash
+../bin/python ../bin/scow
 ```
 
 If the scow command does not work, you can alternatively run:
