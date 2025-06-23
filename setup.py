@@ -32,8 +32,6 @@ setup(
         'pandas',
         'numpy',
         'SPARQLWrapper',
-        "rdflib==6.0.2",
-        "PyYAML>=5.4",
         'cow-csvw'
     ],
     entry_points={'console_scripts': ['scow = main:main']},
