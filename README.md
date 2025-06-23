@@ -23,23 +23,26 @@ cowEnv\Scripts\activate
 python3 -m venv cowEnv
 source cowEnv/bin/activate
 ```
-
-### 2. Clone the Repository
+### 2. Navigate to the environment
+```bash
+cd cowEnv
+```
+### 3. Clone the Repository
 ```bash
 git clone https://github.com/MateuszKielan/BachelorThesis_CoW_Interface.git
 ```
 
-### 3. Navigate to the Project Folder
+### 4. Navigate to the Project Folder
 ```bash
 cd BachelorThesis_CoW_Interface
 ```
 
-### 3. Install the tool with pip
+### 5. Install the tool with pip
 ```bash
 pip install .
 ```
 
-### 4. Run the Tool 
+### 6. Run the Tool 
 ```bash
 scow
 ```
