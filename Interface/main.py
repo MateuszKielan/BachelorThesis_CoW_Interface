@@ -1634,6 +1634,7 @@ class CowApp(MDApp):
         """
         Build app function that runs the Screen Manager.
         """
+        Builder.load_file("cow.kv")
         # Set the adaptive fullScreen mode
         Window.maximize()
         sm = ScreenManager()
