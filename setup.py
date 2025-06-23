@@ -28,7 +28,7 @@ setup(
     entry_points={'console_scripts' : [ 'scow = scow.main:main' ]},
     install_requires=[
         "cython<3",
-        "pyyaml==5.3.1",
+        "pyyaml",
         "kivy[base]",
         "kivymd",
         "pandas",
