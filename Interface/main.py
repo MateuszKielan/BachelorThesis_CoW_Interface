@@ -20,6 +20,7 @@ from kivy.metrics import dp
 import csv
 import json
 import logging
+import os
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
 from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data
 from kivymd.uix.card import MDCard
@@ -1634,7 +1635,8 @@ class CowApp(MDApp):
         """
         Build app function that runs the Screen Manager.
         """
-        Builder.load_file("cow.kv")
+        kv_path = os.path.join(os.path.dirname(__file__), "cow.kv")
+        Builder.load_file(kv_path)
         # Set the adaptive fullScreen mode
         Window.maximize()
         sm = ScreenManager()
