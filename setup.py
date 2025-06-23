@@ -26,6 +26,9 @@ setup(
     packages = ['scow'],
     package_dir = {'scow': 'Interface'},
     entry_points={'console_scripts' : [ 'scow = scow.main:main' ]},
+    package_data={
+        'scow': ['cow.kv'],  # 👈 this line ensures cow.kv is included in the install
+    },
     install_requires=[
         "cython<3",
         "pyyaml",
