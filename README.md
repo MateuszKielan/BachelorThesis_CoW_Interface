@@ -36,7 +36,7 @@ cd BachelorThesis_CoW_Interface
 
 ### 3. Install the tool with pip
 ```bash
-pip install -e .
+pip install .
 ```
 
 ### 4. Run the Tool 
