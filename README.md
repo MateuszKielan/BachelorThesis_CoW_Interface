@@ -21,6 +21,18 @@ python -m venv cowEnv
 ```bash
 python -m venv cowEnv
 ```
+###2. Activate the environment
+
+**Windows**
+```bash
+cowEnv\Scripts\activate
+```
+
+**macOS/Linux**
+```bash
+source cowEnv/bin/activate
+```
+
 ### 2. Navigate to the environment
 ```bash
 cd cowEnv
@@ -63,3 +75,9 @@ If the scow command does not work, you can alternatively run:
 ```bash
 python Interface/main.py
 ```
+
+### 7. Download a sample dataset
+You can access the link below and download a dataset "example.csv":
+https://drive.google.com/drive/folders/16y2IHep4GmYxn7ptYYzi-Iz_aPY3HJmg
+
+
