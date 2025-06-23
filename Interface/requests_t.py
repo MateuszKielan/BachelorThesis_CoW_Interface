@@ -3,7 +3,7 @@ import requests
 import csv
 import json
 from copy import deepcopy
-from utils import get_csv_headers
+from .utils import get_csv_headers
 import logging
 import typing
 import time 
