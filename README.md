@@ -21,7 +21,7 @@ python -m venv cowEnv
 ```bash
 python -m venv cowEnv
 ```
-###2. Activate the environment
+### 2. Activate the environment
 
 **Windows**
 ```bash
