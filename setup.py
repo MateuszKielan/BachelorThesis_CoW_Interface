@@ -33,7 +33,7 @@ setup(
         "cython<3",
         "pyyaml",
         "kivy[base]",
-        "kivymd",
+        "kivymd==2.0",
         "pandas",
         "numpy",
         "SPARQLWrapper<2.0",
