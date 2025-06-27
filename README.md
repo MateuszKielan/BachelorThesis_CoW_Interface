@@ -10,7 +10,9 @@ Original CoW tool repository: https://github.com/CLARIAH/COW
 
 ## **Instalation**
 
-Below is the installation guide for the tool. It works on any operating system and should take around 2 minutes to install. As the last step there is a link with a sample dataset used for evaluation. Please download it as well.
+Below is the installation guide for the tool. It works on any operating system and should take around 2 minutes to install. As the last step there is a link with a sample dataset used for evaluation. Please download it as well. 
+
+The tool works with a stable version of python- 3.12. It is highly recommended that you work with that version which can be downloaded from an official python website: https://www.python.org/downloads/release/python-3124/
 
 ### 1. Create Environment
 
