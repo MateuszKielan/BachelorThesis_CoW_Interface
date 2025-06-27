@@ -18,7 +18,7 @@ setup(
     description='Smart and Intuitive UI for CoW',
     long_description = open('README.md').read(),
     long_description_content_type="text/markdown",
-    license='GLP3',
+    license='GPL-3.0-or-later',
     include_package_data=True,
     zip_safe=True,
     keywords=['rdf', 'linked data', 'csv', 'GUI', 'converter'],
