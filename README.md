@@ -37,21 +37,21 @@ cowEnv\Scripts\activate
 source cowEnv/bin/activate
 ```
 
-### 2. Navigate to the environment
+### 3. Navigate to the environment
 ```bash
 cd cowEnv
 ```
-### 3. Clone the Repository
+### 4. Clone the Repository
 ```bash
 git clone https://github.com/MateuszKielan/BachelorThesis_CoW_Interface.git
 ```
 
-### 4. Navigate to the Project Folder
+### 5. Navigate to the Project Folder
 ```bash
 cd BachelorThesis_CoW_Interface
 ```
 
-### 5. Install the tool with pip
+### 6. Install the tool with pip
 
 **Windows**
 ```bash
@@ -63,7 +63,7 @@ pip install .
 ../bin/pip install .
 ```
 
-### 6. Run the Tool 
+### 7. Run the Tool 
 
 **Windows**
 ```bash
