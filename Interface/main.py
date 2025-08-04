@@ -57,8 +57,8 @@ from cow_csvw.converter.csvw import build_schema, CSVWConverter
 # Set up the logger
 logger = logging.getLogger(__name__)
 
-# Load all the hint texts
-logger.info("[System: ] Loading help texts")
+# Load all the hint texts into a global variable
+logger.info("System: Loading help texts")
 HELP_TEXTS = load_help_text()
 
 class StartingScreen(Screen):
