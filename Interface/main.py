@@ -44,7 +44,8 @@ import time
 # Custom Module Imports
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
-from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data
+from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text
+from .ui.converter_screen_ui import build_request_help_popup
 
 # CoW Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
@@ -615,47 +616,16 @@ class ConverterScreen(Screen):
         """
         Function show_request_help_popup that displays help information about the type of requests made.
         """
+        
+        # Text of the helper popup
+        help_texts = load_help_text()
 
-        # Create a box layout for the helper content
-        content = BoxLayout(orientation='vertical')
-
-        # insert the text of the helper button
-        help_text = (
-        "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently. "
-        "This is useful when your data columns represent different types of information and you want the most accurate match for each.\n\n"
-        "[b]Homogenous:[/b] Finds a single vocabulary that works well for all columns together. "
-        "This is useful when your data is thematically consistent and you prefer using one shared vocabulary for easier semantic integration."
-        )
-
-        # Bind the text to the Label
-        label = Label(
-            text=help_text,
-            markup=True,
-            halign="left",
-            valign="middle",
-            text_size=(400, None),
-            size_hint_y=None,
-        )
-        # Bind the texture size to the label
-        label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
-
-        # Add the ScrollView property to make the popup more responsive
-        scroll = ScrollView(size_hint=(1, 1)) # Adjust it for the full page
-        scroll.add_widget(label)
-
-        content.add_widget(scroll)
-
-        # Initialize Popup
-        popup = Popup(
-            title="Help: Request Types",
-            content=content,
-            size_hint=(None, None),
-            size=(500, 300),
-            auto_dismiss=True,
-        )
+        # Use the UI builder function to build the popup
+        popup = build_request_help_popup(help_texts["request_help_text"])
 
         # Open the popup
         popup.open()
+
 
     def show_recommendation_help_popup(self):
         """

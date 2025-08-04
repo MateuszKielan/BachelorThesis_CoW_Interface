@@ -8,6 +8,7 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.snackbar import MDSnackbar
 from pathlib import Path
 from typing import List
+import json
 #------------------------------------------
 
 
@@ -203,3 +204,10 @@ def create_vocab_row_data(vocabulary_match_scores, vocabulary_coverage_score, vo
     result.sort(key=lambda x: x[3], reverse=True)
     
     return result
+
+
+def load_help_text(path: str = "Interface/resources/help_texts.json") -> str:
+
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+    

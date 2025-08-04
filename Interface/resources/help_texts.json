@@ -1,0 +1,3 @@
+{
+    "request_help_text": "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently.\n\n[b]Homogenous:[/b] Finds a single vocabulary that works well for all columns together."
+}
