@@ -54,7 +54,12 @@ def build_request_help_popup(help_text: str) -> Popup:
 
 
 def builder_recommendation_help_popup(help_text):
-
+    """
+    Function builder_recommendation_help_popup that builds recommendation window help popup
+    
+    Args:
+        help_text: 
+    """
     content = BoxLayout(orientation='vertical')
 
     # Bind text to the Label
@@ -87,3 +92,15 @@ def builder_recommendation_help_popup(help_text):
     )
 
     return popup
+
+
+def builder_vocabulary_popup(title, content):
+
+    # Initialize the popup window
+    popupWindow = Popup(
+        title=title, 
+        content=content, 
+        size_hint=(1,1)
+    )
+
+    return popupWindow

@@ -45,7 +45,7 @@ import time
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
 from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text
-from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup
+from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
 
 # CoW Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
@@ -632,42 +632,38 @@ class ConverterScreen(Screen):
         """
         Function show_recommendation_help_popup that displays help information about the recommendation section.
         """
-        
+
+        # Use the UI builder function to build the popup
         popup = builder_recommendation_help_popup(HELP_TEXTS["recommendation_help_text"])
         
+        # Open the popup
         popup.open()
 
 
     def convert_with_cow(self, csv_path: str):
         """
-        Function convert_with_cow that takes the CSV file and creates a JSON metadata
-        Utilizes build_schema function from cow_csvw
+        Converts a CSV file into a JSON metadata file using CoW (CSV on the Web).
 
         Args:
-            csv_path (str): path to the input file
-        
+            csv_path (str): Path to the input CSV file.
         """
-
-        # convert string to a Path object for further processing
         input_path = Path(csv_path)
+        output_metadata_path = input_path.parent / f"{input_path.stem}-metadata.json"
 
-        # Retrieve the whole path + the retrieved file name with the file type for CoW conversion
-        #   The final path looks as following: csvFileName.csv-metadata.json
-        output_metadata_path = input_path.parent / f"{self.selected_file.name[:-4]}-metadata.json"
-
-        # Check if the file was already generated
         if output_metadata_path.exists():
             logger.info("CoW: Metadata file already exists. Loading data.")
-        else:
-            try:
-                start_time_converter = time.time()
-                build_schema(str(input_path), str(output_metadata_path)) # Build the mapping file using the CoW implementation
-                end_time_converter = time.time()
-                total_execution_time_converter = end_time_converter - start_time_converter
-                logger.info(f"Total execution time of conversion: {total_execution_time_converter} seconds")
-                logger.info(f"CoW: Saving metadata at {str(output_metadata_path)}")
-            except Exception as e:
-                logger.info("CoW: Metadata generation failed")
+            return
+
+        try:
+            start_time = time.time()
+            build_schema(str(input_path), str(output_metadata_path))
+            duration = time.time() - start_time
+            logger.info(f"CoW: Metadata saved to {output_metadata_path}")
+            logger.info(f"Conversion time: {duration:.2f} seconds")
+        except Exception as e:
+            logger.error("CoW: Metadata generation failed")
+            logger.exception(e)
+
     
 
     def replace_all(self, headers: list, all_results: dict, request_results: list):
@@ -918,6 +914,7 @@ class ConverterScreen(Screen):
         # Schedule the data loading after a delay
         Clock.schedule_once(lambda dt: self.load_full_dataset(column_heads, row_data), 0.5)
 
+
     def load_full_dataset(self, column_heads, row_data):
         """
         Function to load the full dataset and display it in a popup.
@@ -996,13 +993,18 @@ class ConverterScreen(Screen):
             show = VocabularyScorePopup(vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores)
 
             # Initialize and open window
-            popupWindow = Popup(title=f'Vocabulary Ranking data', content=show,size_hint=(1,1))
+            popup = builder_vocabulary_popup('Vocabulary Ranking data', show)
 
+            # Register logger
             logger.info("Converter Screen: Opening the Recommendation Popup")
-            popupWindow.open()
+            
+            # Open popup
+            popup.open()
+            
             self.show_converter_screen()
 
         Clock.schedule_once(show_popup_after_loading, 1)
+
 
     def highlight_switch(self):
         """
