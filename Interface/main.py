@@ -1,5 +1,14 @@
-#------Imports Section-------
-from kivymd.app import MDApp
+#------IMPORTS SECTION-------
+
+#------ GUI Imports (Kivy, Kivymd, tkinter) ------
+# Core Kivy Imports
+from kivy.core.window import Window
+from kivy.lang import Builder
+from kivy.config import Config
+from kivy.clock import Clock
+from kivy.metrics import dp
+
+# Kivy UI Imports
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
@@ -7,34 +16,42 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
-from kivy.lang import Builder
-from kivy.config import Config
-from tkinter import Tk, filedialog
-from pathlib import Path
-from kivy.core.window import Window
-from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
-from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results
-from kivymd.uix.datatables import MDDataTable
 from kivy.uix.scrollview import ScrollView
-from kivy.metrics import dp
-import csv
-import json
-import logging
-import os
-from cow_csvw.converter.csvw import build_schema, CSVWConverter
-from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data
+from kivy.uix.textinput import TextInput
+
+# Kivymd Imports
+from kivymd.app import MDApp
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.snackbar import MDSnackbar
-from kivy.clock import Clock
-from shutil import copyfile
-from kivy.uix.textinput import TextInput
-from threading import Thread, Lock
+from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.spinner import MDSpinner
+
+# Tkinter Imports
+from tkinter import Tk, filedialog
+
+# Python Imports
+from pathlib import Path
+import csv
+import json
+import logging
+import os
+from shutil import copyfile
+from threading import Thread, Lock
 import time
-import multiprocessing
+
+# Custom Module Imports
+from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
+from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
+from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data
+
+# CoW Import
+from cow_csvw.converter.csvw import build_schema, CSVWConverter
 #-----------------------------
+
+
+
 
 # Set up the logger
 logger = logging.getLogger(__name__)
@@ -575,22 +592,28 @@ class ConverterScreen(Screen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.rec_mode = "Homogenous"  # Changing in the switch_mode function
-        self.headers = []  # Add this to store headers for search functionality
-        self.sorted_combi_score_vocabularies = [] 
+        self.rec_mode: str = "Homogenous"                 # Singular or Homogenous mode. Changing in the switch_mode function
+        self.headers: list = []                           # Store headers for search functionality
+        self.sorted_combi_score_vocabularies: list = []   # Store the sorted combi score vocabularies
 
 
     def show_loading_screen(self):
+        """
+        Function show_loading_screen that shows the loading screen
+        """
         self.manager.current = "loading"
 
 
     def show_converter_screen(self):
+        """
+        Function show_converter_screen that shows the converter screen
+        """
         self.manager.current = "converter"
 
 
     def show_request_help_popup(self):
         """
-        Function show_request_help_popup thta displayes help information about the type of requests made.
+        Function show_request_help_popup that displays help information about the type of requests made.
         """
 
         # Create a box layout for the helper content
