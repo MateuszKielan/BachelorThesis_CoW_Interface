@@ -1,9 +1,18 @@
+#------IMPORTS SECTION-------
+
+# Python Imports
 import logging
-from cow_csvw.converter.csvw import build_schema, CSVWConverter
 import time
 from pathlib import Path
 
+# CoW Import
+from cow_csvw.converter.csvw import build_schema, CSVWConverter
+#-----------------------------
+
+
+# Set up the logger 
 logger = logging.getLogger(__name__)
+
 
 def convert_with_cow(self, csv_path: str):
         """
