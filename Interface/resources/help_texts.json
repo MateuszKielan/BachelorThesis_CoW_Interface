@@ -1,3 +1,4 @@
 {
-    "request_help_text": "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently.\n\n[b]Homogenous:[/b] Finds a single vocabulary that works well for all columns together."
+    "request_help_text": "[b]Single:[/b] Returns the best vocabulary suggestion for each column independently.\n\n[b]Homogenous:[/b] Finds a single vocabulary that works well for all columns together.",
+    "recommendation_help_text": "Each card represents a column from your uploaded CSV file. It shows the column name, its detected data type, and how many unique values it contains. Use the 'Show Matches' button to view vocabulary suggestions tailored for that specific column."
 }

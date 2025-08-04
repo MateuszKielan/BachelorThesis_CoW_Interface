@@ -53,3 +53,37 @@ def build_request_help_popup(help_text: str) -> Popup:
     return popup
 
 
+def builder_recommendation_help_popup(help_text):
+
+    content = BoxLayout(orientation='vertical')
+
+    # Bind text to the Label
+    label = Label(
+        text=help_text,
+        markup=True,
+        halign="left",
+        valign="middle",
+        text_size=(400, None),
+        size_hint_y=None,
+    )
+
+    # Bind the texture size to the label
+    label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
+
+    # Add Scroll ability for enhanced responsiveness
+    scroll = ScrollView(size_hint=(1, 1))
+    scroll.add_widget(label)
+
+    # Add property to the main window
+    content.add_widget(scroll)
+
+    # Instantiate Popup
+    popup = Popup(
+        title="Help: Recommendations",
+        content=content,
+        size_hint=(None, None),
+        size=(500, 300),
+        auto_dismiss=True,
+    )
+
+    return popup

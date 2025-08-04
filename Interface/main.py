@@ -45,7 +45,7 @@ import time
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
 from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text
-from .ui.converter_screen_ui import build_request_help_popup
+from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup
 
 # CoW Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
@@ -56,6 +56,10 @@ from cow_csvw.converter.csvw import build_schema, CSVWConverter
 
 # Set up the logger
 logger = logging.getLogger(__name__)
+
+# Load all the hint texts
+logger.info("[System: ] Loading help texts")
+HELP_TEXTS = load_help_text()
 
 class StartingScreen(Screen):
     """
@@ -616,12 +620,9 @@ class ConverterScreen(Screen):
         """
         Function show_request_help_popup that displays help information about the type of requests made.
         """
-        
-        # Text of the helper popup
-        help_texts = load_help_text()
 
         # Use the UI builder function to build the popup
-        popup = build_request_help_popup(help_texts["request_help_text"])
+        popup = build_request_help_popup(HELP_TEXTS["request_help_text"])
 
         # Open the popup
         popup.open()
@@ -631,41 +632,9 @@ class ConverterScreen(Screen):
         """
         Function show_recommendation_help_popup that displays help information about the recommendation section.
         """
-        content = BoxLayout(orientation='vertical')
-
-        # Help text 
-        help_text = "Each card represents a column from your uploaded CSV file. It shows the column name, its detected data type, and how many unique values it contains. Use the 'Show Matches' button to view vocabulary suggestions tailored for that specific column."
         
-        # Bind text to the Label
-        label = Label(
-            text=help_text,
-            markup=True,
-            halign="left",
-            valign="middle",
-            text_size=(400, None),
-            size_hint_y=None,
-        )
-
-        # Bind the texture size to the label
-        label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
-
-        # Add Scroll ability for enhanced responsiveness
-        scroll = ScrollView(size_hint=(1, 1))
-        scroll.add_widget(label)
-
-        # Add property to the main window
-        content.add_widget(scroll)
-
-        # Instantiate Popup
-        popup = Popup(
-            title="Help: Recommendations",
-            content=content,
-            size_hint=(None, None),
-            size=(500, 300),
-            auto_dismiss=True,
-        )
-
-        # Open popup
+        popup = builder_recommendation_help_popup(HELP_TEXTS["recommendation_help_text"])
+        
         popup.open()
 
 
