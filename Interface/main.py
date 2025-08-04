@@ -1,6 +1,5 @@
 #------IMPORTS SECTION-------
 
-#------ GUI Imports (Kivy, Kivymd, tkinter) ------
 # Core Kivy Imports
 from kivy.core.window import Window
 from kivy.lang import Builder
@@ -44,15 +43,14 @@ import time
 # Custom Module Imports
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
-from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text
+from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text
 from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
-from .converter import convert_with_cow
+from .util.converter import convert_with_cow
+from .util.metadata import update_metadata
 
 # CoW (Csv On The Web)Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
 #-----------------------------
-
-
 
 
 # Set up the logger
@@ -61,6 +59,7 @@ logger = logging.getLogger(__name__)
 # Load all the hint texts into a global variable
 logger.info("System: Loading help texts")
 HELP_TEXTS = load_help_text()
+
 
 class StartingScreen(Screen):
     """
@@ -317,10 +316,11 @@ class RecommendationPopup(FloatLayout):
             if column.get('name') == self.header:
                 column.update({
                     'prefixedName': name,     # prefixed name 
-                    '@id': uri,       # uri
-                    'vocab': vocab,   # vocabulary 
-                    'type': rdf_type, # rdf type
-                    'score': score    # score
+                    '@id': uri,               # uri
+                    'vocab': vocab,           # vocabulary 
+                    'propertyUrl': uri,        # uri
+                    'type': rdf_type,         # rdf type
+                    'score': score            # score
                 })
 
                 updated = True # If replaced update the flag
@@ -667,126 +667,32 @@ class ConverterScreen(Screen):
         # Find the metadata path without the extension
         path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
 
-        # Load the file
-        with open(path, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file)
-
-        logger.info(f"System: Mode detected: {self.rec_mode}")
-
-        # Build a lookup map for quick index access depending on the request mode 
-        if self.rec_mode == 'Homogenous':
-            index_lookup = {header: idx for header, idx in request_results} # If homogenous than retrieve index for every header
-        else:
-            index_lookup = {header: 0 for header, idx in request_results} # If single take the first match
-
-        # Retrieve the column names from tableSchema
-        for column in data.get('tableSchema', {}).get('columns', []):
-            # Get the header name for mapping purposes
-            header = column.get('name')
-
-            # If header is present in both all_results and index_lookup
-            if header in all_results and header in index_lookup:
-                match = all_results[header][index_lookup[header]]
-                
-                if self.custom_endpoint == "":
-                    # Update the data in the file 
-                    column.update({
-                        'name': header,
-                        'prefixedName': match[0][0],  # prefixed name
-                        '@id': match[2][0],           # URI
-                        'propertyUrl': match[2][0],   # URI for CoW
-                        'vocab': match[1],            # vocabulary.prefix
-                        'type': match[3],             # type
-                        'score': match[4],            # score
-                    })
-                else:
-                    column.update({
-                        'name': header,
-                        'prefixedName': match[0],     # prefixed name
-                        '@id': match[2],              # URI
-                        'propertyUrl': match[2],      # URI for CoW
-                        'vocab': match[1],            # vocabulary.prefix
-                        'type': match[3],             # type
-                        'score': match[4],            # score
-                    })
-
-                logger.info(f"System: Metadata Updated {header} -> {match[0][0]}")
-            else:
-                logger.warning(f"System: Match Not Found for header: {header}")
-
-        # Save the changes
         try:
-            with open(path, 'w', encoding='utf-8') as json_file:
-                json.dump(data, json_file, indent=4, ensure_ascii=False)
-                logger.info(f"System: Metadata File Written {path}")
+            path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
+            update_metadata(path, headers, all_results, request_results, self.rec_mode, self.custom_endpoint)
+            logger.info("System: Metadata file updated successfully")
+            self.show_json()
         except Exception as e:
-            logger.warning(f"Error writing metadata file: {e}")
-            show_warning("Could not write the metadata file. Please check file permission.")
-
-        logger.info("Converter Screen: Updating the Screen")
-
-        # Update the json preview
-        self.show_json()
+            logger.warning(f"Error updating metadata: {e}")
+            show_warning("Could not write the metadata file.")
 
 
-    def substitute_recommendations(self, headers: list, all_results: dict, request_results: list):
+    def substitute_recommendations(self, headers, all_results, request_results):
         """
-        Updates the metadata file with best matches for each column.
+        Function substitute_recommendations that replaces the default schema with the best homogenous recommendations selected by default
 
-        Params:
-            headers (list): list of headers
-            all_results (dict): dictionary of header: list of matches
-            request_results (list): array of tuples containt the header and corresponding best match
+        Args:
+            headers list(str): list of all the headers. 
+            all_results dict: list of all the matches for headers.
+            request_results: best match index for each header
         """
-
-        # Retrieve the file path without the type name 
-        path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
-
-        # Open the file 
-        with open(path, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file)
-
-        # Build a lookup dict for quick index access
-        index_lookup = {header: idx for header, idx in request_results}
-
-        for column in data.get('tableSchema', {}).get('columns', []):
-            header = column.get('name')
-            if header in all_results and header in index_lookup:
-                match = all_results[header][index_lookup[header]]
-
-                if self.custom_endpoint == "":
-                    column.update({
-                        'name': header,
-                        'prefixedName': match[0][0],  # prefixed name
-                        '@id': match[2][0],           # URI
-                        'propertyUrl': match[2][0],   # URI for CoW
-                        'vocab': match[1],            # vocabulary.prefix
-                        'type': match[3],             # type
-                        'score': match[4],            # score
-                    })
-                else:
-                    column.update({
-                        'name': header,
-                        'prefixedName': match[0],     # prefixed name
-                        '@id': match[2],              # URI
-                        'propertyUrl': match[2],      # URI for CoW
-                        'vocab': match[1],            # vocabulary.prefix
-                        'type': match[3],             # type
-                        'score': match[4],            # score
-                    })
-
-                logger.info(f"System: Metadata Updated - {header} -> {match[0][0]}")
-            else:
-                logger.warning(f"System: Match Not Found - for header: {header}")
-
-        # Save
         try:
-            with open(path, 'w', encoding='utf-8') as json_file:
-                json.dump(data, json_file, indent=4, ensure_ascii=False)
-                logger.info(f"System: Metadata File Written - {path}")
+            path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
+            update_metadata(path, headers, all_results, request_results, self.rec_mode, self.custom_endpoint)
+            logger.info("System: Metadata substituted successfully.")
         except Exception as e:
-            logger.warning(f"Error writing metadata file: {e}")
-            show_warning("Could not write the metadata file. PLease check file permissions.")
+            logger.warning(f"Error substituting metadata: {e}")
+            show_warning("Could not update the metadata. Please check file permissions.")
 
 
     def save_json(self):
@@ -800,7 +706,7 @@ class ConverterScreen(Screen):
         data = self.ids.json_editor.text
         data = json.loads(data)
 
-        # Save the Retrieved data into the fiel 
+        # Save the Retrieved data into the field 
         with open(path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=2, ensure_ascii=False)
 

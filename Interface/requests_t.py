@@ -3,7 +3,7 @@ import requests
 import csv
 import json
 from copy import deepcopy
-from .utils import get_csv_headers
+from .util.utils import get_csv_headers
 import logging
 import typing
 import time 
@@ -328,50 +328,5 @@ def retrieve_combiSQORE_recursion(all_results: dict, vocab_scores: list[tuple], 
 
 
 #--------------------------------------------------------------
-# Main Function to run the request
-def main():
-    """
-    Main function to run the test requests.
 
-    Args:
-        None
-
-    Returns:
-        None
-
-    """
-    csv_file = "Interface/examples/cow_person_example.csv"
-    headers = get_csv_headers(csv_file)
-    logger.info(f"List of retrieved headers {headers}")
-    all_results = {}
-
-    # Get Recommendations for every header
-    for id,header in enumerate(headers):
-        recommendations = get_recommendations(header, 20)
-        header_scores = organize_results(recommendations)
-        all_results[header] = header_scores
-    
-    # Create a list of retrieved vocabularies
-    vocabs = get_vocabs(all_results)
-    logger.info(f"List of retrieved vocabularies")
-
-    # Calculate a score for every vocabulary
-    logger.info(f"List of vocabularies with averaged Tf-IDF score {scores}")
-
-    # Rank the vocabularies according to Query-Combinative-Ontology Similarity Score
-    combi_score_vocabularies = calculate_combi_score(all_results, scores)
-    sorted_combi_score_vocabularies = sorted(combi_score_vocabularies, key=lambda x: x[1], reverse=True)
-    logger.info(f"Normalized combiSQOREs: {sorted_combi_score_vocabularies}")
-
-    # Retrieve best results for homogenous requests
-    request_result = retrieve_combiSQORE_recursion(all_results, sorted_combi_score_vocabularies, len(headers))
-
-    # Display results
-    for header, index in request_result:
-        match = all_results[header][index]
-        print(f"- {header}: {match[0]} ({match[1]}, score={match[4]})")
-
-
-if __name__ == "__main__":
-    main()
 #--------------------------------------------------------------

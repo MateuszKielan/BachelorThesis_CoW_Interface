@@ -1,5 +1,5 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
-from .utils import get_csv_headers
+from .util.utils import get_csv_headers
 import difflib
 import math
 
