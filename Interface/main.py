@@ -46,8 +46,9 @@ from .requests_t import get_recommendations, organize_results, get_vocabs, get_a
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
 from .utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text
 from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
+from .converter import convert_with_cow
 
-# CoW Import
+# CoW (Csv On The Web)Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
 #-----------------------------
 
@@ -640,31 +641,17 @@ class ConverterScreen(Screen):
         popup.open()
 
 
-    def convert_with_cow(self, csv_path: str):
+    def build_metadata(self, csv_path: str):
         """
         Converts a CSV file into a JSON metadata file using CoW (CSV on the Web).
 
         Args:
             csv_path (str): Path to the input CSV file.
         """
-        input_path = Path(csv_path)
-        output_metadata_path = input_path.parent / f"{input_path.stem}-metadata.json"
 
-        if output_metadata_path.exists():
-            logger.info("CoW: Metadata file already exists. Loading data.")
-            return
-
-        try:
-            start_time = time.time()
-            build_schema(str(input_path), str(output_metadata_path))
-            duration = time.time() - start_time
-            logger.info(f"CoW: Metadata saved to {output_metadata_path}")
-            logger.info(f"Conversion time: {duration:.2f} seconds")
-        except Exception as e:
-            logger.error("CoW: Metadata generation failed")
-            logger.exception(e)
-
-    
+        # Call the converter method to build metadata json file -> see converter.py
+        convert_with_cow(csv_path)
+       
 
     def replace_all(self, headers: list, all_results: dict, request_results: list):
         """
@@ -821,6 +808,7 @@ class ConverterScreen(Screen):
 
         # Update the JSON preview
         self.show_json()
+
 
     def convert_json(self):
         """
@@ -1374,7 +1362,7 @@ class ConverterScreen(Screen):
         """
         try:
             # Convert the CSV to metadata JSON
-            converter = Thread(target=self.convert_with_cow, args=(file_path,))
+            converter = Thread(target=self.build_metadata, args=(file_path,))
             converter.start()
         except Exception as e:
             logger.error(f"Error starting conversion thread: {e}")
@@ -1437,7 +1425,7 @@ class ConverterScreen(Screen):
         Function process_custom_endpoint that processes the custom endpoint.
         """
         # Convert the CSV to metadata JSO
-        converter = Thread(target=self.convert_with_cow, args=(file_path,))
+        converter = Thread(target=self.build_metadata, args=(file_path,))
 
         try:
             logger.info("Requests: Populating the match dictionary")
