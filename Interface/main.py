@@ -1,3 +1,19 @@
+# This file contains main structure of the application. 
+# The file contains implementation of all the screens and 
+#
+# It contains 7 classes:
+#   1. Starting Screen: Implementation of the filechooser and the custom endpoint text field.
+#   2. Loading Screen: Implementation of the loading screen widget animation.
+#   3. DataPopup (CHANGE THIS STUPID NAME): Implementation of the page that displays uploaded CSV file.
+#   4. RecommendationPopup (ALSO DON'T LIKE THE NAME): Implementation of the popups containing matches for every header.
+#   5. VocabularyScorePopup: Implementation of the popup containing ranked list of vocabularies (first card in the Recommender screen).
+#   6. ConverterScreen: Implementation of the main screen after the file upload. It further contains:
+#       - conversion process and vocabulary ranking algorithm.
+#   7. CowApp: Standard kivy implementation. Takes care of the screen manager (register all the screens), runs the application
+#
+# Naming convention
+
+
 #------IMPORTS SECTION-------
 
 # Core Kivy Imports
@@ -48,7 +64,7 @@ from .ui.converter_screen_ui import build_request_help_popup, builder_recommenda
 from .util.converter import convert_with_cow
 from .util.metadata import update_metadata
 
-# CoW (Csv On The Web)Import
+# CoW (Csv On The Web) Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
 #-----------------------------
 
@@ -56,20 +72,26 @@ from cow_csvw.converter.csvw import build_schema, CSVWConverter
 # Set up the logger
 logger = logging.getLogger(__name__)
 
-# Load all the hint texts into a global variable
+# Load all text contained in the help boxes. The texts are stored in the json format in resources/help_texts.json
 logger.info("System: Loading help texts")
 HELP_TEXTS = load_help_text()
 
 
 class StartingScreen(Screen):
     """
-    Class StartingScreen that implements logic behind file selection.
+    Class StartingScreen that implements logic behind the first screen the user sees in the application.
 
-    1. This class corresponds to the first screen user sees when opening the CoW Interface.
-    2. After user selects the file and presses "Convert" button the system switches to ConverterScreen class
+    StartingScreen consists of:
+        1. Screen Title
+        2. Field for inserting the custom SPARQL enpoint
+        3. "Select File" button
+        4. "Convert" button
+    
+    The intended flow of the screen is:
+        StartingScreen -> upload file -> press "convert" -> ConverterScreen
 
     Attributes:
-        None
+        selected_file (Path): path to the file selected by user.
     """
 
     def __init__(self, **kwargs):
@@ -1407,7 +1429,7 @@ class ConverterScreen(Screen):
         headers = get_csv_headers(str(file_path))
         self.headers = headers  # Store headers for search functionality
 
-        # Dictionary {header: list of matches}
+        # {header: list of matches}
         self.all_results = {}
 
         # Set the size of received matches
