@@ -10,8 +10,6 @@
 #   6. ConverterScreen: Implementation of the main screen after the file upload. It further contains:
 #       - conversion process and vocabulary ranking algorithm.
 #   7. CowApp: Standard kivy implementation. Takes care of the screen manager (register all the screens), runs the application
-#
-# Naming convention
 
 
 #------IMPORTS SECTION-------
@@ -59,8 +57,8 @@ import time
 # Custom Module Imports
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
-from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text
 from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
+from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text, is_file_valid
 from .util.converter import convert_with_cow
 from .util.metadata import update_metadata
 
@@ -79,7 +77,7 @@ HELP_TEXTS = load_help_text()
 
 class StartingScreen(Screen):
     """
-    Class StartingScreen that implements logic behind the first screen the user sees in the application.
+    Class implements logic behind the first screen the user sees in the application.
 
     StartingScreen consists of:
         1. Screen Title
@@ -96,87 +94,71 @@ class StartingScreen(Screen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.selected_file = None
+        self.selected_file_path = None 
 
 
-    def select_file(self):
+    def browse_for_file(self) -> None:
         """
-        Function select_file that opens filechooser.
+        Function that implements the filechooser.
         """
         logger.info("File chooser: Opening...")
 
-        logger.info("File chooser: Opening...")
         root = Tk()
-        root.withdraw()  # Hide the root window
+        root.withdraw()  
+
+        # Initialize the filedialog window
+        # Filters for CSV file extension
+        # Filter can be tricked manually  
+        # Additional checkpoint is setup in handle_file_submition
         file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
+
         root.destroy()
 
+        # Update the text "No file selected" field with the file name.
         if file_path:
-            self.selected_file = Path(file_path)
-            self.ids.file_path_label.text = self.selected_file.name
+            self.selected_file_path = Path(file_path)
+            self.ids.file_path_label.text = self.selected_file_path.name
             logger.info(f"File selected: {file_path}")
         else:
             logger.info("No file selected.")
 
 
-    def select_store(self, selection: list) -> None:
+    def handle_file_submission(self) -> None:
         """
-        Function selct_store that: 
-            1. Stores the selected file path.
-            2. Updates the file name label.
-        Params:
-            selection (list): list of length 1 with a selected file
-        """
-        # If user has Selected the file then update the Path and display the label of the file name of the screen
-        if selection:
-            self.selected_file = Path(selection[0])
-            file_path_name = str(Path(selection[0]).name)
-            self.ids.file_path_label.text = file_path_name
-        logger.info("File Chooser: Closing...")
+        Function validates the file and starts the conversion process.
 
-
-    def switch(self) -> None:
+        - Retrieve custom API enpoint (even if empty).
+        - Validate if the file was selected. 
+        - Validate if the file is a CSV file. 
+        - Switch to LoadingScreens and load the data.
+        - After a delay switch to the converter screen.
         """
-        Function switch that 
-            1. Switches the screen to loading_screen
-            2. Passes the file path to the converter_screen
-            3. Raises a warning window in case of a wrong file selection
-        """
-        # Retrieve the API endpoint
+        # Retrieve the API endpoint from the text field
         custom_endpoint = self.ids.api_endpoint_data.text
         logger.info(f"API endpoint: {custom_endpoint}")
 
-        # Invoking screen manager to switch to converter screen if proper file selected
-        if self.selected_file:
+        # Validate CSV file before processing
+        # Checks: file path exists, file is CSV format, and file contains data
+        # If invalid, shows warning and returns early
+        valid = is_file_valid(self.selected_file_path)
 
-            rows = open_csv(self.selected_file)
-            if len(rows) > 0:
+        if not valid:
+            return
 
-                # Check if the file is a CSV file
-                if not str(self.selected_file).lower().endswith('.csv'):
-                    logger.warning('Not a CSV file')
-                    show_warning("Please select a CSV file")
-                    return
+        # Switch to loading screen
+        self.manager.current = "loading"
+        logger.info("Screen Manager: Switching to Loading Screen")
                 
-                # Switch to loading screen
-                self.manager.current = "loading"
-                logger.info("Screen Manager: Switching to Loading Screen")
+        # Schedule the data loading and screen switch
+        def load_data(dt):
+            converter_screen = self.manager.get_screen("converter")
+            converter_screen.display_recommendation(self.selected_file_path, custom_endpoint)
+            self.manager.current = "converter"
+            logger.info("Screen Manager: Switching to Converter Screen")
                 
-                # Schedule the data loading and screen switch
-                def load_data(dt):
-                    converter_screen = self.manager.get_screen("converter")
-                    converter_screen.display_recommendation(self.selected_file, custom_endpoint)
-                    self.manager.current = "converter"
-                    logger.info("Screen Manager: Switching to Converter Screen")
-                
-                # Schedule the loading with a small delay to ensure loading screen is visible (0.5 seconds minimum for loading screen to be visible)
-                Clock.schedule_once(load_data, 0.5)
-            else:
-                logger.warning("File is empty")
-                show_warning("The file is empty. Please select a different file.")
-        else:
-            logger.warning('No file selected')
-            show_warning("Please select a file")
+        # Schedule the loading with a small delay to ensure loading screen is visible (0.5 seconds minimum for loading screen to be visible)
+        Clock.schedule_once(load_data, 0.5)
+            
 
 
 class LoadingScreen(Screen):

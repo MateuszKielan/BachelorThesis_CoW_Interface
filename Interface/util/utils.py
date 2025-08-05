@@ -9,8 +9,10 @@ from kivymd.uix.snackbar import MDSnackbar
 from pathlib import Path
 from typing import List
 import json
+import logging
 #------------------------------------------
 
+logger = logging.getLogger(__name__)
 
 def get_csv_headers(file_path: str) -> list:
     """
@@ -211,3 +213,42 @@ def load_help_text(path: str = "Interface/resources/help_texts.json") -> str:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
     
+
+def is_file_valid(file_path: str) -> bool:
+    """
+    Function that checks if the file under the file_path is valid.
+
+    Validity criteria:
+        - The path shouldn't be empty
+        - The file should be a csv file
+        - The file shouldn't be empty
+
+    Args:
+        file_path (str): path to the file 
+    Return:
+        true if valid, false otherwise
+    """
+    
+    logger.info("System: Starting validation")
+
+    # Check if the file was chosen
+    if not file_path:
+        show_warning("You didn't select a file.")
+        return False
+
+
+    # Check if the file is a CSV
+    if not file_path.lower().endswith('.csv'):
+        show_warning("Please select a CSV file")
+        return False
+    
+
+    rows = open_csv(file_path)
+
+    # Check if the file is empty
+    if len(rows) == 0:
+        show_warning("The file is empty.")
+        return False
+    
+    logger.info("System: Validation finished. Result: Positive")
+    return True
