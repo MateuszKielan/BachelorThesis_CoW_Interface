@@ -1,4 +1,11 @@
 #:kivy 2.3.1
+
+
+# This KV file defines the static UI structure for all three screens.
+# It contains only layout and elements that do not rely on dynamic or external data.
+# These elements remain constant throughout the user interaction.
+
+
 ScreenManager:
     StartingScreen:
     LoadingScreen:
@@ -43,7 +50,7 @@ ScreenManager:
                 size_hint: None, None
                 size: 200, 50
                 pos_hint: {"center_x": 0.5}
-                on_press: root.select_file()
+                on_press: root.browse_for_file()
 
             Label:
                 id: file_path_label
@@ -57,7 +64,7 @@ ScreenManager:
                 size_hint: None, None
                 size: 200, 50
                 pos_hint: {"center_x": 0.5}
-                on_press: root.switch()
+                on_press: root.handle_file_submission()
 
 <LoadingScreen>:
     name: "loading"
