@@ -58,6 +58,7 @@ import time
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
 from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
+from .ui.loading_screen_ui import build_loading_screen_layout
 from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text, is_file_valid
 from .util.converter import convert_with_cow
 from .util.metadata import update_metadata
@@ -167,43 +168,10 @@ class LoadingScreen(Screen):
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Create a FloatLayout as the main container
-        main_layout = FloatLayout()
         
-        # Create a vertical box layout for the content
-        content_layout = BoxLayout(
-            orientation='vertical',
-            spacing=30,
-            padding=20,
-            size_hint=(0.8, 0.5),
-            pos_hint={'center_x': 0.5, 'center_y': 0.5}
-        )
-        
-        # Add a spinning circle
-        spinner = MDSpinner(
-            size_hint=(None, None),
-            size=(46, 46),
-            pos_hint={'center_x': .5},
-            active=True
-        )
-        
-        # Add loading text
-        loading_label = MDLabel(
-            text="Loading... Processing your file and fetching recommendations",
-            halign="center",
-            theme_text_color="Primary",
-            font_style="H5"
-        )
-        
-        # Add widgets to content layout
-        content_layout.add_widget(spinner)
-        content_layout.add_widget(loading_label)
-        
-        # Add content layout to main layout
-        main_layout.add_widget(content_layout)
-        
-        # Add main layout to screen
-        self.add_widget(main_layout)
+        # Add the layout of the loading screen to the screen. 
+        # For logic on how the loading screen is created see loading_screen.py
+        self.add_widget(build_loading_screen_layout())
 
 
 class DataPopup(FloatLayout):

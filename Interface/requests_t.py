@@ -1,4 +1,10 @@
-# Imports Section
+# This file takes care of the requect to the LOV api endpoint.
+# It further implements the logic behind the combiSQORE vocabulary ranking algorithm.
+# For more info on combiSQORE check: (LINK TO THE PAPER)
+
+
+
+# -------- Imports Section ------------
 import requests
 import csv
 import json
@@ -18,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 # Lov api url
+# MAYBE CHANGE THE NAME AS WELL
 recommender_url = "https://lov.linkeddata.es/dataset/lov/api/v2/term/search"
 
 
