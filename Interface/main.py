@@ -12,7 +12,7 @@
 #   7. CowApp: Standard kivy implementation. Takes care of the screen manager (register all the screens), runs the application
 
 
-#------IMPORTS SECTION-------
+#------ IMPORTS SECTION -------
 
 # Core Kivy Imports
 from kivy.core.window import Window
@@ -160,7 +160,6 @@ class StartingScreen(Screen):
         # Schedule the loading with a small delay to ensure loading screen is visible (0.5 seconds minimum for loading screen to be visible)
         Clock.schedule_once(load_data, 0.5)
             
-
 
 class LoadingScreen(Screen):
     """

@@ -1,7 +1,7 @@
 # This file contains main ui builder for the loading screen
 # The main function can be found in main.py  (formulate better!)
 
-#------IMPORTS SECTION-------
+#------ IMPORTS SECTION -------
 
 # Kivy UI imports
 from kivy.uix.boxlayout import BoxLayout
