@@ -11,6 +11,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivymd.uix.spinner import MDSpinner
 from kivymd.uix.label import MDLabel
 
+#-----------------------------
 
 def build_loading_screen_layout():
     """
@@ -23,6 +24,7 @@ def build_loading_screen_layout():
                 - Spinner 
                 - Label 
     """
+
     # Create a FloatLayout as the main container
     main_layout = FloatLayout()
     
