@@ -23,6 +23,16 @@ def build_loading_screen_layout():
             - Inside the BoxLayout:
                 - Spinner 
                 - Label 
+                
+    -------------------
+    |   Float Layout  |
+    |  -------------  |
+    |  | BoxLayout |  |
+    |  |   Spinner |  |
+    |  |   Label   |  |
+    |  -------------  |
+    -------------------
+
     """
 
     # Create a FloatLayout as the main container
