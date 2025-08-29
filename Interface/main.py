@@ -59,6 +59,7 @@ from .requests_t import get_recommendations, organize_results, get_vocabs, get_a
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
 from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
 from .ui.loading_screen_ui import build_loading_screen_layout
+from .ui.data_popup_ui import build_data_table
 from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text, is_file_valid
 from .util.converter import convert_with_cow
 from .util.metadata import update_metadata
@@ -173,7 +174,7 @@ class LoadingScreen(Screen):
         self.add_widget(build_loading_screen_layout())
 
 
-class DataPopup(FloatLayout):
+class DataPopup(FloatLayout):   # CHANGE THIS STUPID NAME, BE MORE SPECIFIC
     """
     Class DataPopup that defines a popup page that displays full csv data table.
 
@@ -186,28 +187,21 @@ class DataPopup(FloatLayout):
         self.build_table(column_heads, row_data)
 
 
-    def build_table(self, column_heads: list, row_data: list):
+    def build_table(self, column_headers: list, row_data: list):
         """
         Function build_table that builds the table inspection widget for the whole dataset.
 
         Params:
-            column_heads(arr): list of headers
+            column_headers(arr): list of headers
             row_data(arr): list of data row by row
         """
         # Add a spacing widget
         self.ids.popup_data_container.add_widget(Widget(size_hint_y=None, height=20))
 
-        # Define the table
-        table = MDDataTable(
-            column_data=column_heads,                     # column data 
-            row_data=row_data,                            # row data
-            size_hint=(0.9, 0.85),                        # size
-            pos_hint={"center_x": 0.5, "center_y": 0.5},  # position
-            use_pagination=True,                          # enable splitting data into pages
-            rows_num=20                                   # maximum row numbers per page
-        )
+        # Build the table
+        table = build_data_table(column_headers, row_data)
 
-        # Clear the previous table on launch and add the new table to the widget
+        # Clear the previous table on launch and add the new table to the container
         self.ids.popup_data_container.clear_widgets()
         self.ids.popup_data_container.add_widget(table)
 
@@ -220,7 +214,7 @@ class DataPopup(FloatLayout):
         parent = self.parent
         while parent:
             if isinstance(parent, Popup):
-                parent.dismiss()        # close the popup
+                parent.dismiss()           
                 break
             parent = parent.parent
 
