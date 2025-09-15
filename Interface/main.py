@@ -5,7 +5,7 @@
 #   1. Starting Screen: Implementation of the filechooser and the custom endpoint text field.
 #   2. Loading Screen: Implementation of the loading screen widget animation.
 #   3. DataPopup (CHANGE THIS STUPID NAME): Implementation of the page that displays uploaded CSV file.
-#   4. RecommendationPopup (ALSO DON'T LIKE THE NAME): Implementation of the popups containing matches for every header.
+#   4. HeaderVocabularyMatchesPopup: Implementation of the popups containing matches for every header.
 #   5. VocabularyScorePopup: Implementation of the popup containing ranked list of vocabularies (first card in the Recommender screen).
 #   6. ConverterScreen: Implementation of the main screen after the file upload. It further contains:
 #       - conversion process and vocabulary ranking algorithm.
@@ -60,7 +60,7 @@ from .sparql_requests import get_sparql_recommendations, organize_sparql_results
 from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
 from .ui.loading_screen_ui import build_loading_screen_layout
 from .ui.data_popup_ui import build_data_table
-from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text, is_file_valid
+from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text, is_file_valid, clean_recommendation_data
 from .util.converter import convert_with_cow
 from .util.metadata import update_metadata
 
@@ -220,9 +220,9 @@ class DataPopup(FloatLayout):   # CHANGE THIS STUPID NAME, BE MORE SPECIFIC
 
 
 
-class RecommendationPopup(FloatLayout):
+class HeaderVocabularyMatchesPopup(FloatLayout):
     """
-    Class RecommendationPopup that implements the logic behind Recommendation popups for every header 
+    Class HeaderVocabularyMatchesPopup that implements the logic behind the popups displaying vocabulary recommendations for every header.
 
     Attributes:
         header (str): current table header
@@ -247,23 +247,14 @@ class RecommendationPopup(FloatLayout):
             table (MDDataTable): full table data
             row (list): data of the selected row
         """
-        def clean(text: str):
-            """
-            Function clean that cleans the inserted results from unnecessary brackets
+        print(type(row[4]))
 
-            Args:
-                text (str): text that needs to be cleaned
-            Returns:
-                text (str): text cleaned from the unnecessary punctuation
-
-            """
-            return text.translate(str.maketrans('', '', "[]'"))
-
+        row = clean_recommendation_data(row)
         # Parse and clean the row values
-        name = clean(row[0])
-        vocab = clean(row[1])
-        uri = clean(row[2])
-        rdf_type = clean(row[3])
+        name = clean_recommendation_data(row[0])
+        vocab = clean_recommendation_data(row[1])
+        uri = clean_recommendation_data(row[2])
+        rdf_type = clean_recommendation_data(row[3])
         score = float(row[4])
 
         # Choose the data path with only the name
@@ -812,7 +803,7 @@ class ConverterScreen(Screen):
 
         def show_popup_after_loading(dt):
             # Pass the data to the popup
-            show = RecommendationPopup(header,data, list_titles, request_results, self.rec_mode, self.selected_file)
+            show = HeaderVocabularyMatchesPopup(header,data, list_titles, request_results, self.rec_mode, self.selected_file)
 
             # Initialize and open window
             popupWindow = Popup(title=f'Matches for {header}', content=show,size_hint=(1,1))

@@ -238,7 +238,7 @@ def is_file_valid(file_path: str) -> bool:
 
 
     # Check if the file is a CSV
-    if not file_path.lower().endswith('.csv'):
+    if not str(file_path).lower().endswith('.csv'):
         show_warning("Please select a CSV file")
         return False
     
@@ -252,3 +252,30 @@ def is_file_valid(file_path: str) -> bool:
     
     logger.info("System: Validation finished. Result: Positive")
     return True
+
+
+def clean_recommendation_data(data: list) -> list:
+    """
+    Cleans the inserted results from unnecessary brackets. Only done for the visualization purposes.
+
+    Args:
+        data (list): list of data entries to be cleaned
+
+    Returns:
+        list: list of cleaned data entries
+    """
+
+    def clean_text_entry(entry: str) -> str:
+        return entry.translate(str.maketrans('', '', "[]'"))
+    
+    cleaned = []
+
+    for entry in data:
+        entry = clean_text_entry(entry)
+
+        try:
+            entry = float(entry)
+        except:
+            pass
+
+        cleaned.
