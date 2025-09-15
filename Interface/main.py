@@ -57,12 +57,14 @@ import time
 # Custom Module Imports
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
-from .ui.converter_screen_ui import build_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
+from .ui.converter_screen_ui import builder_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
 from .ui.loading_screen_ui import build_loading_screen_layout
 from .ui.data_popup_ui import build_data_table
 from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text, is_file_valid, clean_recommendation_data
-from .util.converter import convert_with_cow
-from .util.metadata import update_metadata
+
+# Core logic imports
+from .core.converter import convert_with_cow
+from .core.metadata import update_metadata
 
 # CoW (Csv On The Web) Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
