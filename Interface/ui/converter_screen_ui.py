@@ -94,7 +94,7 @@ def builder_recommendation_help_popup(help_text):
     return popup
 
 
-def builder_vocabulary_popup(title, content):
+def builder_recommended_terms_popup(title, content):
 
     # Initialize the popup window
     popupWindow = Popup(
