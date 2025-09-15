@@ -9,7 +9,7 @@ from kivy.uix.scrollview import ScrollView
 
 # ------ Functions Section ------
 
-def build_request_help_popup(help_text: str) -> Popup:
+def builder_request_help_popup(help_text: str) -> Popup:
     """
     Function build_request_help_popup that builds the request help popup.
 

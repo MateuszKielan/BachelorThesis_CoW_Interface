@@ -30,3 +30,4 @@ def build_data_table(column_headers: list, row_data: list):         # Change the
         )
 
     return table
+
