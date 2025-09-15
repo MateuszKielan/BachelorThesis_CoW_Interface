@@ -66,7 +66,7 @@ from .util.utils import infer_column_type, open_csv, show_warning, get_csv_heade
 
 # Core logic imports
 from .core.converter import convert_with_cow
-from .core.metadata import update_metadata
+from .core.metadata import update_metadata, retrieve_best_match
 
 # CoW (Csv On The Web) Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
@@ -357,33 +357,23 @@ class HeaderVocabularyMatchesPopup(FloatLayout):
             rec_mode (str): mode of display (Single or Homogenous)
 
         """
-        # Clear all  previous widgets
+        # Clear all previous widgets to avoid wrong data on display
         self.ids.popup_recommendations.clear_widgets() 
 
-        # Update the class-wide variable with the received header
+        # Update the class-wide variable with the received header -> used in insert_instance function to trace the current header
         self.header = header
 
-        # Extract the best match index from request_results for the appropriate header
-        try: 
-            index = [item[1] for item in request_results if item[0] == header]
-
-            # Extract the best recommendation for both Single and Homogenous requests
-            best_match_data_homogenous = [organized_data[index[0]]]   # Retrieve the match indicated by the index
-            best_match_data_single = [organized_data[0]]              # Since matches are already sorted retrieve the first one
-
-        except:
-            best_match_data_homogenous = []
-            best_match_data_single = []
-
-        
-            
-        # Depending on the request mode create a table with the best match
-        if rec_mode == 'Homogenous': # If mode is Homogenous
+        # Retrieve best matches
+        best_match_data_homogenous, best_match_data_single = retrieve_best_match(organized_data, request_results, header)
+          
+        # Depending on the request mode create a table with the corresponding best match and the rest of ui
+        if rec_mode == 'Homogenous': 
             recommendation_ui = builder_vocabulary_matches_layout(header, organized_data, best_match_data_homogenous, list_titles, on_row_checked=self.show_recommendation_action_menu)
             
-        elif rec_mode == 'Single': # If mode is Single
+        elif rec_mode == 'Single': 
             recommendation_ui = builder_vocabulary_matches_layout(header, organized_data, best_match_data_single, list_titles, on_row_checked=self.show_recommendation_action_menu)
-            
+        
+        # Add the constructed ui to the displayed page
         self.ids.popup_recommendations.add_widget(recommendation_ui)
 
 

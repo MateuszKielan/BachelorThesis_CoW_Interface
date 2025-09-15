@@ -45,3 +45,21 @@ def update_metadata(path, headers, all_results, request_results, mode, custom_en
         json.dump(data, json_file, indent=4, ensure_ascii=False)
 
     return path
+
+
+def retrieve_best_match(organized_data, request_results, header):
+    """
+    Function that retrieves the best results for both single and homogenous requests for a particular header.
+    """
+    try: 
+        index = [item[1] for item in request_results if item[0] == header]
+
+        # Extract the best recommendation for both Single and Homogenous requests
+        best_match_data_homogenous = [organized_data[index[0]]]   # Retrieve the match indicated by the index
+        best_match_data_single = [organized_data[0]]              # Since matches are already sorted retrieve the first one
+
+    except:
+        best_match_data_homogenous = []
+        best_match_data_single = []
+    
+    return best_match_data_homogenous, best_match_data_single

@@ -10,7 +10,6 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 
 # Kivymd Imports
-
 from kivymd.uix.datatables import MDDataTable
 
 #-----------------------------
@@ -34,11 +33,11 @@ def builder_vocabulary_matches_layout(header: str, organized_data: list, best_ma
             empty_label = Label(
                 text='NO Matches found',
                 color=(1,1,1,1),
-                font_size='20sp',
+                font_size='40sp',
                 size_hint_y=0.05,
             )
             ui_root.add_widget(empty_label)
-            return  ui_root                                  # Return early to prevent empty table creation later
+            return  ui_root                 # Return early to prevent empty table creation later
 
     # Label for best match
     best_match_label = Label(
@@ -64,7 +63,7 @@ def builder_vocabulary_matches_layout(header: str, organized_data: list, best_ma
         height=20
     )
 
-    # LAbel for all matches
+    # Label for all matches
     all_match_label = Label(
         text=f'List of all matches:', 
         color=(1, 1, 1, 1), 
