@@ -278,4 +278,4 @@ def clean_recommendation_data(data: list) -> list:
         except:
             pass
 
-        cleaned.
+        pass

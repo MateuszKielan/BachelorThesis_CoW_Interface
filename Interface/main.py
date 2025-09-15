@@ -1,5 +1,5 @@
 # This file contains main structure of the application. 
-# The file contains implementation of all the screens and 
+# The file contains implementation of all the screens.
 #
 # It contains 7 classes:
 #   1. Starting Screen: Implementation of the filechooser and the custom endpoint text field.
@@ -55,11 +55,13 @@ from threading import Thread, Lock
 import time
 
 # Custom Module Imports
+# SIDE-NOTE: Why not combine all of the requests methods into one that sorts this stuff out. Too much confusion with all of the functions.
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
-from .ui.converter_screen_ui import builder_request_help_popup, builder_recommendation_help_popup, builder_vocabulary_popup
+from .ui.converter_screen_ui import builder_request_help_popup, builder_recommendation_help_popup, builder_recommended_terms_popup
 from .ui.loading_screen_ui import build_loading_screen_layout
 from .ui.data_popup_ui import build_data_table
+from .ui.header_vocabulary_matches_popup_ui import builder_vocabulary_matches_layout
 from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text, is_file_valid, clean_recommendation_data
 
 # Core logic imports
@@ -238,7 +240,7 @@ class HeaderVocabularyMatchesPopup(FloatLayout):
         super().__init__(**kwargs)
         self.header = header
         self.selected_file = selected_file
-        self.build_table(header, organized_data, list_titles, request_results, rec_mode)
+        self.build_popup(header, organized_data, list_titles, request_results, rec_mode)
 
 
     def insert_instance(self, table: MDDataTable, row: list):
@@ -343,7 +345,7 @@ class HeaderVocabularyMatchesPopup(FloatLayout):
         self.insert_popup.open()
 
 
-    def build_table(self, header: str, organized_data: list, list_titles: list, request_results: list, rec_mode: str):
+    def build_popup(self, header: str, organized_data: list, list_titles: list, request_results: list, rec_mode: str):
         """
         Function build_table that builds the table for every header.
 
@@ -356,17 +358,7 @@ class HeaderVocabularyMatchesPopup(FloatLayout):
 
         """
         # Clear all  previous widgets
-        self.ids.popup_recommendations.clear_widgets()
-
-        if not organized_data or len(organized_data) == 0:
-            self.ids.popup_recommendations.add_widget(Label(
-                text='NO Matches found',
-                color=(1,1,1,1),
-                font_size='20sp',
-                size_hint_y=0.05
-            ))
-            return  # Prevent Table creation
-        
+        self.ids.popup_recommendations.clear_widgets() 
 
         # Update the class-wide variable with the received header
         self.header = header
@@ -383,76 +375,17 @@ class HeaderVocabularyMatchesPopup(FloatLayout):
             best_match_data_homogenous = []
             best_match_data_single = []
 
-        if len(best_match_data_single) > 0 and len(best_match_data_homogenous) > 0:
-            # Display the best match table according to mode 
-            if rec_mode == 'Homogenous': # If mode is Homogenous
-                best_table = MDDataTable(
-                    column_data = list_titles,
-                    row_data= best_match_data_homogenous,
-                    size_hint=(0.6, 0.1),
-                    pos_hint={"center_x": 0.5, "center_y": 0.6},
-                    check = True,
-                    use_pagination=False
-                )
-            elif rec_mode == 'Single': # If mode is Single
-                best_table = MDDataTable(
-                    column_data = list_titles,
-                    row_data = best_match_data_single,
-                    size_hint=(0.6, 0.1),
-                    pos_hint={"center_x": 0.5, "center_y": 0.6},
-                    check = True,
-                    use_pagination=False
-                )
-
-            # Define the table of all matches
-            table = MDDataTable(
-                column_data=list_titles,
-                row_data=organized_data,
-                size_hint=(0.6, 0.3),
-                pos_hint={"center_x": 0.5, "center_y": 0.3},
-                use_pagination=True,
-                check = True,
-                rows_num=20
-            )
-
-            # Add the new tables to the widget with Labels
-            self.ids.popup_recommendations.add_widget(Label(
-                text=f'Best match for {header}:', 
-                color=(1, 1, 1, 1), 
-                font_size='20sp', 
-                size_hint_y=0.05
-            ))
-
-            # Add best table to the widget
-            self.ids.popup_recommendations.add_widget(best_table)
+        
             
-            # Create spacing Widget
-            self.ids.popup_recommendations.add_widget(Widget(
-                size_hint_y=None, 
-                height=20
-            ))
+        # Depending on the request mode create a table with the best match
+        if rec_mode == 'Homogenous': # If mode is Homogenous
+            recommendation_ui = builder_vocabulary_matches_layout(header, organized_data, best_match_data_homogenous, list_titles, on_row_checked=self.show_recommendation_action_menu)
+            
+        elif rec_mode == 'Single': # If mode is Single
+            recommendation_ui = builder_vocabulary_matches_layout(header, organized_data, best_match_data_single, list_titles, on_row_checked=self.show_recommendation_action_menu)
+            
+        self.ids.popup_recommendations.add_widget(recommendation_ui)
 
-            # Add the title
-            self.ids.popup_recommendations.add_widget(Label(
-                text=f'List of all matches:', 
-                color=(1, 1, 1, 1), 
-                font_size='20sp', 
-                size_hint_y=0.05
-            ))
-
-            # Add all matches table to the widget
-            self.ids.popup_recommendations.add_widget(table)
-
-            # Bind the insert functionality to every row of both tables 
-            table.bind(on_check_press=self.show_recommendation_action_menu)
-            best_table.bind(on_check_press=self.show_recommendation_action_menu)
-        else:
-            self.ids.popup_recommendations.add_widget(Label(
-                text='NO Matches found',
-                color=(1,1,1,1),
-                font_size='20sp',
-                size_hint_y=0.05
-            ))
 
     def dismiss_popup(self):
         """
@@ -581,7 +514,7 @@ class ConverterScreen(Screen):
         """
 
         # Use the UI builder function to build the popup
-        popup = build_request_help_popup(HELP_TEXTS["request_help_text"])
+        popup = builder_request_help_popup(HELP_TEXTS["request_help_text"])
 
         # Open the popup
         popup.open()
@@ -845,7 +778,7 @@ class ConverterScreen(Screen):
             show = VocabularyScorePopup(vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores)
 
             # Initialize and open window
-            popup = builder_vocabulary_popup('Vocabulary Ranking data', show)
+            popup = builder_recommended_terms_popup('Term Ranking data', show)
 
             # Register logger
             logger.info("Converter Screen: Opening the Recommendation Popup")
