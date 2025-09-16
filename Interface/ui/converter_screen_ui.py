@@ -1,11 +1,18 @@
 # This file contains the UI builder functions for the ConverterScreen class in main.py.
 
 # ------ Imports Section ------
+
+# Kivy UI Imports
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
+
+# Kivymd Imports
+from kivymd.uix.card import MDCard
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDRaisedButton
 
 # ------ Functions Section ------
 
@@ -104,3 +111,97 @@ def builder_recommended_terms_popup(title, content):
     )
 
     return popupWindow
+
+
+def builder_vocabulary_card(vocabulary_match_scores, on_press_callback=None):
+
+    vocab_card = MDCard(
+        orientation='vertical',
+        size_hint=(0.85, None),
+        pos_hint={"center_x": 0.5},
+        height=160,
+        padding=10,
+        spacing=10,
+        ripple_behavior=True,
+        md_bg_color=(0.95, 0.95, 0.95, 1),
+        shadow_softness=1,
+        elevation=4,
+        )
+
+    vocab_card.add_widget(MDLabel(
+        text=f"[b]Vocabulary Scores[/b]",
+        markup=True,
+        theme_text_color="Primary",
+        font_style="Subtitle1",
+        size_hint_y=None,
+        height=30
+        ))
+    
+
+    vocab_card.add_widget(MDLabel(
+        text=f"Vocabularies: {len(vocabulary_match_scores)}",
+        theme_text_color="Secondary",
+        size_hint_y=None,
+        height=24
+        ))
+
+    # Create the button with the callback
+    button = MDRaisedButton(
+        text="Show Scores",
+        size_hint=(None, None),
+        size=(150, 40),
+        pos_hint={"center_x": 0.5}
+    )
+    
+    # Set the callback if provided
+    if on_press_callback:
+        button.bind(on_press=on_press_callback)
+    
+    vocab_card.add_widget(button)
+
+    return vocab_card
+
+def builder_header_card(header, number_of_matches, dtype, on_press_callback):
+    header_card = MDCard(
+        orientation='vertical',
+        size_hint=(0.85, None),
+        pos_hint={"center_x": 0.5},
+        height=160,
+        padding=10,
+        spacing=10,
+        ripple_behavior=True,
+        md_bg_color=(0.95, 0.95, 0.95, 1),
+        shadow_softness=1,
+        elevation=4,
+    )
+
+    header_card.add_widget(MDLabel(
+        text=f"[b]Header:[/b] {header}",
+        markup=True,
+        theme_text_color="Primary",
+        font_style="Subtitle1",
+        size_hint_y=None,
+        height=30
+    ))
+
+    header_card.add_widget(MDLabel(
+        text=f"Type: {dtype}  |  Matches: {number_of_matches}",
+        theme_text_color="Secondary",
+        size_hint_y=None,
+        height=24
+    ))
+
+    button = MDRaisedButton(
+        text="Show Matches",
+        size_hint=(None, None),
+        size=(150, 40),
+        pos_hint={"center_x": 0.5},
+    )
+
+    # Set the callback if provided
+    if on_press_callback:
+        button.bind(on_press=on_press_callback)
+    
+    header_card.add_widget(button)
+
+    return header_card
