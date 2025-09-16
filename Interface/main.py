@@ -58,7 +58,7 @@ import time
 # SIDE-NOTE: Why not combine all of the requests methods into one that sorts this stuff out. Too much confusion with all of the functions.
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
-from .ui.converter_screen_ui import builder_request_help_popup, builder_recommendation_help_popup, builder_recommended_terms_popup
+from .ui.converter_screen_ui import builder_request_help_popup, builder_recommendation_help_popup, builder_recommended_terms_popup, builder_vocabulary_card
 from .ui.loading_screen_ui import build_loading_screen_layout
 from .ui.data_popup_ui import build_data_table
 from .ui.header_vocabulary_matches_popup_ui import builder_vocabulary_matches_layout, builder_recommendation_action_menu
@@ -67,7 +67,7 @@ from .util.utils import infer_column_type, open_csv, show_warning, get_csv_heade
 
 # Core logic imports
 from .core.converter import convert_with_cow
-from .core.metadata import update_metadata, retrieve_best_match
+from .core.metadata import update_metadata, retrieve_best_match, convert_json_to_nquads
 
 # CoW (Csv On The Web) Import
 from cow_csvw.converter.csvw import build_schema, CSVWConverter
@@ -486,7 +486,7 @@ class ConverterScreen(Screen):
         self.show_json()
 
 
-    def convert_json(self):
+    def initialize_json_conversion(self):
         """
         Function convert_json that converts the metadata file into nquads file. 
 
@@ -496,50 +496,8 @@ class ConverterScreen(Screen):
         # Selected file path
         input_csv_path = self.selected_file
 
-        # Check if the file exists
-        if not self.selected_file.exists():
-            logger.error(f"System: CSV file does not exist at: {self.selected_file}")
-        else:
-            logger.info(f"System: CSV file does exist at: {self.selected_file}")
-
-        metadata_file = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
-
-        # Check if the metadata file exists
-        if not metadata_file.exists():
-            logger.error(f"System: Metadata file not found: {metadata_file}")
-        else:
-            logger.info(f"System: Metadata file found: {metadata_file}")
-
-        try:
-            start_time_converter = time.time()
-            # Extract file paths
-            input_csv_path = str(self.selected_file)
-            correct_metadata_path = self.selected_file.with_name(f"{self.selected_file.stem}-metadata.json")
-            cow_expected_path = self.selected_file.with_name(f"{self.selected_file.name}-metadata.json")
-
-            # Ensure CoW finds the metadata file where it expects it
-            if not cow_expected_path.exists():
-                copyfile(correct_metadata_path, cow_expected_path)
-                logger.info(f"System: Copied metadata to CoW-expected path: {cow_expected_path}")
-            
-            # Instantiate and run the converter
-            converter = CSVWConverter(
-                file_name=input_csv_path,
-                processes=1,
-                output_format="nquads",
-                base="https://example.com/id/"  
-            )
-
-            converter.convert()
-
-            logger.info("CoW: Conversion to N-Quads completed successfully.")
-            show_success_message("Conversion to N-Quads completed successfully.")
-            end_time_converter = time.time()
-            total_execution_time_converter = end_time_converter - start_time_converter
-            logger.info(f"Total execution time of conversion: {total_execution_time_converter} seconds")
-        except Exception as e:
-            logger.error(f"CoW: Error during conversion: {e}")
-
+        convert_json_to_nquads(input_csv_path)
+        
 
     def show_json(self):
         """
@@ -638,6 +596,7 @@ class ConverterScreen(Screen):
             data (list): list of data for the header  
             list_titles (list): list of table headers
         """
+        # Test the edge cases
         if len(vocabulary_match_scores) == 0:
             show_warning("No vocabulary data available")
             return
@@ -728,45 +687,11 @@ class ConverterScreen(Screen):
         end_idx = start_idx + self.cards_per_page
         current_headers = headers[start_idx:end_idx]
 
-        vocab_card = MDCard(
-            orientation='vertical',
-                size_hint=(0.85, None),
-                pos_hint={"center_x": 0.5},
-                height=160,
-                padding=10,
-                spacing=10,
-                ripple_behavior=True,
-                md_bg_color=(0.95, 0.95, 0.95, 1),
-                shadow_softness=1,
-                elevation=4,
-        )
+        # Create callback function for vocabulary card
+        def vocab_callback(instance):
+            self.open_vocabulary_recommendations(self.vocabulary_match_scores, self.vocab_coverage_score, self.vocabulary_scores)
 
-        vocab_card.add_widget(MDLabel(
-                text=f"[b]Vocabulary Scores[/b]",
-                markup=True,
-                theme_text_color="Primary",
-                font_style="Subtitle1",
-                size_hint_y=None,
-                height=30
-            ))
-        
-
-        vocab_card.add_widget(MDLabel(
-                text=f"Vocabularies: {len(self.vocabulary_match_scores)}",
-                theme_text_color="Secondary",
-                size_hint_y=None,
-                height=24
-            ))
-
-
-        vocab_card.add_widget(MDRaisedButton(
-                text="Show Scores",
-                size_hint=(None, None),
-                size=(150, 40),
-                pos_hint={"center_x": 0.5},
-                on_press = lambda x, v=self.vocabulary_match_scores, vc= self.vocab_coverage_score, vm= self.vocabulary_scores: self.open_vocabulary_recommendations(v, vc, vm)
-        ))
-        
+        vocab_card = builder_vocabulary_card(self.vocabulary_match_scores, vocab_callback)
         table.add_widget(vocab_card)
 
         # For Every header in current page add a corresponding button with the appropriate data

@@ -5,6 +5,16 @@ import logging
 
 # Kivymd Imports
 from kivymd.app import MDApp
+
+# Python Imports
+import time
+from shutil import copyfile
+
+# Custom module imports
+from ..util.utils import show_success_message
+
+# CoW (Csv On The Web) Import
+from cow_csvw.converter.csvw import CSVWConverter
 #-----------------------------
 
 logger = logging.getLogger(__name__)
@@ -134,3 +144,49 @@ def retrieve_best_match(organized_data, request_results, header):
         best_match_data_single = []
     
     return best_match_data_homogenous, best_match_data_single
+
+
+def convert_json_to_nquads(selected_file):
+    # Check if the file exists
+        if not selected_file.exists():
+            logger.error(f"System: CSV file does not exist at: {selected_file}")
+        else:
+            logger.info(f"System: CSV file does exist at: {selected_file}")
+
+        metadata_file = selected_file.with_name(f"{selected_file.stem}-metadata.json")
+
+        # Check if the metadata file exists
+        if not metadata_file.exists():
+            logger.error(f"System: Metadata file not found: {metadata_file}")
+        else:
+            logger.info(f"System: Metadata file found: {metadata_file}")
+
+        try:
+            start_time_converter = time.time()
+            # Extract file paths
+            input_csv_path = str(selected_file)
+            correct_metadata_path = selected_file.with_name(f"{selected_file.stem}-metadata.json")
+            cow_expected_path = selected_file.with_name(f"{selected_file.name}-metadata.json")
+
+            # Ensure CoW finds the metadata file where it expects it
+            if not cow_expected_path.exists():
+                copyfile(correct_metadata_path, cow_expected_path)
+                logger.info(f"System: Copied metadata to CoW-expected path: {cow_expected_path}")
+            
+            # Instantiate and run the converter
+            converter = CSVWConverter(
+                file_name=input_csv_path,
+                processes=1,
+                output_format="nquads",
+                base="https://example.com/id/"  
+            )
+
+            converter.convert()
+
+            logger.info("CoW: Conversion to N-Quads completed successfully.")
+            show_success_message("Conversion to N-Quads completed successfully.")
+            end_time_converter = time.time()
+            total_execution_time_converter = end_time_converter - start_time_converter
+            logger.info(f"Total execution time of conversion: {total_execution_time_converter} seconds")
+        except Exception as e:
+            logger.error(f"CoW: Error during conversion: {e}")
