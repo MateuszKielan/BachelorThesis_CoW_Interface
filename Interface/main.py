@@ -61,7 +61,8 @@ from .sparql_requests import get_sparql_recommendations, organize_sparql_results
 from .ui.converter_screen_ui import builder_request_help_popup, builder_recommendation_help_popup, builder_recommended_terms_popup
 from .ui.loading_screen_ui import build_loading_screen_layout
 from .ui.data_popup_ui import build_data_table
-from .ui.header_vocabulary_matches_popup_ui import builder_vocabulary_matches_layout
+from .ui.header_vocabulary_matches_popup_ui import builder_vocabulary_matches_layout, builder_recommendation_action_menu
+from .ui.vocabulary_score_popup_ui import builder_vocabulary_score_popup
 from .util.utils import infer_column_type, open_csv, show_warning, get_csv_headers, show_success_message, create_vocab_row_data, load_help_text, is_file_valid, clean_recommendation_data
 
 # Core logic imports
@@ -243,66 +244,6 @@ class HeaderVocabularyMatchesPopup(FloatLayout):
         self.build_popup(header, organized_data, list_titles, request_results, rec_mode)
 
 
-    def insert_instance(self, table: MDDataTable, row: list):
-        """
-        Inserts the selected match into the metadata file for the current header.
-
-        Args:
-            table (MDDataTable): full table data
-            row (list): data of the selected row
-        """
-        print(type(row[4]))
-
-        row = clean_recommendation_data(row)
-        # Parse and clean the row values
-        name = clean_recommendation_data(row[0])
-        vocab = clean_recommendation_data(row[1])
-        uri = clean_recommendation_data(row[2])
-        rdf_type = clean_recommendation_data(row[3])
-        score = float(row[4])
-
-        # Choose the data path with only the name
-        data_path = self.selected_file.parent / f"{self.selected_file.name[:-4]}-metadata.json"
-
-        # Open the csv file for reading
-        with open(data_path, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file)
-
-        # Initialize the flag to track success of the update
-        updated = False
-
-        # Loop through all columns in the tableSchema
-        for column in data.get('tableSchema', {}).get('columns', []):
-            if column.get('name') == self.header:
-                column.update({
-                    'prefixedName': name,     # prefixed name 
-                    '@id': uri,               # uri
-                    'vocab': vocab,           # vocabulary 
-                    'propertyUrl': uri,        # uri
-                    'type': rdf_type,         # rdf type
-                    'score': score            # score
-                })
-
-                updated = True # If replaced update the flag
-                logger.info(f"[Inserted] {self.header} -> {name} ({vocab})")
-
-        # Display warning
-        if not updated:
-            logger.warning(f"Insert Failed: Header '{self.header}' not found in metadata.")
-
-        # Save the modified data to the file 
-        with open(data_path, 'w', encoding='utf-8') as json_file:
-            json.dump(data, json_file, indent=4, ensure_ascii=False)
-            logger.info(f"Metadata File Written: {data_path}")
-
-        # After Insert is Finished close the Popup
-        self.insert_popup.dismiss()
-
-        # Refresh JSON preview
-        app = MDApp.get_running_app()
-        app.root.get_screen("converter").show_json()
-        logger.info("Converter Screen: Refreshed JSON Preview Screen")
-
 
     def show_recommendation_action_menu(self, instance_table: MDDataTable, instance_row: list):
         """
@@ -318,28 +259,8 @@ class HeaderVocabularyMatchesPopup(FloatLayout):
         logger.info(f"Recommendation Popup: Table Data - {instance_table.row_data}")
         logger.info(f"Recommendation Popup: Row Data - {instance_row}")
 
-        # Create the widget
-        content = BoxLayout(orientation='vertical', size_hint= (1,1))
-
-        # Create a button to insert the chosen match
-        button_insert = MDRaisedButton(
-            text="Insert", 
-            on_press=lambda x, t=instance_table, r=instance_row: Clock.schedule_once(lambda dt: self.insert_instance(t, r)), # Use clocking to avoid error when conflicting with loading screen
-            size_hint=(None, None),
-            pos_hint={"center_x":0.5, "y": 0.6}                                        
-        )
-        
-        # Add the button to the widget
-        content.add_widget(button_insert)
-
-        # Ininitialize the popup window
-        self.insert_popup = Popup(
-            title = "Select Action",
-            size_hint=(None, None),
-            size=(500, 300),
-            auto_dismiss=True,
-            content = content
-        )
+        # Call the builder function to build the popup ui
+        self.insert_popup = builder_recommendation_action_menu(instance_table, instance_row, self.header, self.selected_file)
 
         # Open the popup window 
         self.insert_popup.open()
@@ -402,60 +323,28 @@ class VocabularyScorePopup(FloatLayout):
         """
         Builds the vocabulary scores table with proper error handling.
         """
+        # Clear the widget to avoid old data being displayed
         self.ids.popup_vocab_recommendations.clear_widgets()
         
-        # Add error handling for empty data
-        if not vocabulary_match_scores or not vocabulary_scores:
-            self.ids.popup_vocab_recommendations.add_widget(Label(
-                text='No vocabulary data available',
-                color=(1,1,1,1),
-                font_size='20sp',
-                size_hint_y=0.05
-            ))
-            return
-        
+        # Try to retrieve vocabulary data and bulid the table accordingly
         try:
             vocab_data = create_vocab_row_data(vocabulary_match_scores, vocabulary_coverage_score, vocabulary_scores)
             logger.info(f"Row_data: {vocab_data}")
             
-            # Check if we have valid data
-            if not vocab_data:
-                self.ids.popup_vocab_recommendations.add_widget(Label(
-                    text='No vocabulary data available',
-                    color=(1,1,1,1),
-                    font_size='20sp',
-                    size_hint_y=0.05
-                ))
-                return
+            # Call the builder function to build the ui of the popup window
+            vocabulary_score_popup = builder_vocabulary_score_popup(vocabulary_scores, vocab_data)   
             
-            list_col_names = [
-                ("vocabularies", dp(60)), 
-                ("Average Match Score", dp(60)), 
-                ("Number of Produced Matches", dp(60)),
-                ("Combi Score", dp(60))
-            ]
+            self.ids.popup_vocab_recommendations.add_widget(vocabulary_score_popup)
 
-            table = MDDataTable(
-                column_data=list_col_names,
-                row_data=vocab_data,
-                size_hint=(0.6, 0.3),
-                pos_hint={"center_x": 0.5, "center_y": 0.3},
-                use_pagination=True,
-                check=False,  # Disable row selection to prevent crashes
-                rows_num=20
-            )
-            
-            self.ids.popup_vocab_recommendations.add_widget(table)
-            
         except Exception as e:
-            logger.error(f"Error building vocabulary table: {e}")
-            self.ids.popup_vocab_recommendations.add_widget(Label(
-                text=f'Error loading vocabulary data: {str(e)}',
-                color=(1,1,1,1),
-                font_size='16sp',
-                size_hint_y=0.05
-            ))
+            logger.info(f"Error retrieving vocabulary data: {e}")
+
+            # Call the builder function with empty parameters to display error in case something fails
+            vocabulary_score_popup = builder_vocabulary_score_popup([], [])   
             
+            self.ids.popup_vocab_recommendations.add_widget(vocabulary_score_popup)
+
+
     def dismiss_popup(self):
         """
         Function dismiss_popup that closes the popup window
