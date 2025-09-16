@@ -58,7 +58,7 @@ import time
 # SIDE-NOTE: Why not combine all of the requests methods into one that sorts this stuff out. Too much confusion with all of the functions.
 from .requests_t import get_recommendations, organize_results, get_vocabs, get_average_score, calculate_combi_score, retrieve_combiSQORE_recursion  # My implementation of single / homogenous requests
 from .sparql_requests import get_sparql_recommendations, organize_sparql_results, get_sparql_vocabs, compute_similarity, assign_match_scores, get_average_sparql_score, calculate_sparql_combi_score, retrieve_sparql_results # Same Implementation for SPARQL requests
-from .ui.converter_screen_ui import builder_request_help_popup, builder_recommendation_help_popup, builder_recommended_terms_popup, builder_vocabulary_card
+from .ui.converter_screen_ui import builder_request_help_popup, builder_recommendation_help_popup, builder_recommended_terms_popup, builder_vocabulary_card, builder_header_card
 from .ui.loading_screen_ui import build_loading_screen_layout
 from .ui.data_popup_ui import build_data_table
 from .ui.header_vocabulary_matches_popup_ui import builder_vocabulary_matches_layout, builder_recommendation_action_menu
@@ -687,59 +687,31 @@ class ConverterScreen(Screen):
         end_idx = start_idx + self.cards_per_page
         current_headers = headers[start_idx:end_idx]
 
-        # Create callback function for vocabulary card
+        # Create callback function for vocabulary card that triggers the opening of a popup
         def vocab_callback(instance):
             self.open_vocabulary_recommendations(self.vocabulary_match_scores, self.vocab_coverage_score, self.vocabulary_scores)
 
         vocab_card = builder_vocabulary_card(self.vocabulary_match_scores, vocab_callback)
         table.add_widget(vocab_card)
 
-        # For Every header in current page add a corresponding button with the appropriate data
+        # For Every header in current page add a corresponding card with the appropriate data
         for header in current_headers:
+
+            # Compute the necessary data for each header
             logger.info(f"creating a card for {header}")
             data = all_results[header]
             dtype = infer_column_type(header, self.selected_file) 
             number_of_matches = len(all_results[header])
 
-            card = MDCard(
-                orientation='vertical',
-                size_hint=(0.85, None),
-                pos_hint={"center_x": 0.5},
-                height=160,
-                padding=10,
-                spacing=10,
-                ripple_behavior=True,
-                md_bg_color=(0.95, 0.95, 0.95, 1),
-                shadow_softness=1,
-                elevation=4,
-            )
+            # Create callback function for header card that triggers the opening of a popup
+            def header_callback(instance):
+                self.open_recommendations(header, data, self.list_titles, self.request_results)
 
-            card.add_widget(MDLabel(
-                text=f"[b]Header:[/b] {header}",
-                markup=True,
-                theme_text_color="Primary",
-                font_style="Subtitle1",
-                size_hint_y=None,
-                height=30
-            ))
-
-            card.add_widget(MDLabel(
-                text=f"Type: {dtype}  |  Matches: {number_of_matches}",
-                theme_text_color="Secondary",
-                size_hint_y=None,
-                height=24
-            ))
-
-            card.add_widget(MDRaisedButton(
-                text="Show Matches",
-                size_hint=(None, None),
-                size=(150, 40),
-                pos_hint={"center_x": 0.5},
-                on_press=lambda x, h=header, d=data: self.open_recommendations(h, d, self.list_titles, self.request_results)
-            ))
+            # Call the builder function that builds the card for the current header
+            header_card = builder_header_card(header, number_of_matches, dtype, header_callback)
 
             table.add_widget(Widget(size_hint_y=None, height=40))
-            table.add_widget(card)
+            table.add_widget(header_card)
 
         # Add pagination controls
         pagination_layout = BoxLayout(
